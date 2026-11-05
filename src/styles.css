@@ -408,3 +408,20 @@ img{max-width:100%}
 .booking-contact-card>div>small{font-size:10px;line-height:1.5;color:#9ba69f}
 .telegram-contact-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border:1px solid #3d6958;border-radius:11px;background:#1b3a2d;color:#d8eee1;text-decoration:none;font-size:11px;font-weight:600}
 .contact-unavailable{font-size:10px;color:#a99a79}
+
+
+/* Client contact and clickable booking details */
+.client-telegram-field{display:flex;flex-direction:column;gap:7px;margin:13px 0 19px;color:#c4cdc7;font-size:9px;letter-spacing:.06em}
+.client-telegram-field input{width:100%;padding:12px;border:1px solid #39423d;border-radius:11px;background:#101514;color:#eef2ee;font-size:12px;letter-spacing:normal}
+.client-telegram-field small{color:#8f9a93;font-size:9px;letter-spacing:normal;line-height:1.5}
+.slot-open-booking,.workspace-booking-open{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex:1;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;font-size:10px}
+.slot-open-booking{flex-direction:row;align-items:center;flex-wrap:wrap}
+.slot-open-booking small,.workspace-booking-open small{color:#9da9a1;font-size:9px}
+.workspace-booking-open b{font-size:11px}
+.booking-detail-modal{position:relative;width:min(100%,460px);max-height:85vh;overflow:auto;padding:22px;border:1px solid #39423d;border-radius:19px;background:#151a18;color:#e8ede9;box-shadow:0 20px 70px #000b}
+.booking-detail-modal h2{margin:10px 30px 8px 0;font-size:18px;line-height:1.4}
+.booking-detail-modal p{color:#aeb8b1;font-size:11px;line-height:1.5}
+.booking-reference-link{display:flex;flex-direction:column;gap:8px;margin:13px 0;color:#cbd8ce;text-decoration:none;font-size:10px}
+.booking-reference-link img{width:100%;max-height:320px;object-fit:contain;border-radius:12px;background:#0b0e0d}
+.booking-modal-actions{display:flex;gap:8px;margin-top:14px}
+.booking-modal-actions button{flex:1;min-height:40px;border-radius:10px;font-size:10px}
