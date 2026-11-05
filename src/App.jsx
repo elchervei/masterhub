@@ -173,6 +173,8 @@ export default function App() {
   const [authError,setAuthError]=useState('')
   const [userRole,setUserRole]=useState('client')
   const [mastersList,setMastersList]=useState([])
+  const [viewMode,setViewMode]=useState('client')
+  const [bookingSaving,setBookingSaving]=useState(false)
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
   useEffect(() => { const timer = window.setTimeout(() => setIntroVisible(false), 1500); return () => window.clearTimeout(timer) }, [])
   useEffect(() => {
@@ -252,9 +254,7 @@ export default function App() {
     const payload = { user_id: user.id, category: form.category, public_name: form.public_name, bio: form.bio, studio_name: form.studio_name || null, city: 'Калининград', contact_telegram: form.contact_telegram || null, experience_years: Number(form.experience_years || 0), starting_price: Number(form.starting_price || 0), status: 'pending' }
     const { error } = await supabase.from('masters').insert(payload)
     if (error) { setRegistrationStatus(error.message || 'Не удалось отправить анкету.'); return }
-    const { error: roleError } = await supabase.from('profiles').update({ role: 'master' }).eq('id', user.id)
-    if (roleError) console.warn('Master role update:', roleError.message)
-    setUserRole('master')
+    if (userRole !== 'admin') { const { error: roleError } = await supabase.from('profiles').update({ role: 'master' }).eq('id', user.id); if (roleError) console.warn('Master role update:', roleError.message); setUserRole('master') }
     setRegistrationOpen(false)
     setRegistrationStatus('Анкета отправлена на проверку. После одобрения профиль появится в каталоге.')
   }
@@ -265,7 +265,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name))')
+        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path))')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
@@ -288,7 +288,7 @@ export default function App() {
         about: m.bio || '',
         experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
         image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=900&q=85',
-        works: []
+        works: (m.portfolio_items || []).map(w=>w.image_path)
       }))
       setMastersList(liveMasters)
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
