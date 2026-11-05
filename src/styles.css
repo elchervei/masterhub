@@ -526,3 +526,51 @@ img{max-width:100%}
 .inquiry-master-gallery button{overflow:hidden;padding:0;border:1px solid var(--line);border-radius:11px;background:#090c0b}
 .inquiry-master-gallery img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
 @media(max-width:360px){.inquiry-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-home-button{font-size:8px;padding:6px 7px}}
+
+/* Master workspace refresh */
+.detail-cover{height:116px;margin-left:-14px;margin-right:-14px;border-radius:0 0 14px 14px}
+.detail-identity{padding:9px 0 7px;align-items:center}
+.detail-identity h1{font-size:17px;letter-spacing:-.35px}
+.detail-facts{margin:7px 0;padding:10px 0;border-top:1px solid #303936;border-bottom:1px solid #303936}
+.detail-facts b{font-size:10px}
+.detail-about{font-size:10px;max-width:58ch}
+.detail-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px;border:1px solid #303936;border-radius:12px;background:#111615}
+.detail-tabs button{margin:0;padding:9px 4px;border:0;border-radius:8px;font-size:9px}
+.detail-tabs button.selected{background:#29342e;color:#edf2ed}
+.work-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.work-grid img{aspect-ratio:1;object-fit:cover}
+.booking-cta{position:sticky;bottom:76px;z-index:4;box-shadow:0 8px 24px #0008}
+.master-workspace{padding-top:8px;padding-bottom:92px}
+.master-workspace .topbar-title strong{font-size:12px}
+.workspace-master-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;margin:4px 0 10px;border:1px solid #353f39;border-radius:15px;background:linear-gradient(135deg,#1b241f,#111615)}
+.workspace-master-card h2{font-size:16px;letter-spacing:-.3px}
+.workspace-section{padding:13px;margin:9px 0;border:1px solid #303a35;border-radius:15px;background:rgba(19,24,21,.88)}
+.workspace-section h3{font-size:11px;letter-spacing:.01em}
+.master-tab-intro h2,.master-appointments-section h2{margin:5px 0;font-size:22px;letter-spacing:-.5px}
+.master-tab-intro>p,.master-appointments-section>p{margin:0 0 12px;color:#9ca9a0;font-size:10px;line-height:1.55}
+.master-summary-row{display:flex;justify-content:space-between;align-items:center;margin:12px 0;padding:10px 12px;border:1px solid #344139;border-radius:11px;background:#151d18;color:#aebbb1;font-size:10px}
+.master-summary-row b{color:#edf3ee;font-size:16px}
+.master-empty-state{display:flex;min-height:150px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;text-align:center;color:#8f9c93}
+.master-empty-state svg{color:#a8b9ab}
+.master-empty-state b{color:#e2e9e3;font-size:12px}
+.master-empty-state span{max-width:250px;font-size:10px;line-height:1.5}
+.master-appointments-section{padding-bottom:9px}
+.master-appointment-card{width:100%;display:flex;align-items:center;gap:10px;margin:7px 0;padding:11px;border:1px solid #344139;border-radius:13px;background:#151c18;color:#e7eee8;text-align:left}
+.appointment-date-block{width:42px;height:46px;flex:0 0 42px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;background:#26352b}
+.appointment-date-block b{font-size:17px;line-height:1}
+.appointment-date-block small{margin-top:3px;color:#b7c8ba;font-size:9px;text-transform:uppercase}
+.appointment-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.appointment-main b{overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.appointment-main small{color:#9eaaa1;font-size:9px}
+.appointment-status{padding:5px 7px;border:1px solid #414d45;border-radius:8px;color:#b8c4bb;font-size:8px;white-space:nowrap}
+.appointment-status.price_proposed{border-color:#78673c;color:#e3cb8e;background:#302918}
+.appointment-status.confirmed{border-color:#42684d;color:#b8d9bd;background:#1d3022}
+.appointment-status.completed{border-color:#454b47;color:#aeb8b1;background:#222724}
+.booking-inbox-card{padding:12px 13px;border-radius:12px;background:#151c18}
+.booking-inbox-card b{font-size:12px}
+.booking-inbox-date{font-size:10px}
+.inquiry-inbox-section{margin-top:10px}
+.bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bottom-nav .nav-item{gap:4px}
+.bottom-nav .nav-item span{font-size:9px}
+@media(max-width:360px){.appointment-status{font-size:7px;padding:4px 5px}.master-appointment-card{gap:7px;padding:9px}}
