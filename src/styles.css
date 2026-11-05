@@ -743,3 +743,9 @@ img{max-width:100%}
 .master-appointments-section .master-dashboard-stats{margin:8px 0 12px}
 .schedule-form select{width:100%;min-height:34px}
 @media(max-width:360px){.deposit-setting-row{flex-direction:column}.deposit-setting-row .primary-button{width:100%}.waitlist-row{align-items:flex-start;flex-direction:column}}
+
+.master-workspace .waitlist-section{margin-top:10px;padding:12px;border:1px solid #342c40;border-radius:12px;background:#171420}
+.master-workspace .waitlist-section h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:#eee7f4;font-size:13px}
+.master-workspace .waitlist-section .count-chip{margin-left:auto}
+.master-workspace .deposit-setting-row input{width:100%;background:#171420;color:#eee7f4;border:1px solid #40364c;border-radius:9px;padding:9px}
+.master-workspace .reschedule-editor .primary-button{min-height:36px}
