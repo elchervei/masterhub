@@ -30,7 +30,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     }
     setLoading(false)
   }
-  useEffect(()=>{let live=true;let channel=null;const start=async()=>{await load();if(!supabase||!user)return;const {data:current}=await supabase.from('masters').select('id').eq('user_id',user.id).maybeSingle();if(live&&current)channel=supabase.channel('master-bookings-'+current.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings',filter:'master_id=eq.'+current.id},()=>load()).subscribe()};start();const handler=()=>load();window.addEventListener('masterhub:master-created',handler);return()=>{live=false;window.removeEventListener('masterhub:master-created',handler);if(channel)supabase.removeChannel(channel)}},[user?.id])
+  useEffect(()=>{let live=true;let channel=null;const start=async()=>{await load();if(!supabase||!user)return;const {data:current}=await supabase.from('masters').select('id').eq('user_id',user.id).maybeSingle();if(live&&current)channel=supabase.channel('master-bookings-'+current.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings',filter:'master_id=eq.'+current.id},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'master_inquiries',filter:'master_id=eq.'+current.id},()=>load()).subscribe()};start();const handler=()=>load();window.addEventListener('masterhub:master-created',handler);return()=>{live=false;window.removeEventListener('masterhub:master-created',handler);if(channel)supabase.removeChannel(channel)}},[user?.id])
   const uploadImage=async(file,kind)=>{
     if(!file||!master)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Поддерживаются только JPG, PNG и WebP.');return}
