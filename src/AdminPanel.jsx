@@ -4,14 +4,14 @@ import { Check, X, ClipboardList, Clock3, Trash2, CalendarDays } from 'lucide-re
 const labels={tattoo:'Тату',nails:'Ногти',brows:'Брови и ресницы',piercing:'Пирсинг',makeup:'Макияж'}
 const money=n=>new Intl.NumberFormat('ru-RU').format(n||0)+' ₽'
 
-export default function AdminPanel({supabase}){
+export default function AdminPanel({supabase,currentUserId}){
   const [realRows,setRealRows]=useState([]),[testRows,setTestRows]=useState([]),[bookings,setBookings]=useState([])
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[filter,setFilter]=useState('pending')
   const [section,setSection]=useState('applications')
   const load=async()=>{
     setLoading(true);setError('')
     const [real,demo,bk]=await Promise.all([
-      supabase.from('masters').select('id,public_name,category,bio,city,studio_name,experience_years,starting_price,contact_telegram,status,created_at').order('created_at',{ascending:false}),
+      supabase.from('masters').select('id,user_id,public_name,category,bio,city,studio_name,experience_years,starting_price,contact_telegram,status,created_at').order('created_at',{ascending:false}),
       supabase.from('master_test_applications').select('*').order('created_at',{ascending:false}),
       supabase.from('bookings').select('id,starts_at,ends_at,status,client_note,reference_image_url,masters(public_name)').order('starts_at',{ascending:false})
     ])
@@ -22,8 +22,14 @@ export default function AdminPanel({supabase}){
   const moderate=async(row,status)=>{const {error}=await supabase.from('masters').update({status}).eq('id',row.id);if(error)setError(error.message);else load()}
   const moderateTest=async(row,status)=>{const {error}=await supabase.from('master_test_applications').update({status}).eq('id',row.id);if(error)setError(error.message);else load()}
   const deleteApplication=async row=>{
-    if(!window.confirm(`Удалить заявку «${row.public_name}»? Это действие нельзя отменить.`))return
-    const {error}=await supabase.from(row.isTest?'master_test_applications':'masters').delete().eq('id',row.id)
+    if(!row.isTest&&row.user_id===currentUserId){setError('Защита: собственный аккаунт администратора удалить отсюда нельзя.');return}
+    if(row.isTest){if(!window.confirm(`Удалить тестовую анкету «${row.public_name}»?`))return;const {error}=await supabase.from('master_test_applications').delete().eq('id',row.id);if(error)setError(error.message);else load();return}
+    const {count,error:countError}=await supabase.from('bookings').select('id',{count:'exact',head:true}).eq('master_id',row.id)
+    if(countError){setError(countError.message);return}
+    const warning=count?` Вместе с анкетой будут удалены связанные записи: ${count}.`:''
+    if(!window.confirm(`Удалить реальную анкету мастера «${row.public_name}»?${warning} Сам Telegram-аккаунт останется, админский аккаунт защищён. Это действие нельзя отменить.`))return
+    if(count){const {error:bookingError}=await supabase.from('bookings').delete().eq('master_id',row.id);if(bookingError){setError(bookingError.message);return}}
+    const {error}=await supabase.from('masters').delete().eq('id',row.id).neq('user_id',currentUserId)
     if(error)setError(error.message);else load()
   }
   const deleteBooking=async row=>{
@@ -45,7 +51,7 @@ export default function AdminPanel({supabase}){
           <div className="admin-app-top"><div><span className="eyebrow">{row.isTest?'ТЕСТОВАЯ АНКЕТА':'ЗАЯВКА МАСТЕРА'}</span><h3>{row.public_name}</h3></div><span className={'status-pill '+row.status}>{statusLabel(row.status)}</span></div>
           <div className="admin-app-meta"><span>{labels[row.category]||row.category}</span><span>{row.city}</span><span>{row.experience_years||0} лет опыта</span><b>от {money(row.starting_price)}</b></div>
           {row.studio_name&&<p className="admin-app-studio">{row.studio_name}</p>}<p className="admin-app-bio">{row.bio}</p>{row.contact_telegram&&<p className="admin-app-contact">{row.contact_telegram}</p>}
-          <div className="admin-app-actions">{row.status!=='approved'&&<button className="approve-button" onClick={()=>row.isTest?moderateTest(row,'approved'):moderate(row,'approved')}><Check size={15}/> Одобрить</button>}{row.status!=='rejected'&&<button className="reject-button" onClick={()=>row.isTest?moderateTest(row,'rejected'):moderate(row,'rejected')}><X size={15}/> Отклонить</button>}<button className="admin-delete-button" onClick={()=>deleteApplication(row)}><Trash2 size={15}/> Удалить</button></div>
+          <div className="admin-app-actions">{row.status!=='approved'&&<button className="approve-button" onClick={()=>row.isTest?moderateTest(row,'approved'):moderate(row,'approved')}><Check size={15}/> Одобрить</button>}{row.status!=='rejected'&&<button className="reject-button" onClick={()=>row.isTest?moderateTest(row,'rejected'):moderate(row,'rejected')}><X size={15}/> Отклонить</button>}{(row.isTest||row.user_id!==currentUserId)&&<button className="admin-delete-button" onClick={()=>deleteApplication(row)}><Trash2 size={15}/> Удалить</button>}</div>
         </article>)}</div>}
       </>:!bookings.length?<div className="empty-state"><CalendarDays size={30}/><b>Записей пока нет</b><span>Все клиентские записи будут отображаться здесь.</span></div>:<div className="admin-application-list">{bookings.map(b=><article className="admin-application" key={b.id}><div className="admin-app-top"><div><span className="eyebrow">ЗАПИСЬ К МАСТЕРУ</span><h3>{b.masters?.public_name||'Мастер'}</h3></div><span className="status-pill">{b.status}</span></div><p className="admin-app-bio">{new Date(b.starts_at).toLocaleString('ru-RU',{dateStyle:'full',timeStyle:'short'})} — {new Date(b.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</p><p className="admin-app-contact">{b.client_note||'Татуировка'}</p>{b.reference_image_url&&<a href={b.reference_image_url} target="_blank" rel="noreferrer">Открыть референс</a>}<div className="admin-app-actions"><button className="admin-delete-button" onClick={()=>deleteBooking(b)}><Trash2 size={15}/> Удалить запись</button></div></article>)}</div>}
     </main>
