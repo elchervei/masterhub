@@ -354,3 +354,49 @@ img{max-width:100%}
 .review-editor textarea{min-height:68px;resize:vertical}
 .review-editor button{min-height:36px}
 .complete-booking{padding:8px 10px;border:1px solid #45614e;border-radius:9px;background:#1b2921;color:#b7d9c2;font-size:9px}
+
+
+/* Master availability calendar, image upload and admin cleanup */
+.master-cover-preview{width:100%;max-height:190px;object-fit:cover;border-radius:13px;margin:2px 0 10px;border:1px solid var(--line)}
+.upload-control{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:43px;padding:11px 13px;border:1px dashed #59625e;border-radius:12px;background:#171d1b;color:#d0d8d2;font-size:10px;cursor:pointer;overflow:hidden}
+.upload-control input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.booking-reference{justify-content:flex-start;margin:8px 0 13px}
+.fixed-service-label{padding:11px 12px;border:1px solid #343b3c;border-radius:10px;background:#0d1011;color:#d9dfdb;font-size:11px}
+.calendar-legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 13px}
+.calendar-legend span{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:9px}
+.calendar-legend i,.calendar-day i{width:7px;height:7px;display:inline-block;border-radius:50%;background:#59615e}
+.calendar-legend i.free,.calendar-day.free i{background:#75b78a}
+.calendar-legend i.partial,.calendar-day.partial i{background:#d5b45f}
+.calendar-legend i.full,.calendar-day.full i{background:#bd6666}
+.master-calendar-grid,.client-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.calendar-day{position:relative;min-width:0;min-height:39px;display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;border:1px solid #303736;border-radius:10px;background:#111515;color:#d6dcd8;font-size:11px}
+.calendar-day.outside{opacity:.28}
+.calendar-day.chosen{border-color:#a9b8ae;background:#25302a;box-shadow:inset 0 0 0 1px rgba(169,184,174,.25)}
+.calendar-day.free{background:rgba(64,116,78,.15)}
+.calendar-day.partial{background:rgba(157,126,49,.16)}
+.calendar-day.full{background:rgba(125,54,54,.16)}
+.calendar-day:disabled{cursor:default;opacity:.35}
+.calendar-month-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px;text-transform:capitalize}
+.calendar-month-head b{font-size:12px;font-weight:600}
+.calendar-month-head button{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:#171b1c;color:#e1e5e2;font-size:19px}
+.calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:5px}
+.calendar-weekdays span{text-align:center;color:#8d9891;font-size:8px}
+.date-input-label{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:var(--muted);font-size:9px}
+.date-input-label input{padding:10px;border:1px solid #343b3c;border-radius:10px;background:#0d1011;color:var(--text)}
+.slot-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.slot-list>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid #34443a;border-radius:10px;background:rgba(53,95,65,.12);font-size:10px}
+.slot-list>div.slot-booked{border-color:#654343;background:rgba(125,54,54,.12);color:#d6aaaa}
+.slot-list span{display:flex;align-items:center;gap:7px}
+.slot-list button,.mini-delete{width:29px;height:29px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:#1a1e1e;color:#c8d0ca}
+.available-slot-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.available-slot-list .time-slot{border-radius:11px;min-height:42px}
+.workspace-service-list>div{display:flex;align-items:center;gap:8px}
+.workspace-service-list>div span{flex:1}
+.admin-section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 15px}
+.admin-section-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid var(--line);border-radius:12px;background:#121617;color:#9da5a1;font-size:10px}
+.admin-section-tabs button.selected{border-color:#87938d;background:#242b28;color:#f0f2ef}
+.admin-delete-button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:37px;border:1px solid #694343;border-radius:11px;background:#281b1b;color:#e1b5b5;font-size:10px}
+.admin-app-actions .admin-delete-button{flex:1}
+.master-photo{background-color:#202625;background-image:linear-gradient(135deg,#252d2a,#111515)}
+.detail-cover{background-color:#202625}
+@media(max-width:360px){.calendar-day{min-height:35px}.calendar-legend{gap:8px}.calendar-legend span{font-size:8px}}
