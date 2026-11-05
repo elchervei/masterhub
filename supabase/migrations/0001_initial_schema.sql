@@ -212,7 +212,7 @@ alter table public.reviews enable row level security;
 create or replace function public.prevent_profile_role_change()
 returns trigger language plpgsql as $$
 begin
-  if new.role is distinct from old.role then
+  if new.role is distinct from old.role and coalesce(auth.role(), '') <> 'service_role' and current_user not in ('postgres', 'supabase_admin') then
     raise exception 'Profile role can only be changed by a trusted administrator';
   end if;
   return new;
@@ -237,7 +237,7 @@ create policy "approved masters public read" on public.masters for select using 
 drop policy if exists "master reads own listing" on public.masters;
 create policy "master reads own listing" on public.masters for select to authenticated using (user_id = auth.uid());
 drop policy if exists "master creates own listing" on public.masters;
-create policy "master creates own listing" on public.masters for insert to authenticated with check (user_id = auth.uid());
+create policy "master creates own listing" on public.masters for insert to authenticated with check (user_id = auth.uid() and status in ('draft','pending'));
 drop policy if exists "master updates own pending listing" on public.masters;
 create policy "master updates own pending listing" on public.masters for update to authenticated using (user_id = auth.uid() and status in ('draft','pending','rejected')) with check (user_id = auth.uid() and status in ('draft','pending','rejected'));
 
@@ -290,6 +290,25 @@ drop policy if exists "master manages blocked dates" on public.blocked_dates;
 create policy "master manages blocked dates" on public.blocked_dates for all to authenticated
 using (exists(select 1 from public.masters m where m.id = master_id and m.user_id = auth.uid()))
 with check (exists(select 1 from public.masters m where m.id = master_id and m.user_id = auth.uid()));
+
+
+-- Prevent clients/masters from rewriting the booking owner, service or time window.
+create or replace function public.guard_booking_changes()
+returns trigger language plpgsql as $
+begin
+  if new.client_id is distinct from old.client_id
+     or new.master_id is distinct from old.master_id
+     or new.service_id is distinct from old.service_id
+     or new.starts_at is distinct from old.starts_at
+     or new.ends_at is distinct from old.ends_at then
+    raise exception 'Booking identity and time cannot be edited';
+  end if;
+  return new;
+end;
+$;
+drop trigger if exists bookings_guard_fields on public.bookings;
+create trigger bookings_guard_fields before update on public.bookings
+for each row execute function public.guard_booking_changes();
 
 drop policy if exists "clients read own bookings" on public.bookings;
 create policy "clients read own bookings" on public.bookings for select to authenticated using (client_id = auth.uid());
