@@ -39,9 +39,15 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
   </article>
 }
 
-function BottomNav({ active, setActive, isAdmin }) {
-  const visibleTabs = isAdmin ? [...tabs, { id: 'admin', label: 'Заявки', icon: ClipboardList }] : tabs
-  return <nav className="bottom-nav">{visibleTabs.map(({ id, label, icon: Icon }) => <button key={id} className={active === id ? 'nav-item active' : 'nav-item'} onClick={() => setActive(id)}><Icon size={20} strokeWidth={active === id ? 2.2 : 1.7} /><span>{label}</span></button>)}</nav>
+function BottomNav({ active, setActive, isAdmin, isMaster }) {
+  const masterTabs = [
+    { id: 'profile', label: 'Кабинет', icon: BriefcaseBusiness },
+    { id: 'master-inbox', label: 'Заявки', icon: ClipboardList },
+    { id: 'master-bookings', label: 'Записи', icon: CalendarDays },
+    { id: 'home', label: 'Клиент', icon: Home }
+  ]
+  const visibleTabs = isMaster ? masterTabs : isAdmin ? [...tabs, { id: 'admin', label: 'Заявки', icon: ClipboardList }] : tabs
+  return <nav className="bottom-nav">{visibleTabs.map(({ id, label, icon: Icon }) => <button key={id} className={active === id ? 'nav-item active' : 'nav-item'} onClick={() => setActive(id)}><Icon size={19} strokeWidth={active === id ? 2.2 : 1.7} /><span>{label}</span></button>)}</nav>
 }
 
 function Header({ title, subtitle, back, action }) {
@@ -406,7 +412,7 @@ export default function App() {
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
-  else if(active==='profile' && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')}/>
+  else if(['profile','master-inbox','master-bookings'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')}/>
   else content=<ProfilePage isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
-  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
+  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
