@@ -459,3 +459,35 @@ img{max-width:100%}
 .workspace-section h3{margin-bottom:9px;font-size:11px}
 
 .workspace-home-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);color:var(--text);font-size:10px;font-weight:600;white-space:nowrap}.workspace-home-button:active{background:rgba(255,255,255,.09)}
+
+
+/* Booking inbox and price negotiation flow */
+.booking-inbox-section{padding:14px}
+.booking-inbox-card{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:5px 0;padding:15px;border:1px solid #3a4540;border-radius:14px;background:linear-gradient(145deg,#1a211e,#111615);color:#e8eee9;text-align:left}
+.booking-inbox-card:active{border-color:#82988a;background:#202a24}
+.booking-inbox-card b{font-size:14px}
+.booking-inbox-card>span:last-child{color:#aab7ae;font-size:10px}
+.booking-inbox-date{color:#b8c7bd;font-size:11px;font-weight:600}
+.quote-waiting-list{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.quote-waiting-list>b{font-size:11px}
+.quote-waiting-list>div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;color:#aeb9b1;font-size:10px}
+.quote-waiting-list strong{color:#dce8df}
+.open-reference-button{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;margin:13px 0;border:1px solid #52665a;border-radius:12px;background:#1b2921;color:#d7e8dc;font-size:12px;font-weight:600}
+.booking-negotiation-modal{width:min(100%,480px)}
+.quote-editor{display:flex;flex-direction:column;gap:11px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.quote-editor label{display:flex;flex-direction:column;gap:7px;color:#b8c5bc;font-size:9px;letter-spacing:.06em}
+.quote-editor input,.quote-editor textarea{width:100%;padding:12px;border:1px solid #39443e;border-radius:11px;background:#0d1210;color:#f0f4f0;font-size:13px;letter-spacing:normal}
+.quote-editor textarea{min-height:70px;resize:vertical;font-size:11px}
+.quote-editor .primary-button{min-height:44px}
+.quote-decline-button{min-height:39px;border:1px solid #644747;border-radius:10px;background:#281b1b;color:#ddb4b4;font-size:10px}
+.reference-lightbox{z-index:1001;display:flex;align-items:center;justify-content:center;padding:18px}
+.reference-lightbox>img{max-width:100%;max-height:86vh;object-fit:contain;border-radius:13px;background:#080a09}
+.reference-lightbox .modal-close{position:absolute;right:18px;top:18px;z-index:2}
+.booking-card-expanded{padding:16px}
+.client-price-offer{display:flex;flex-direction:column;gap:9px;margin-top:13px;padding:14px;border:1px solid #526a59;border-radius:14px;background:rgba(38,67,47,.22)}
+.client-price-offer>span{color:#aebeb1;font-size:9px;letter-spacing:.08em}
+.client-price-offer>strong{font-size:24px;color:#e5f0e7}
+.client-price-offer p{margin:0;color:#b8c7bb;font-size:11px;line-height:1.5}
+.client-price-offer>div{display:flex;gap:8px}
+.client-price-offer button{flex:1;min-height:40px;border-radius:10px;font-size:10px}
+.client-reference-link{display:inline-flex;margin-top:8px;color:#b7cbbd;font-size:10px;text-decoration:underline}
