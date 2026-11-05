@@ -221,3 +221,20 @@ img{max-width:100%}
 .home-intro-only{width:100%;min-height:calc(100svh - 152px);display:grid;place-items:center;padding:24px 12px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center}
 .home-intro-only h1{max-width:330px;margin:0;font-family:'Manrope',sans-serif;font-size:clamp(28px,8vw,35px);font-weight:600;line-height:1.17;letter-spacing:-1.15px;overflow-wrap:anywhere;color:#eceeee}
 .auth-error{padding:11px 13px;border:1px solid #553d3d;border-radius:13px;background:#1b1414;color:#e0baba}
+
+
+/* Service categories */
+.category-home{padding-top:30px}
+.category-heading{margin:8px 0 23px}
+.category-heading h1{margin:9px 0 7px;font-size:26px;font-weight:600;letter-spacing:-.9px}
+.category-heading p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+.category-list{display:flex;flex-direction:column;gap:9px}
+.category-choice{width:100%;min-height:76px;display:flex;align-items:center;gap:13px;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:#111315;color:var(--text);text-align:left}
+.category-choice:active{background:#1a1d1f}
+.category-mark{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;border:1px solid #3c4244;border-radius:13px;background:#191c1e;color:#c6cbcc;font-size:13px;font-weight:600}
+.category-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.category-copy b{font-size:13px;font-weight:600}
+.category-copy small{color:var(--muted);font-size:9px;line-height:1.4}
+.category-choice>svg{flex:0 0 auto;color:#8d9496}
+.master-registration-modal select{width:100%;padding:12px;border:1px solid #363c3e;border-radius:12px;background:#0c0e0f;color:var(--text);font-size:11px}
+.master-registration-modal option{background:#121416;color:var(--text)}
