@@ -126,12 +126,13 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
       if(file.size>5*1024*1024){setError('Размер каждого изображения — до 5 МБ.');return}
     }
     setError('')
-    setReferences(old=>[...old,...incoming])
+    setReferences(old=>[...old,...incoming.map(file=>({file,preview:URL.createObjectURL(file)}))])
   }
   const uploadReferences=async()=>{
     if(!user)throw new Error('Подключи Telegram, чтобы отправить заявку.')
     const urls=[]
-    for(const file of references){
+    for(const item of references){
+      const file=item.file
       const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
       const path=user.id+'/inquiry-'+crypto.randomUUID()+'.'+ext
       const {data,error}=await supabase.storage.from('masterhub-media').upload(path,file,{contentType:file.type,upsert:false})
@@ -158,7 +159,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <section className="inquiry-upload-section">
       <label className="upload-control inquiry-upload-control"><Upload size={17}/><span>Добавить фото и эскизы</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{addFiles(e.target.files);e.target.value=''}}/></label>
       <p className="muted-note">До 8 изображений · JPG, PNG или WebP · до 5 МБ каждое</p>
-      {references.length>0&&<div className="inquiry-reference-grid">{references.map((file,i)=><div className="inquiry-reference-thumb" key={i}><img src={URL.createObjectURL(file)} alt={file.name}/><button type="button" onClick={()=>setReferences(old=>old.filter((_,index)=>index!==i))} aria-label="Убрать изображение"><X size={14}/></button><small>{file.name}</small></div>)}</div>}
+      {references.length>0&&<div className="inquiry-reference-grid">{references.map((file,i)=><div className="inquiry-reference-thumb" key={i}><img src={file.preview} alt={file.file.name}/><button type="button" onClick={()=>{URL.revokeObjectURL(file.preview);setReferences(old=>old.filter((_,index)=>index!==i))}} aria-label="Убрать изображение"><X size={14}/></button><small>{file.file.name}</small></div>)}</div>}
     </section>
     {error&&<p className="auth-error">{error}</p>}
     <button className="primary-button full-button" disabled={saving||uploading||!references.length} onClick={submit}>{uploading?'Загружаем изображения…':saving?'Отправляем…':'Отправить материалы мастеру'} <ChevronRight size={17}/></button>
