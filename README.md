@@ -47,3 +47,16 @@ npm run preview
 ## Важно
 
 Демо-слоты и заявки не являются реальными бронированиями. До подключения backend интерфейс только показывает пользовательский сценарий.
+
+
+## Supabase setup
+
+1. Create a Supabase project.
+2. Open **SQL Editor** in the Supabase dashboard.
+3. Open `supabase/migrations/0001_initial_schema.sql` in this repository, copy the complete contents, paste into SQL Editor, and run it.
+4. In **Project Settings → API**, copy the Project URL and the publishable key (or legacy anon key).
+5. Create a local `.env` file from `.env.example` and fill in:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+Never put the `service_role` key in frontend code or Vercel environment variables prefixed with `VITE_`. The migration enables Row Level Security and creates the initial schema. Telegram authentication, admin bootstrap, and the live frontend data adapter are the next integration step; the existing screens still use demo data until that work is completed.
