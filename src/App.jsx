@@ -148,6 +148,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [clientTelegram,setClientTelegram]=useState('')
   const [uploading,setUploading]=useState(false)
   const [error,setError]=useState('')
+  const [waitlistSaving,setWaitlistSaving]=useState(false)
   const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
   const telegramContact=useMemo(()=>{const raw=String(master.handle||'').trim();if(!raw)return '';if(raw.startsWith('https://')||raw.startsWith('http://'))return raw;if(raw.startsWith('t.me/'))return 'https://'+raw;const username=raw.startsWith('@')?raw.slice(1):raw;return 'https://t.me/'+username},[master.handle])
   const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
