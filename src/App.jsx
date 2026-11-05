@@ -265,7 +265,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path))')
+        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path)')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
@@ -296,16 +296,17 @@ export default function App() {
     loadMasters()
     return () => { active = false }
   }, [])
-  const toggleFavorite=id=>setFavorites(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id])
+  useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
+  const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=data=>{setBookings(old=>[...old,data]);setBookingMaster(null);setSelected(null);setActive('bookings')}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const [hh,mm]=data.time.split(':').map(Number);const start=new Date(2026,10,data.day,hh,mm);const end=new Date(start.getTime()+90*60000);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,service_id:null,starts_at:start.toISOString(),ends_at:end.toISOString(),client_note:data.service});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
   let content
-  if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking}/>
+  if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
   else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
   else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
-  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
+  else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase}/>\n  else if(active==='profile' && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} onOpenRegistration={()=>setRegistrationOpen(true)}/>\n  else content=<ProfilePage isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
+  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
