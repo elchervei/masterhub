@@ -122,7 +122,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [error,setError]=useState('')
   const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
   const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=first.getDay();return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
+  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=(first.getDay()+6)%7;return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
   useEffect(()=>{let live=true;async function load(){if(!supabase)return;const today=dateKey(new Date());const limit=new Date();limit.setDate(limit.getDate()+60);const s=await supabase.from('master_time_slots').select('*').eq('master_id',master.id).gte('slot_date',today).lte('slot_date',dateKey(limit)).order('slot_date').order('starts_at');if(live){setSlots(s.data||[]);if(s.error)setError(s.error.message);if(!selectedDate){const firstFree=(s.data||[]).find(slot=>slot.is_active);if(firstFree){setSelectedDate(firstFree.slot_date);setMonth(new Date(firstFree.slot_date+'T12:00:00'))}}}}load();return()=>{live=false}},[supabase,master.id])
   const slotsFor=key=>slots.filter(s=>s.slot_date===key)
   const freeFor=key=>slotsFor(key).filter(s=>s.is_active)
@@ -315,7 +315,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path), services(id,title,description,price_from,duration_minutes,is_active)')
+        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, cover_image_url, master_styles(styles(name)), portfolio_items(image_path), services(id,title,description,price_from,duration_minutes,is_active)')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
