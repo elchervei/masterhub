@@ -48,7 +48,7 @@ function Header({ title, subtitle, back, action }) {
   return <header className="topbar">
     {back ? <button className="icon-button back-button" onClick={back}><ArrowLeft size={21}/></button> : <div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div>}
     <div className="topbar-title">{title && <strong>{title}</strong>}{subtitle && <small>{subtitle}</small>}</div>
-    {action || <button className="icon-button" aria-label="Уведомления"><Bell size={19}/><i className="notification-dot"/></button>}
+    {action || <button className="icon-button" aria-label="Уведомления и обновления" onClick={()=>window.dispatchEvent(new CustomEvent("masterhub:open-notifications"))}><Bell size={19}/><i className="notification-dot"/></button>}
   </header>
 }
 
@@ -184,6 +184,7 @@ export default function App() {
   const [bookingSaving,setBookingSaving]=useState(false)
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
   useEffect(() => { const timer = window.setTimeout(() => setIntroVisible(false), 1500); return () => window.clearTimeout(timer) }, [])
+  useEffect(()=>{const handler=()=>setActive(userRole==='master'||(userRole==='admin'&&viewMode==='master')?'profile':'bookings');window.addEventListener('masterhub:open-notifications',handler);return()=>window.removeEventListener('masterhub:open-notifications',handler)},[userRole,viewMode])
   useEffect(() => {
     if (!supabase) return
     let active = true
