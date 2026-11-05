@@ -97,11 +97,12 @@ function BookingsPage({ bookings }) {
   return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{bookings.length ? bookings.map((b,i)=><div className="booking-card" key={i}><div className="booking-status"><span className="status-dot"/> Ожидает подтверждения</div><h3>{b.master.name}</h3><p>{b.service}</p><div className="booking-date"><CalendarDays size={16}/> {b.day} ноября · {b.time}</div></div>) : <div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}</main></>
 }
 
-function ProfilePage({ isMaster, setIsMaster, connectionStatus }) {
-  return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">MH</div><div><h2>{isMaster?'Тестовый мастер':'Гость MASTER HUB'}</h2><span>{isMaster?'Кабинет мастера':'Клиентский аккаунт'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
+function ProfilePage({ isMaster, connectionStatus, user, authLoading, onTelegramLogin, onSignOut, authError }) {
+  return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">{user ? (user.user_metadata?.first_name?.[0] || user.user_metadata?.full_name?.[0] || 'M') : 'MH'}</div><div><h2>{user ? (user.user_metadata?.first_name || user.user_metadata?.full_name || 'Пользователь Telegram') : 'Гость MASTER HUB'}</h2><span>{user ? (isMaster ? 'Кабинет мастера' : 'Клиентский аккаунт') : 'Войди через Telegram'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
     <div className="profile-menu">{(isMaster?['Мой профиль мастера','Портфолио и услуги','Расписание и выходные','Заявки на запись','Статистика']:['Личные данные','Мои отзывы','Уведомления','Помощь и поддержка']).map((x,i)=><button key={x}><span className="menu-icon">{[<UserRound/>,<Camera/>,<CalendarDays/>,<BriefcaseBusiness/>,<Star/>][i]}</span>{x}<ChevronRight size={17}/></button>)}</div>
-    <div className="demo-switch"><div><b>Режим разработки</b><small>Переключение интерфейса для проверки</small></div><button className={isMaster?'toggle on':'toggle'} onClick={()=>setIsMaster(!isMaster)}><span/></button></div>
-    <p className="muted-note">Связь с Supabase: <b>{connectionStatus}</b>. Авторизация через Telegram и личные кабинеты подключим следующим этапом.</p>
+    {user ? <button className="secondary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button> : <button className="primary-button full-button" onClick={onTelegramLogin} disabled={authLoading}>{authLoading ? 'Подключаем Telegram…' : 'Войти через Telegram'} <ChevronRight size={17}/></button>}
+    {authError && <p className="muted-note" role="alert">{authError}</p>}
+    <p className="muted-note">Связь с Supabase: <b>{connectionStatus}</b>. {user ? 'Аккаунт защищён проверкой Telegram.' : 'Открой приложение через Telegram, чтобы войти.'}</p>
   </main></>
 }
 
@@ -111,9 +112,46 @@ export default function App() {
   const [bookingMaster,setBookingMaster]=useState(null)
   const [favorites,setFavorites]=useState([2])
   const [bookings,setBookings]=useState([])
-  const [isMaster,setIsMaster]=useState(false)
+  const [user,setUser]=useState(null)
+  const [authLoading,setAuthLoading]=useState(false)
+  const [authError,setAuthError]=useState('')
+  const [userRole,setUserRole]=useState('client')
   const [mastersList,setMastersList]=useState(masters)
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
+  useEffect(() => {
+    if (!supabase) return
+    let active = true
+    supabase.auth.getSession().then(({ data }) => { if (active) setUser(data.session?.user || null) })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user || null))
+    return () => { active = false; listener.subscription.unsubscribe() }
+  }, [])
+  useEffect(() => {
+    let active = true
+    async function loadRole() {
+      if (!supabase || !user) { setUserRole('client'); return }
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+      if (active && data?.role) setUserRole(data.role)
+    }
+    loadRole()
+    return () => { active = false }
+  }, [user])
+  const loginWithTelegram = async () => {
+    setAuthError('')
+    const initData = window.Telegram?.WebApp?.initData
+    if (!initData) { setAuthError('Открой Master Hub внутри Telegram — данные авторизации не найдены.'); return }
+    if (!supabase) { setAuthError('Нет подключения к Supabase.'); return }
+    setAuthLoading(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('telegram-auth', { body: { initData } })
+      if (error) throw error
+      if (!data?.session?.access_token || !data?.session?.refresh_token) throw new Error(data?.error || 'Не удалось получить сессию.')
+      const { error: sessionError } = await supabase.auth.setSession(data.session)
+      if (sessionError) throw sessionError
+      setUser(data.session.user || null)
+    } catch (error) { console.error('MASTER HUB Telegram auth:', error); setAuthError(error.message || 'Ошибка авторизации. Попробуй ещё раз.') }
+    finally { setAuthLoading(false) }
+  }
+  const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(null); setUserRole('client') }
   useEffect(() => {
     let active = true
     async function loadMasters() {
@@ -160,6 +198,6 @@ export default function App() {
   else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={isMaster} setIsMaster={setIsMaster} connectionStatus={connectionStatus}/>
+  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onTelegramLogin={loginWithTelegram} onSignOut={signOut} authError={authError}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div></div>
 }
