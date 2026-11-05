@@ -431,3 +431,29 @@ img{max-width:100%}
 .admin-booking-reference img{display:block;width:100%;max-height:260px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#0b0e0d}
 .booking-reference-link{display:flex;flex-direction:column;gap:8px;margin:13px 0;color:#cbd8ce;font-size:9px;letter-spacing:.06em}
 .booking-reference-link img{width:100%;max-height:360px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#0b0e0d}
+
+
+/* Compact public master profile: tighter spacing and less oversized content. */
+.detail-page{padding-top:0;padding-bottom:88px}
+.detail-cover{height:148px;margin-left:-14px;margin-right:-14px;border-radius:0 0 15px 15px}
+.detail-identity{padding:10px 0 8px;gap:8px}
+.detail-identity h1{font-size:19px;line-height:1.2;margin:3px 0}
+.detail-identity .eyebrow{font-size:8px}
+.avatar-placeholder{width:38px;height:38px;flex-basis:38px}
+.detail-facts{gap:6px;padding:9px 0}
+.detail-facts div{gap:3px}
+.detail-facts small{font-size:7px}
+.detail-facts b{font-size:9px}
+.detail-about{margin:9px 0;font-size:10px;line-height:1.45}
+.detail-tags{margin:7px 0}
+.detail-tabs{gap:12px;margin:12px 0 10px}
+.detail-tabs button{padding-bottom:7px;font-size:9px}
+.work-grid{gap:6px}
+.work-grid img{border-radius:10px}
+.service-list div{padding:9px 0;font-size:9px}
+.info-panel{padding:11px;font-size:9px}
+.booking-cta{margin-top:12px}
+.workspace-master-card{padding:11px;margin:7px 0 11px;border-radius:13px}
+.workspace-master-card h2{font-size:15px}
+.workspace-section{margin:8px 0;padding:11px;border-radius:14px}
+.workspace-section h3{margin-bottom:9px;font-size:11px}
