@@ -41,25 +41,12 @@ function Header({ title, subtitle, back, action }) {
   </header>
 }
 
-function HomePage({ setActive, openMaster, favorites, toggleFavorite, mastersList }) {
-  return <><Header subtitle="КАЛИНИНГРАД" />
-    <main className="page-content home-page home-redesign">
-      <section className="home-intro">
-        <span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span>
-        <h1>Татуировка —<br/><em>твой личный знак.</em></h1>
-        <p>Находи мастеров, изучай портфолио и выбирай работу, которая действительно откликается.</p>
-        <button className="primary-button home-main-cta" onClick={() => setActive('catalog')}>Смотреть мастеров <ChevronRight size={17}/></button>
-        <div className="home-orbit" aria-hidden="true"><span>✳</span><i></i></div>
-      </section>
-      <button className="home-category-card" onClick={() => setActive('catalog')}>
-        <span className="home-category-index">01 / НАПРАВЛЕНИЕ</span><span className="home-category-title">Татуировки</span><span className="home-category-bottom">Стили · портфолио · запись <ChevronRight size={17}/></span>
-      </button>
-      <section className="home-masters-section">
-        <div className="section-heading"><div><span className="eyebrow">ПОДБОРКА</span><h2>Мастера города</h2></div><button className="text-link" onClick={() => setActive('catalog')}>Все <ChevronRight size={15}/></button></div>
-        {mastersList.length ? <div className="master-list">{mastersList.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}</div> : <div className="home-empty"><div className="home-empty-mark">M</div><div><b>Каталог скоро наполнится</b><span>Первые мастера появятся после проверки анкет.</span></div></div>}
-      </section>
-    </main>
-  </>
+function HomePage() {
+  return <main className="page-content home-page home-redesign">
+    <section className="home-intro home-intro-only">
+      <h1>Выбери своего мастера</h1>
+    </section>
+  </main>
 }
 
 function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList }) {
@@ -103,15 +90,19 @@ function BookingsPage({ bookings }) {
   return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{bookings.length ? bookings.map((b,i)=><div className="booking-card" key={i}><div className="booking-status"><span className="status-dot"/> Ожидает подтверждения</div><h3>{b.master.name}</h3><p>{b.service}</p><div className="booking-date"><CalendarDays size={16}/> {b.day} ноября · {b.time}</div></div>) : <div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}</main></>
 }
 
-function ProfilePage({ isMaster, connectionStatus, user, authLoading, onSignOut, authError, onStartRegistration, registrationStatus }) {
+function ProfilePage({ isMaster, connectionStatus, user, authLoading, onLogin, onSignOut, authError, onStartRegistration, registrationStatus }) {
   return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">{user ? (user.user_metadata?.first_name?.[0] || user.user_metadata?.full_name?.[0] || 'M') : 'MH'}</div><div><h2>{user ? (user.user_metadata?.first_name || user.user_metadata?.full_name || 'Пользователь Telegram') : 'Гость MASTER HUB'}</h2><span>{user ? (isMaster ? 'Кабинет мастера' : 'Клиентский аккаунт') : 'Подключение Telegram'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
     {!isMaster && <button className="profile-register-master" onClick={onStartRegistration}><BriefcaseBusiness size={19}/><span><b>Стать мастером</b><small>Создать профиль, добавить работы и принимать записи</small></span><ChevronRight size={18}/></button>}
     {isMaster && <div className="profile-register-master master-active"><BriefcaseBusiness size={19}/><span><b>Профиль мастера</b><small>Твоя анкета отправлена или уже опубликована</small></span><ChevronRight size={18}/></div>}
     {registrationStatus && <p className="muted-note">{registrationStatus}</p>}
     <div className="profile-menu">{(isMaster?['Мой профиль мастера','Портфолио и услуги','Расписание и выходные','Заявки на запись','Статистика']:['Личные данные','Мои отзывы','Уведомления','Помощь и поддержка']).map((x,i)=><button key={x}><span className="menu-icon">{[<UserRound/>,<Camera/>,<CalendarDays/>,<BriefcaseBusiness/>,<Star/>][i]}</span>{x}<ChevronRight size={17}/></button>)}</div>
-    {user ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button> : <div className="muted-note">{authLoading ? 'Автоматически подключаем Telegram…' : 'Открой приложение через Telegram — профиль подключится автоматически.'}</div>}
-    {authError && <p className="muted-note" role="alert">{authError}</p>}
-    <p className="muted-note">Связь с Supabase: <b>{connectionStatus}</b>. {user ? 'Аккаунт защищён проверкой Telegram.' : 'Открой приложение через Telegram, чтобы войти.'}</p>
+    {user
+      ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button>
+      : <button className="primary-button full-button" onClick={onLogin} disabled={authLoading}>
+          {authLoading ? 'Подключаем Telegram…' : 'Подключить Telegram'}
+        </button>}
+    {authError && <p className="muted-note auth-error" role="alert">{authError}</p>}
+    <p className="muted-note">Связь с сервером: <b>{connectionStatus}</b></p>
   </main></>
 }
 
@@ -267,6 +258,6 @@ export default function App() {
   else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
+  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
