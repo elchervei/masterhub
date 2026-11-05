@@ -132,9 +132,12 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const chooseDate=key=>{setSelectedDate(key);setSelectedSlot(null)}
   const uploadReference=async()=>{
     if(!reference)return null
-    if(!user){throw new Error('Подключи Telegram, чтобы прикрепить референс.')}
-    const ext=(reference.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'
-    const path=`${user.id}/reference-${crypto.randomUUID()}.${ext}`
+    if(!user)throw new Error('Подключи Telegram, чтобы прикрепить референс.')
+    const allowed=['image/jpeg','image/png','image/webp']
+    if(!allowed.includes(reference.type))throw new Error('Поддерживаются только JPG, PNG и WebP.')
+    if(reference.size>5*1024*1024)throw new Error('Референс слишком большой. Максимум — 5 МБ.')
+    const ext=reference.type==='image/png'?'png':reference.type==='image/webp'?'webp':'jpg'
+    const path=user.id+'/reference-'+crypto.randomUUID()+'.'+ext
     const {data,error}=await supabase.storage.from('masterhub-media').upload(path,reference,{contentType:reference.type,upsert:false})
     if(error)throw error
     return supabase.storage.from('masterhub-media').getPublicUrl(data.path).data.publicUrl
@@ -148,9 +151,9 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
     <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали татуировки до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
     <span className="eyebrow">ШАГ 1 · РЕФЕРЕНС ТАТУИРОВКИ</span>
-    <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setReference(e.target.files?.[0]||null)}/></label>
+    <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0]||null;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){setError(file.size>5*1024*1024?'Максимальный размер референса — 5 МБ.':'Поддерживаются только JPG, PNG и WebP.');e.target.value='';setReference(null);return}setError('');setReference(file)}}/></label>
     {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
-    <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value)} placeholder="@username" autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
+    <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value.slice(0,32))} placeholder="@username" maxLength={32} autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
     <span className="eyebrow">ШАГ 2 · ВЫБЕРИ ДЕНЬ</span>
     <div className="calendar-month-head"><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><b>{month.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
     <div className="calendar-weekdays">{['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((x,i)=><span key={i}>{x}</span>)}</div>
@@ -201,10 +204,10 @@ function MasterRegistration({ onClose, onSubmit }) {
     <button type="button" className="modal-close" onClick={onClose}><X size={20}/></button>
     <span className="eyebrow">MASTER HUB · АНКЕТА</span><h2>Регистрация мастера</h2><p>Заполни данные — анкета попадёт на модерацию и после одобрения появится в каталоге.</p>
     <label>Направление<select value={form.category} onChange={e=>update('category',e.target.value)}>{categories.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-    <label>Имя или псевдоним<input required value={form.public_name} onChange={e=>update('public_name',e.target.value)} placeholder="Как тебя показывать клиентам"/></label>
-    <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ"/></label>
-    <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии"/></label>
-    <label>Telegram для связи<input value={form.contact_telegram} onChange={e=>update('contact_telegram',e.target.value)} placeholder="@username"/></label>
+    <label>Имя или псевдоним<input required value={form.public_name} onChange={e=>update('public_name',e.target.value)} placeholder="Как тебя показывать клиентам" maxLength={50}/></label>
+    <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ" maxLength={500}/></label>
+    <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии" maxLength={80}/></label>
+    <label>Telegram для связи<input value={form.contact_telegram} onChange={e=>update('contact_telegram',e.target.value)} placeholder="@username" maxLength={32}/></label>
     <div className="registration-row"><label>Опыт, лет<input type="number" min="0" value={form.experience_years} onChange={e=>update('experience_years',e.target.value)}/></label><label>Цена от, ₽<input required type="number" min="0" value={form.starting_price} onChange={e=>update('starting_price',e.target.value)}/></label></div>
     <button className="primary-button full-button" disabled={saving}>{saving ? 'Отправляем…' : 'Отправить на проверку'} <ChevronRight size={17}/></button>
   </form></div>
@@ -260,8 +263,14 @@ export default function App() {
     let active = true
     async function loadRole() {
       if (!supabase || !user) { setUserRole('client'); return }
-      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-      if (active && data?.role) setUserRole(data.role)
+      const [{ data: profile }, { data: ownMaster, error: masterError }] = await Promise.all([
+        supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
+      ])
+      if (!active) return
+      if (profile?.role === 'admin') setUserRole('admin')
+      else if (ownMaster && !masterError) setUserRole('master')
+      else setUserRole('client')
     }
     loadRole()
     return () => { active = false }
@@ -304,10 +313,25 @@ export default function App() {
   const submitMasterRegistration = async form => {
     if (!supabase || !user) return
     setRegistrationStatus('Отправляем анкету…')
-    const payload = { user_id: user.id, category: form.category, public_name: form.public_name, bio: form.bio, studio_name: form.studio_name || null, city: 'Калининград', contact_telegram: form.contact_telegram || null, experience_years: Number(form.experience_years || 0), starting_price: Number(form.starting_price || 0), status: 'pending' }
-    const { error } = await supabase.from('masters').insert(payload)
-    if (error) { setRegistrationStatus(error.message || 'Не удалось отправить анкету.'); return }
-    if (userRole !== 'admin') { const { error: roleError } = await supabase.from('profiles').update({ role: 'master' }).eq('id', user.id); if (roleError) console.warn('Master role update:', roleError.message); setUserRole('master') }
+    const payload = {
+      user_id: user.id,
+      category: form.category,
+      public_name: String(form.public_name || '').trim().slice(0, 50),
+      bio: String(form.bio || '').trim().slice(0, 500),
+      studio_name: String(form.studio_name || '').trim().slice(0, 80) || null,
+      city: 'Калининград',
+      contact_telegram: String(form.contact_telegram || '').trim().slice(0, 32) || null,
+      experience_years: Math.max(0, Number(form.experience_years || 0)),
+      starting_price: Math.max(0, Number(form.starting_price || 0)),
+      status: 'pending'
+    }
+    const { data: existing, error: lookupError } = await supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
+    if (lookupError) { setRegistrationStatus(lookupError.message); return }
+    const result = existing
+      ? await supabase.from('masters').update(payload).eq('id', existing.id)
+      : await supabase.from('masters').insert(payload)
+    if (result.error) { setRegistrationStatus(result.error.message || 'Не удалось отправить анкету.'); return }
+    if (userRole !== 'admin') setUserRole('master')
     setRegistrationOpen(false)
     window.dispatchEvent(new Event('masterhub:master-created'))
     setRegistrationStatus('Анкета отправлена на проверку. После одобрения профиль появится в каталоге.')
