@@ -118,6 +118,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [selectedDate,setSelectedDate]=useState('')
   const [selectedSlot,setSelectedSlot]=useState(null)
   const [reference,setReference]=useState(null)
+  const [clientTelegram,setClientTelegram]=useState('')
   const [uploading,setUploading]=useState(false)
   const [error,setError]=useState('')
   const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
@@ -141,7 +142,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const submit=async()=>{
     if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
     setError('')
-    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,referenceImageUrl})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
+    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,referenceImageUrl,clientTelegram:clientTelegram.trim()})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
   }
   return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
@@ -149,6 +150,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <span className="eyebrow">ШАГ 1 · РЕФЕРЕНС ТАТУИРОВКИ</span>
     <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setReference(e.target.files?.[0]||null)}/></label>
     {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
+    <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value)} placeholder="@username" autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
     <span className="eyebrow">ШАГ 2 · ВЫБЕРИ ДЕНЬ</span>
     <div className="calendar-month-head"><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><b>{month.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
     <div className="calendar-weekdays">{['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((x,i)=><span key={i}>{x}</span>)}</div>
@@ -361,7 +363,7 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:'Татуировка',reference_image_url:data.referenceImageUrl||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:'Татуировка',reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
@@ -369,7 +371,7 @@ export default function App() {
   else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase}/>
+  else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
   else if(active==='profile' && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} onOpenRegistration={()=>setRegistrationOpen(true)}/>
   else content=<ProfilePage isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
