@@ -38,7 +38,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     }
     setLoading(false)
   }
-  useEffect(() => { load() }, [user?.id])
+  useEffect(() => { load(); const handler=()=>load(); window.addEventListener('masterhub:master-created',handler); return ()=>window.removeEventListener('masterhub:master-created',handler) }, [user?.id])
 
   const addService = async event => {
     event.preventDefault()
