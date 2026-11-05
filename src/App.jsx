@@ -115,7 +115,8 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
 function BookingPage({ master, onBack, onConfirm, saving }) {
   const [day,setDay]=useState(12)
   const [time,setTime]=useState('14:00')
-  const serviceOptions=master.services?.length ? master.services.map(item=>item.title) : ['Консультация и эскиз','Небольшая татуировка','Сеанс до 3 часов']\n  const [service,setService]=useState(serviceOptions[0])
+  const serviceOptions=master.services?.length ? master.services.map(item=>item.title) : ['Консультация и эскиз','Небольшая татуировка','Сеанс до 3 часов']
+  const [service,setService]=useState(serviceOptions[0])
   const days=[10,11,12,13,14,15,16]
   const times=['10:00','11:30','13:00','14:00','15:30','17:00']
   return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page"><div className="booking-master"><img src={master.image} alt=""/><div><b>{master.name}</b><small>{master.studio}</small></div></div><span className="eyebrow">ШАГ 1 · УСЛУГА</span><div className="service-options">{serviceOptions.map(s=><button className={service===s?'option selected':'option'} key={s} onClick={()=>setService(s)}><span>{s}</span><Check size={17}/></button>)}</div><span className="eyebrow">ШАГ 2 · ДАТА</span><div className="date-strip">{days.map((d,i)=><button key={d} className={day===d?'date-cell selected':'date-cell'} onClick={()=>setDay(d)}><small>{['ВТ','СР','ЧТ','ПТ','СБ','ВС','ПН'][i]}</small><b>{d}</b></button>)}</div><span className="eyebrow">ШАГ 3 · ВРЕМЯ</span><div className="time-grid">{times.map(t=><button key={t} className={time===t?'time-slot selected':'time-slot'} onClick={()=>setTime(t)}>{t}</button>)}</div><div className="booking-summary"><span>Предварительная стоимость</span><b>{master.services?.length ? money(master.services.find(item=>item.title===service)?.price_from||master.price) : service==='Консультация и эскиз'?'Бесплатно':service==='Небольшая татуировка'?money(master.price):money(master.price*3)}</b></div><p className="muted-note">Заявка появится в твоих записях и кабинете мастера.</p><button className="primary-button full-button" disabled={saving} onClick={()=>onConfirm({master,day,time,service,serviceId:master.services?.find(item=>item.title===service)?.id||null,duration:master.services?.find(item=>item.title===service)?.duration_minutes||90})}>{saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button></main></>
@@ -273,7 +274,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path), services(id,title,description,price_from,duration_minutes,is_active))')
+        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name)), portfolio_items(image_path), services(id,title,description,price_from,duration_minutes,is_active)')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
@@ -296,7 +297,8 @@ export default function App() {
         about: m.bio || '',
         experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
         image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=900&q=85',
-        works: (m.portfolio_items || []).map(w=>w.image_path),\n        services: (m.services || []).filter(service=>service.is_active)
+        works: (m.portfolio_items || []).map(w=>w.image_path),
+        services: (m.services || []).filter(service=>service.is_active)
       }))
       setMastersList(liveMasters)
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
