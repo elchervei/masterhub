@@ -265,6 +265,7 @@ export default function App() {
     if (error) { setRegistrationStatus(error.message || 'Не удалось отправить анкету.'); return }
     if (userRole !== 'admin') { const { error: roleError } = await supabase.from('profiles').update({ role: 'master' }).eq('id', user.id); if (roleError) console.warn('Master role update:', roleError.message); setUserRole('master') }
     setRegistrationOpen(false)
+    window.dispatchEvent(new Event('masterhub:master-created'))
     setRegistrationStatus('Анкета отправлена на проверку. После одобрения профиль появится в каталоге.')
   }
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(null); setUserRole('client') }
