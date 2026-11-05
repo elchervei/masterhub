@@ -24,7 +24,7 @@ const tabs = [
 
 function MasterCard({ master, favorite, onFavorite, onOpen }) {
   return <article className="master-card">
-    <button className="master-photo" onClick={onOpen} style={{ backgroundImage: `url(${master.image})` }} aria-label={`Открыть профиль ${master.name}`}>
+    <button className="master-photo" onClick={onOpen} style={{ backgroundImage: master.image ? `url(${master.image})` : undefined }} aria-label={`Открыть профиль ${master.name}`}>
       <span className="photo-tag"><span className="online-dot" /> Принимает записи</span>
     </button>
     <div className="master-card-body">
@@ -112,16 +112,54 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
   </>
 }
 
-function BookingPage({ master, onBack, onConfirm, saving }) {
-  const [day,setDay]=useState(12)
-  const [time,setTime]=useState('14:00')
-  const serviceOptions=master.services?.length ? master.services.map(item=>item.title) : ['Консультация и эскиз','Небольшая татуировка','Сеанс до 3 часов']
-  const [service,setService]=useState(serviceOptions[0])
-  const days=[10,11,12,13,14,15,16]
-  const times=['10:00','11:30','13:00','14:00','15:30','17:00']
-  return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page"><div className="booking-master"><img src={master.image} alt=""/><div><b>{master.name}</b><small>{master.studio}</small></div></div><span className="eyebrow">ШАГ 1 · УСЛУГА</span><div className="service-options">{serviceOptions.map(s=><button className={service===s?'option selected':'option'} key={s} onClick={()=>setService(s)}><span>{s}</span><Check size={17}/></button>)}</div><span className="eyebrow">ШАГ 2 · ДАТА</span><div className="date-strip">{days.map((d,i)=><button key={d} className={day===d?'date-cell selected':'date-cell'} onClick={()=>setDay(d)}><small>{['ВТ','СР','ЧТ','ПТ','СБ','ВС','ПН'][i]}</small><b>{d}</b></button>)}</div><span className="eyebrow">ШАГ 3 · ВРЕМЯ</span><div className="time-grid">{times.map(t=><button key={t} className={time===t?'time-slot selected':'time-slot'} onClick={()=>setTime(t)}>{t}</button>)}</div><div className="booking-summary"><span>Предварительная стоимость</span><b>{master.services?.length ? money(master.services.find(item=>item.title===service)?.price_from||master.price) : service==='Консультация и эскиз'?'Бесплатно':service==='Небольшая татуировка'?money(master.price):money(master.price*3)}</b></div><p className="muted-note">Заявка появится в твоих записях и кабинете мастера.</p><button className="primary-button full-button" disabled={saving} onClick={()=>onConfirm({master,day,time,service,serviceId:master.services?.find(item=>item.title===service)?.id||null,duration:master.services?.find(item=>item.title===service)?.duration_minutes||90})}>{saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button></main></>
+function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
+  const [slots,setSlots]=useState([])
+  const [busy,setBusy]=useState([])
+  const [selectedDate,setSelectedDate]=useState('')
+  const [selectedSlot,setSelectedSlot]=useState(null)
+  const [reference,setReference]=useState(null)
+  const [uploading,setUploading]=useState(false)
+  const [error,setError]=useState('')
+  const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
+  const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=first.getDay();return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
+  useEffect(()=>{let live=true;async function load(){if(!supabase)return;const today=dateKey(new Date());const limit=new Date();limit.setDate(limit.getDate()+60);const [s,b]=await Promise.all([supabase.from('master_time_slots').select('*').eq('master_id',master.id).eq('is_active',true).gte('slot_date',today).lte('slot_date',dateKey(limit)).order('slot_date').order('starts_at'),supabase.from('bookings').select('starts_at,ends_at,status').eq('master_id',master.id).in('status',['pending','confirmed'])]);if(live){setSlots(s.data||[]);setBusy(b.data||[]);if(s.error)setError(s.error.message);if(!selectedDate){const firstFree=(s.data||[]).find(slot=>!(b.data||[]).some(x=>new Date(x.starts_at)<new Date(slot.ends_at)&&new Date(x.ends_at)>new Date(slot.starts_at)));if(firstFree){setSelectedDate(firstFree.slot_date);setMonth(new Date(firstFree.slot_date+'T12:00:00'))}}}}load();return()=>{live=false}},[supabase,master.id])
+  const slotsFor=key=>slots.filter(s=>s.slot_date===key)
+  const freeFor=key=>slotsFor(key).filter(s=>!busy.some(b=>new Date(b.starts_at)<new Date(s.ends_at)&&new Date(b.ends_at)>new Date(s.starts_at)))
+  const statusFor=key=>{const all=slotsFor(key);if(!all.length)return '';const free=freeFor(key).length;return free===0?'full':free===all.length?'free':'partial'}
+  const chooseDate=key=>{setSelectedDate(key);setSelectedSlot(null)}
+  const uploadReference=async()=>{
+    if(!reference)return null
+    if(!user){throw new Error('Подключи Telegram, чтобы прикрепить референс.')}
+    const ext=(reference.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'
+    const path=`${user.id}/reference-${crypto.randomUUID()}.${ext}`
+    const {data,error}=await supabase.storage.from('masterhub-media').upload(path,reference,{contentType:reference.type,upsert:false})
+    if(error)throw error
+    return supabase.storage.from('masterhub-media').getPublicUrl(data.path).data.publicUrl
+  }
+  const submit=async()=>{
+    if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
+    setError('')
+    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,referenceImageUrl})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
+  }
+  return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
+    <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
+    <span className="eyebrow">ШАГ 1 · РЕФЕРЕНС ТАТУИРОВКИ</span>
+    <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setReference(e.target.files?.[0]||null)}/></label>
+    {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
+    <span className="eyebrow">ШАГ 2 · ВЫБЕРИ ДЕНЬ</span>
+    <div className="calendar-month-head"><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><b>{month.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
+    <div className="calendar-weekdays">{['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((x,i)=><span key={i}>{x}</span>)}</div>
+    <div className="client-calendar-grid">{days.map((d,i)=>{const key=dateKey(d),same=d.getMonth()===month.getMonth(),past=new Date(key+'T23:59:59')<new Date(new Date().toDateString()),status=statusFor(key);return <button key={i} disabled={!same||past||!slotsFor(key).length||!freeFor(key).length} className={`calendar-day ${same?'':'outside'} ${selectedDate===key?'chosen':''} ${status}`} onClick={()=>chooseDate(key)}><span>{d.getDate()}</span>{status&&<i/>}</button>})}</div>
+    <div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично занято</span><span><i className="full"/> Нет мест</span></div>
+    <span className="eyebrow">ШАГ 3 · СВОБОДНОЕ ВРЕМЯ</span>
+    <div className="available-slot-list">{selectedDate?freeFor(selectedDate).map(slot=><button key={slot.id} className={selectedSlot?.id===slot.id?'time-slot selected':'time-slot'} onClick={()=>setSelectedSlot(slot)}>{new Date(slot.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(slot.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</button>):<p className="muted-note">Выбери день, отмеченный зелёным или жёлтым.</p>}{selectedDate&&!freeFor(selectedDate).length&&<p className="muted-note">На эту дату свободного времени нет.</p>}</div>
+    <div className="booking-summary"><span>Услуга</span><b>Татуировка · от {money(master.price)}</b></div>
+    <p className="muted-note">Мастер увидит выбранный интервал и прикреплённую фотографию.</p>
+    {error&&<p className="auth-error">{error}</p>}
+    <button className="primary-button full-button" disabled={saving||uploading||!selectedSlot} onClick={submit}>{uploading?'Загружаем фото…':saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button>
+  </main></>
 }
-
 function BookingsPage({ supabase, user }) {
   const [bookings,setBookings]=useState([])
   const [loading,setLoading]=useState(true)
@@ -299,7 +337,7 @@ export default function App() {
         city: m.city || 'Калининград',
         about: m.bio || '',
         experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
-        image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=900&q=85',
+        image: m.cover_image_url || m.portfolio_items?.[0]?.image_path || '',
         works: (m.portfolio_items || []).map(w=>w.image_path),
         services: (m.services || []).filter(service=>service.is_active)
       }))
@@ -321,9 +359,9 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const [hh,mm]=data.time.split(':').map(Number);const start=new Date(2026,10,data.day,hh,mm);const duration=Number(data.duration||90);const end=new Date(start.getTime()+duration*60000);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,service_id:data.serviceId||null,starts_at:start.toISOString(),ends_at:end.toISOString(),client_note:data.service});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,service_id:null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:'Татуировка',reference_image_url:data.referenceImageUrl||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
   let content
-  if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving}/>
+  if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
   else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
   else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
