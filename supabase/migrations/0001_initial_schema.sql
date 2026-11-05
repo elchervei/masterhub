@@ -238,8 +238,24 @@ drop policy if exists "master reads own listing" on public.masters;
 create policy "master reads own listing" on public.masters for select to authenticated using (user_id = auth.uid());
 drop policy if exists "master creates own listing" on public.masters;
 create policy "master creates own listing" on public.masters for insert to authenticated with check (user_id = auth.uid() and status in ('draft','pending'));
+create or replace function public.prevent_master_status_change()
+returns trigger language plpgsql as $
+begin
+  if new.status is distinct from old.status
+     and coalesce(auth.role(), '') <> 'service_role'
+     and current_user not in ('postgres', 'supabase_admin') then
+    raise exception 'Master status can only be changed by an administrator';
+  end if;
+  return new;
+end;
+$;
+drop trigger if exists masters_protect_status on public.masters;
+create trigger masters_protect_status before update on public.masters
+for each row execute function public.prevent_master_status_change();
+
 drop policy if exists "master updates own pending listing" on public.masters;
-create policy "master updates own pending listing" on public.masters for update to authenticated using (user_id = auth.uid() and status in ('draft','pending','rejected')) with check (user_id = auth.uid() and status in ('draft','pending','rejected'));
+create policy "master updates own pending listing" on public.masters for update to authenticated
+using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 drop policy if exists "master styles public read" on public.master_styles;
 create policy "master styles public read" on public.master_styles for select using (
