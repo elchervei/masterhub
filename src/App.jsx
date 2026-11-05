@@ -113,58 +113,55 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
 }
 
 function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
-  const [slots,setSlots]=useState([])
-  const [busy,setBusy]=useState([])
-  const [selectedDate,setSelectedDate]=useState('')
-  const [selectedSlot,setSelectedSlot]=useState(null)
-  const [reference,setReference]=useState(null)
-  const [clientTelegram,setClientTelegram]=useState('')
+  const [references,setReferences]=useState([])
   const [uploading,setUploading]=useState(false)
   const [error,setError]=useState('')
-  const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
-  const telegramContact=useMemo(()=>{const raw=String(master.handle||'').trim();if(!raw)return '';if(raw.startsWith('https://')||raw.startsWith('http://'))return raw;if(raw.startsWith('t.me/'))return 'https://'+raw;const username=raw.startsWith('@')?raw.slice(1):raw;return 'https://t.me/'+username},[master.handle])
-  const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=(first.getDay()+6)%7;return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
-  useEffect(()=>{let live=true;async function load(){if(!supabase)return;const today=dateKey(new Date());const limit=new Date();limit.setDate(limit.getDate()+60);const s=await supabase.from('master_time_slots').select('*').eq('master_id',master.id).gte('slot_date',today).lte('slot_date',dateKey(limit)).order('slot_date').order('starts_at');if(live){setSlots(s.data||[]);if(s.error)setError(s.error.message);if(!selectedDate){const firstFree=(s.data||[]).find(slot=>slot.is_active);if(firstFree){setSelectedDate(firstFree.slot_date);setMonth(new Date(firstFree.slot_date+'T12:00:00'))}}}}load();return()=>{live=false}},[supabase,master.id])
-  const slotsFor=key=>slots.filter(s=>s.slot_date===key)
-  const freeFor=key=>slotsFor(key).filter(s=>s.is_active)
-  const statusFor=key=>{const all=slotsFor(key);if(!all.length)return '';const free=freeFor(key).length;return free===0?'full':free===all.length?'free':'partial'}
-  const chooseDate=key=>{setSelectedDate(key);setSelectedSlot(null)}
-  const uploadReference=async()=>{
-    if(!reference)return null
-    if(!user)throw new Error('Подключи Telegram, чтобы прикрепить референс.')
+  const [submitted,setSubmitted]=useState(false)
+  const addFiles=files=>{
+    const incoming=Array.from(files||[])
     const allowed=['image/jpeg','image/png','image/webp']
-    if(!allowed.includes(reference.type))throw new Error('Поддерживаются только JPG, PNG и WebP.')
-    if(reference.size>5*1024*1024)throw new Error('Референс слишком большой. Максимум — 5 МБ.')
-    const ext=reference.type==='image/png'?'png':reference.type==='image/webp'?'webp':'jpg'
-    const path=user.id+'/reference-'+crypto.randomUUID()+'.'+ext
-    const {data,error}=await supabase.storage.from('masterhub-media').upload(path,reference,{contentType:reference.type,upsert:false})
-    if(error)throw error
-    return supabase.storage.from('masterhub-media').getPublicUrl(data.path).data.publicUrl
+    if(references.length+incoming.length>8){setError('Можно прикрепить не больше 8 изображений.');return}
+    for(const file of incoming){
+      if(!allowed.includes(file.type)){setError('Поддерживаются только JPG, PNG и WebP.');return}
+      if(file.size>5*1024*1024){setError('Размер каждого изображения — до 5 МБ.');return}
+    }
+    setError('')
+    setReferences(old=>[...old,...incoming])
+  }
+  const uploadReferences=async()=>{
+    if(!user)throw new Error('Подключи Telegram, чтобы отправить заявку.')
+    const urls=[]
+    for(const file of references){
+      const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
+      const path=user.id+'/inquiry-'+crypto.randomUUID()+'.'+ext
+      const {data,error}=await supabase.storage.from('masterhub-media').upload(path,file,{contentType:file.type,upsert:false})
+      if(error)throw error
+      urls.push(supabase.storage.from('masterhub-media').getPublicUrl(data.path).data.publicUrl)
+    }
+    return urls
   }
   const submit=async()=>{
-    if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
+    if(!references.length){setError('Добавь хотя бы одно фото или эскиз.');return}
     setError('')
-    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,referenceImageUrl,clientTelegram:clientTelegram.trim()})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
+    try{
+      setUploading(true)
+      const referenceImageUrls=await uploadReferences()
+      const ok=await onConfirm({master,referenceImageUrls})
+      if(ok)setSubmitted(true)
+    }catch(e){setError(e.message||'Не удалось отправить заявку.')}
+    finally{setUploading(false)}
   }
-  return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
+  if(submitted)return <><Header title="Заявка отправлена" back={onBack}/><main className="page-content booking-page inquiry-success"><div className="success-mark"><Check size={24}/></div><h2>Материалы отправлены мастеру</h2><p>Мастер посмотрит фотографии и эскизы и свяжется с тобой, чтобы обсудить идею, стоимость и дальнейшие шаги.</p><button className="primary-button full-button" onClick={onBack}>Вернуться к мастеру</button></main></>
+  return <><Header title="Заявка мастеру" back={onBack}/><main className="page-content booking-page">
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
-    <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали татуировки до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
-    <span className="eyebrow">ШАГ 1 · РЕФЕРЕНС ТАТУИРОВКИ</span>
-    <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0]||null;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){setError(file.size>5*1024*1024?'Максимальный размер референса — 5 МБ.':'Поддерживаются только JPG, PNG и WebP.');e.target.value='';setReference(null);return}setError('');setReference(file)}}/></label>
-    {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
-    <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value.slice(0,32))} placeholder="@username" maxLength={32} autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
-    <span className="eyebrow">ШАГ 2 · ВЫБЕРИ ДЕНЬ</span>
-    <div className="calendar-month-head"><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><b>{month.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
-    <div className="calendar-weekdays">{['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((x,i)=><span key={i}>{x}</span>)}</div>
-    <div className="client-calendar-grid">{days.map((d,i)=>{const key=dateKey(d),same=d.getMonth()===month.getMonth(),past=new Date(key+'T23:59:59')<new Date(new Date().toDateString()),status=statusFor(key);return <button key={i} disabled={!same||past||!slotsFor(key).length||!freeFor(key).length} className={`calendar-day ${same?'':'outside'} ${selectedDate===key?'chosen':''} ${status}`} onClick={()=>chooseDate(key)}><span>{d.getDate()}</span>{status&&<i/>}</button>})}</div>
-    <div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично занято</span><span><i className="full"/> Нет мест</span></div>
-    <span className="eyebrow">ШАГ 3 · СВОБОДНОЕ ВРЕМЯ</span>
-    <div className="available-slot-list">{selectedDate?freeFor(selectedDate).map(slot=><button key={slot.id} className={selectedSlot?.id===slot.id?'time-slot selected':'time-slot'} onClick={()=>setSelectedSlot(slot)}>{new Date(slot.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(slot.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</button>):<p className="muted-note">Выбери день, отмеченный зелёным или жёлтым.</p>}{selectedDate&&!freeFor(selectedDate).length&&<p className="muted-note">На эту дату свободного времени нет.</p>}</div>
-    <div className="booking-summary"><span>Услуга</span><b>Татуировка · от {money(master.price)}</b></div>
-    <p className="muted-note">Мастер увидит выбранный интервал и прикреплённую фотографию.</p>
+    <div className="inquiry-intro"><span className="eyebrow">ОБСУДИМ ТВОЮ ИДЕЮ</span><h2>Покажи, что хочешь набить</h2><p>Прикрепи фото места на теле и любые эскизы или референсы. Мастер посмотрит материалы и свяжется с тобой.</p></div>
+    <section className="inquiry-upload-section">
+      <label className="upload-control inquiry-upload-control"><Upload size={17}/><span>Добавить фото и эскизы</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{addFiles(e.target.files);e.target.value=''}}/></label>
+      <p className="muted-note">До 8 изображений · JPG, PNG или WebP · до 5 МБ каждое</p>
+      {references.length>0&&<div className="inquiry-reference-grid">{references.map((file,i)=><div className="inquiry-reference-thumb" key={i}><img src={URL.createObjectURL(file)} alt={file.name}/><button type="button" onClick={()=>setReferences(old=>old.filter((_,index)=>index!==i))} aria-label="Убрать изображение"><X size={14}/></button><small>{file.name}</small></div>)}</div>}
+    </section>
     {error&&<p className="auth-error">{error}</p>}
-    <button className="primary-button full-button" disabled={saving||uploading||!selectedSlot} onClick={submit}>{uploading?'Загружаем фото…':saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button>
+    <button className="primary-button full-button" disabled={saving||uploading||!references.length} onClick={submit}>{uploading?'Загружаем изображения…':saving?'Отправляем…':'Отправить материалы мастеру'} <ChevronRight size={17}/></button>
   </main></>
 }
 function BookingsPage({ supabase, user }) {
@@ -397,7 +394,7 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:'Татуировка',reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку.');return false}setBookingSaving(true);const {error}=await supabase.from('master_inquiries').insert({client_id:user.id,master_id:data.master.id,reference_image_urls:data.referenceImageUrls||[]});setBookingSaving(false);if(error){setAuthError(error.message);return false}return true}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
