@@ -28,3 +28,105 @@
 .profile-register-master{min-height:72px}
 .profile-register-master.master-active{cursor:default;background:rgba(112,70,163,.16)}
 @media(max-width:360px){.home-intro{padding:22px 16px;min-height:250px}.home-intro h1{font-size:30px}.home-orbit{right:-70px;opacity:.8}}
+
+
+/* MASTER HUB — black gothic minimalism */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+:root{
+  color-scheme:dark;
+  font-family:'Manrope',sans-serif;
+  color:#e9e6e4;
+  background:#070708;
+  --bg:#070708;
+  --panel:#111113;
+  --panel2:#171719;
+  --purple:#7f2634;
+  --lilac:#c9bfc0;
+  --muted:#898184;
+  --line:rgba(226,216,215,.12);
+  --white:#eee9e7;
+}
+body,.app-shell{background:#070708}
+.app-shell{background:radial-gradient(ellipse at 50% -18%,rgba(104,24,39,.16),transparent 48%),#070708}
+.ambient{display:none}
+.topbar{background:rgba(7,7,8,.94);border-bottom:1px solid #262224;backdrop-filter:blur(18px)}
+.brand-mark{font-family:'Cinzel',serif;letter-spacing:2.4px;color:#e8e1df}
+.brand-mark i{color:#a94a58}
+.brand-symbol{border:1px solid #74404a;border-radius:3px;color:#c58d94;font-family:'Cinzel',serif;background:#100d0e}
+.topbar-title strong{font-family:'Cinzel',serif;letter-spacing:.7px}
+.topbar-title small,.eyebrow,.hero-kicker{color:#a76c74}
+.icon-button{border:1px solid #30282a;border-radius:3px;background:#101011}
+.notification-dot{background:#a33d4d}
+.page-content{color:#e9e6e4}
+.home-intro,.hero-block{
+  border:1px solid #33272a;border-radius:3px;
+  background:linear-gradient(145deg,#141112 0%,#09090a 72%);
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.home-intro{min-height:310px;padding:30px 23px 25px}
+.home-intro h1,.hero-block h1,.section-heading h2,.home-category-title,.master-name,.detail-identity h1,.booking-card h3,.empty-state b,.profile-card h2,.master-registration-modal h2{
+  font-family:'Cormorant Garamond',serif;
+}
+.home-intro h1{font-size:43px;line-height:1.02;letter-spacing:.1px;margin-top:26px}
+.home-intro h1 em{color:#c08a91}
+.home-intro p{color:#aaa1a1;font-size:11px;max-width:245px}
+.home-orbit{width:155px;height:155px;right:-42px;top:46px;border-color:rgba(179,126,133,.14)}
+.home-orbit:before,.home-orbit:after{border-color:rgba(179,126,133,.11)}
+.home-orbit span{color:rgba(190,140,146,.13)}
+.home-orbit i{background:#8c3543;box-shadow:0 0 14px rgba(140,53,67,.35)}
+.primary-button,.home-main-cta{
+  border:1px solid #8b3d49;border-radius:3px;
+  background:#702532;color:#f4eded;box-shadow:none;
+  text-transform:uppercase;letter-spacing:1px;font-size:10px;
+}
+.primary-button:active{background:#8a3040}
+.home-category-card,.home-empty,.master-card,.profile-card,.profile-menu,.booking-card,.booking-master,.option,.date-cell,.time-slot,.search-box,.tattoo-style-select,.profile-register-master{
+  border:1px solid #2c2527;border-radius:3px;background:#101011;
+}
+.home-category-card{background:linear-gradient(105deg,#171012,#0d0d0e);gap:13px}
+.home-category-index{color:#a76c74;letter-spacing:2px}
+.home-category-title{font-size:28px;color:#eee7e5}
+.home-category-bottom{border-color:#302729;color:#958b8c}
+.home-empty-mark,.avatar-placeholder,.profile-avatar{border:1px solid #62404a;border-radius:3px;background:#1a1113;color:#d0a4a9}
+.section-heading h2{font-size:27px}
+.text-link{color:#c08a91}
+.style-tile{border-radius:3px;background:#111112;border-color:#302729}
+.style-tile>span{color:#bd858c}
+.style-tag{border-radius:2px;background:#1a1113;border-color:#51343a;color:#c9aeb1}
+.master-photo{filter:saturate(.72) brightness(.82)}
+.master-card-body{background:#101011}
+.master-name{font-size:22px;color:#eee8e6}
+.master-meta,.price-caption,.city-note{color:#9a9091}
+.price-caption b{color:#eee8e6}
+.favorite-button.is-favorite{color:#b24b5b}
+.search-box{background:#101011}
+.search-box input,.tattoo-style-select select{color:#eee8e6}
+.tattoo-style-select select,.filter-head select{background:#111113;color:#e6d9da}
+.filter-chip{border-radius:2px;background:#111113;border-color:#302729;color:#b7acad}
+.filter-chip.selected,.date-cell.selected,.time-slot.selected,.option.selected{background:#3a171e;border-color:#8a4651;color:#f1e8e8}
+.empty-state svg{color:#a66b74}
+.detail-cover:after{background:linear-gradient(transparent,rgba(7,7,8,.88))}
+.detail-facts,.detail-tabs,.service-list div{border-color:#302729}
+.detail-about,.info-panel{color:#b9afb0}
+.detail-tabs button.selected{color:#c58b93;border-color:#9b4d59}
+.service-list b,.booking-date{color:#c58b93}
+.booking-page>.eyebrow{color:#a76c74}
+.booking-summary{border-color:#302729}
+.booking-summary b{color:#eee8e6}
+.booking-status{color:#b5c4b6}
+.profile-register-master{border-color:#51333a;background:#171012;color:#eee8e6}
+.profile-register-master small{color:#a99d9e}
+.profile-menu button{border-color:#302729}
+.menu-icon{border-radius:2px;background:#211316;color:#c58b93}
+.modal-backdrop{background:rgba(0,0,0,.88)}
+.master-registration-modal{border:1px solid #493238;border-radius:3px;background:#101011}
+.master-registration-modal input,.master-registration-modal textarea{border:1px solid #3a2b2e;border-radius:3px;background:#09090a;color:#eee8e6}
+.master-registration-modal label{color:#c4b8b9}
+.modal-close{color:#aaa0a1}
+.bottom-nav{background:rgba(8,8,9,.97);border-top:1px solid #302729}
+.nav-item{color:#746b6d}
+.nav-item.active{color:#d0a0a5}
+.nav-item.active svg{filter:none}
+.profile-card h2{font-size:22px}
+.profile-card span{color:#a79c9d}
+@media(max-width:360px){.home-intro{min-height:290px}.home-intro h1{font-size:38px}}
