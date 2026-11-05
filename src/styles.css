@@ -347,3 +347,10 @@ img{max-width:100%}
 .workspace-booking small{color:var(--muted);font-size:9px}
 .workspace-booking>div:last-child{display:flex;gap:5px}
 .workspace-booking button{width:31px;height:31px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:#1b211e;color:#bcd1c2}
+
+.review-editor{display:flex;flex-direction:column;gap:8px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.review-editor b{font-size:11px}
+.review-editor select,.review-editor textarea{width:100%;padding:10px;border:1px solid #343b3c;border-radius:10px;background:#0d1011;color:var(--text);font-size:10px}
+.review-editor textarea{min-height:68px;resize:vertical}
+.review-editor button{min-height:36px}
+.complete-booking{padding:8px 10px;border:1px solid #45614e;border-radius:9px;background:#1b2921;color:#b7d9c2;font-size:9px}
