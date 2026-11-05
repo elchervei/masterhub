@@ -493,3 +493,36 @@ img{max-width:100%}
 .client-reference-link{display:inline-flex;margin-top:8px;color:#b7cbbd;font-size:10px;text-decoration:underline}
 
 .quote-waiting-note{display:flex;flex-direction:column;gap:8px;margin-top:15px;padding:14px;border:1px solid #4b6252;border-radius:13px;background:rgba(38,67,47,.2)}.quote-waiting-note b{font-size:11px;color:#c5d7c9}.quote-waiting-note strong{font-size:22px;color:#e5f0e7}.quote-waiting-note p{margin:0;color:#aebdb1;font-size:10px;line-height:1.5}
+
+
+/* Smaller, calmer profile controls and reference-only tattoo inquiries */
+.profile-menu .menu-icon{width:26px;height:26px;flex-basis:26px;border-radius:8px}
+.profile-menu .menu-icon svg{width:12px;height:12px}
+.profile-menu button{gap:9px;padding:11px 12px;font-size:10px}
+.profile-card>.icon-button{width:31px;height:31px;flex-basis:31px}
+.profile-card>.icon-button svg{width:15px;height:15px}
+.profile-register-master>svg{width:15px;height:15px}
+.workspace-section h3 svg{width:14px;height:14px;flex:0 0 14px}
+.workspace-home-button{min-height:34px;padding:7px 9px;font-size:9px}
+.workspace-home-button svg{width:13px;height:13px}
+.inquiry-intro{margin:8px 0 19px}
+.inquiry-intro h2{margin:8px 0 7px;font-size:20px;letter-spacing:-.5px}
+.inquiry-intro p{margin:0;color:#a6b0a9;font-size:11px;line-height:1.6}
+.inquiry-upload-section{padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(20,24,22,.7)}
+.inquiry-upload-control{min-height:52px;font-size:11px}
+.inquiry-upload-control span{font-weight:600}
+.inquiry-reference-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
+.inquiry-reference-thumb{position:relative;min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#0d1110}
+.inquiry-reference-thumb img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.inquiry-reference-thumb>button{position:absolute;top:5px;right:5px;width:25px;height:25px;display:grid;place-items:center;border:1px solid #ffffff33;border-radius:50%;background:#080a0bdc;color:#fff}
+.inquiry-reference-thumb small{display:block;overflow:hidden;padding:5px;color:#aeb9b1;font-size:8px;text-overflow:ellipsis;white-space:nowrap}
+.inquiry-success{min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.success-mark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #4c6654;border-radius:50%;background:#18251c;color:#b9d9c1}
+.inquiry-success h2{margin:17px 0 7px;font-size:19px}
+.inquiry-success p{max-width:300px;color:#a8b2ab;font-size:11px;line-height:1.6}
+.inquiry-inbox-card{gap:6px}
+.inquiry-detail-modal{width:min(100%,480px)}
+.inquiry-master-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0}
+.inquiry-master-gallery button{overflow:hidden;padding:0;border:1px solid var(--line);border-radius:11px;background:#090c0b}
+.inquiry-master-gallery img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+@media(max-width:360px){.inquiry-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-home-button{font-size:8px;padding:6px 7px}}
