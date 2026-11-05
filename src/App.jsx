@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from './lib/supabase'
 import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, Settings, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness } from 'lucide-react'
 import { masters, styles, workImage } from './data'
 
@@ -40,7 +41,7 @@ function Header({ title, subtitle, back, action }) {
   </header>
 }
 
-function HomePage({ setActive, openMaster, favorites, toggleFavorite }) {
+function HomePage({ setActive, openMaster, favorites, toggleFavorite, mastersList }) {
   return <><Header subtitle="КАЛИНИНГРАД" />
     <main className="page-content home-page">
       <section className="hero-block"><div className="hero-kicker"><Sparkles size={13}/> МЕСТО, ГДЕ НАХОДЯТ СВОИХ</div><h1>Найди своего<br/><em>мастера.</em></h1><p>Татуировки, которые становятся частью твоей истории.</p><button className="primary-button" onClick={() => setActive('catalog')}>Найти мастера <ChevronRight size={17}/></button><div className="hero-decoration">✳</div></section>
@@ -48,18 +49,18 @@ function HomePage({ setActive, openMaster, favorites, toggleFavorite }) {
         <div className="style-grid">{[{name:'Blackwork',sub:'Контраст и форма',symbol:'◈'},{name:'Реализм',sub:'Живые детали',symbol:'✺'},{name:'Fine line',sub:'Тонкие линии',symbol:'〰'},{name:'Орнаментал',sub:'Узор и ритм',symbol:'❋'}].map(s=><button className="style-tile" key={s.name} onClick={() => setActive('catalog')}><span>{s.symbol}</span><b>{s.name}</b><small>{s.sub}</small></button>)}</div>
       </section>
       <section className="section-block"><div className="section-heading"><div><span className="eyebrow">ВЫБОР MASTER HUB</span><h2>Мастера рядом</h2></div><button className="text-link" onClick={() => setActive('catalog')}>Каталог <ChevronRight size={15}/></button></div>
-        <div className="master-list">{masters.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}</div>
+        <div className="master-list">{mastersList.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}</div>
       </section>
       <div className="city-note"><MapPin size={16}/><span>Сейчас мы собираем лучших мастеров Калининграда</span></div>
     </main>
   </>
 }
 
-function CatalogPage({ openMaster, favorites, toggleFavorite }) {
+function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList }) {
   const [query, setQuery] = useState('')
   const [style, setStyle] = useState('Все')
   const [sort, setSort] = useState('popular')
-  const filtered = useMemo(() => masters.filter(m => (m.name + m.studio + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (style === 'Все' || m.styles.includes(style))).sort((a,b)=>sort==='price' ? a.price-b.price : b.rating-a.rating), [query, style, sort])
+  const filtered = useMemo(() => mastersList.filter(m => (m.name + m.studio + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (style === 'Все' || m.styles.includes(style))).sort((a,b)=>sort==='price' ? a.price-b.price : b.rating-a.rating), [mastersList, query, style, sort])
   return <><Header title="Каталог мастеров" subtitle="КАЛИНИНГРАД"/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="popular">По рейтингу</option><option value="price">Сначала дешевле</option></select></label></div>
@@ -96,11 +97,11 @@ function BookingsPage({ bookings }) {
   return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{bookings.length ? bookings.map((b,i)=><div className="booking-card" key={i}><div className="booking-status"><span className="status-dot"/> Ожидает подтверждения</div><h3>{b.master.name}</h3><p>{b.service}</p><div className="booking-date"><CalendarDays size={16}/> {b.day} ноября · {b.time}</div></div>) : <div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}</main></>
 }
 
-function ProfilePage({ isMaster, setIsMaster }) {
+function ProfilePage({ isMaster, setIsMaster, connectionStatus }) {
   return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">MH</div><div><h2>{isMaster?'Тестовый мастер':'Гость MASTER HUB'}</h2><span>{isMaster?'Кабинет мастера':'Клиентский аккаунт'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
     <div className="profile-menu">{(isMaster?['Мой профиль мастера','Портфолио и услуги','Расписание и выходные','Заявки на запись','Статистика']:['Личные данные','Мои отзывы','Уведомления','Помощь и поддержка']).map((x,i)=><button key={x}><span className="menu-icon">{[<UserRound/>,<Camera/>,<CalendarDays/>,<BriefcaseBusiness/>,<Star/>][i]}</span>{x}<ChevronRight size={17}/></button>)}</div>
     <div className="demo-switch"><div><b>Режим разработки</b><small>Переключение интерфейса для проверки</small></div><button className={isMaster?'toggle on':'toggle'} onClick={()=>setIsMaster(!isMaster)}><span/></button></div>
-    <p className="muted-note">Сейчас профиль демонстрационный. Авторизация через Telegram появится при подключении серверной части.</p>
+    <p className="muted-note">Связь с Supabase: <b>{connectionStatus}</b>. Авторизация через Telegram и личные кабинеты подключим следующим этапом.</p>
   </main></>
 }
 
@@ -111,16 +112,54 @@ export default function App() {
   const [favorites,setFavorites]=useState([2])
   const [bookings,setBookings]=useState([])
   const [isMaster,setIsMaster]=useState(false)
+  const [mastersList,setMastersList]=useState(masters)
+  const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
+  useEffect(() => {
+    let active = true
+    async function loadMasters() {
+      if (!supabase) return
+      const { data, error } = await supabase
+        .from('masters')
+        .select('id, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name))')
+        .eq('status', 'approved')
+        .order('rating', { ascending: false })
+      if (!active) return
+      if (error) {
+        setConnectionStatus('ошибка чтения базы')
+        console.error('MASTER HUB Supabase:', error.message)
+        return
+      }
+      const liveMasters = (data || []).map(m => ({
+        id: m.id,
+        name: m.public_name,
+        handle: m.contact_telegram || '',
+        studio: m.studio_name || 'Частный мастер',
+        rating: Number(m.rating || 0),
+        reviews: Number(m.reviews_count || 0),
+        price: Number(m.starting_price || 0),
+        styles: (m.master_styles || []).map(item => item.styles?.name).filter(Boolean),
+        city: m.city || 'Калининград',
+        about: m.bio || '',
+        experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
+        image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=900&q=85',
+        works: []
+      }))
+      if (liveMasters.length) setMastersList(liveMasters)
+      setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
+    }
+    loadMasters()
+    return () => { active = false }
+  }, [])
   const toggleFavorite=id=>setFavorites(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id])
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
   const confirmBooking=data=>{setBookings(old=>[...old,data]);setBookingMaster(null);setSelected(null);setActive('bookings')}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
-  else if(active==='home') content=<HomePage setActive={setActive} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite}/>
-  else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite}/>
+  else if(active==='home') content=<HomePage setActive={setActive} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
+  else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
-  else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{masters.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={isMaster} setIsMaster={setIsMaster}/>
+  else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
+  else content=<ProfilePage isMaster={isMaster} setIsMaster={setIsMaster} connectionStatus={connectionStatus}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div></div>
 }
