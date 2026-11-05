@@ -1,9 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, Settings, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2 } from 'lucide-react'
 import { masters, styles, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
+
+class RenderErrorBoundary extends Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) { return { error } }
+  componentDidCatch(error, info) {
+    console.error('Master Hub screen render error:', error, info)
+  }
+  render() {
+    if (this.state.error) {
+      const message = this.state.error?.message || String(this.state.error)
+      return <section className="render-error-panel">
+        <div className="render-error-mark">!</div>
+        <h2>Экран не загрузился</h2>
+        <p>Поймал ошибку интерфейса. Остальная часть приложения должна оставаться доступной.</p>
+        <pre>{message}</pre>
+        <button type="button" className="primary-button" onClick={() => this.setState({ error: null })}>Попробовать снова</button>
+      </section>
+    }
+    return this.props.children
+  }
+}
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n) + ' ₽'
 const categories = [
@@ -414,5 +435,5 @@ export default function App() {
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
   else if(['profile','master-inbox','master-bookings'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')}/>
   else content=<ProfilePage isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
-  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
+  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner"><RenderErrorBoundary key={active}>{content}</RenderErrorBoundary>{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
