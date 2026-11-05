@@ -44,10 +44,7 @@ function Header({ title, subtitle, back, action }) {
 function HomePage({ setActive, openMaster, favorites, toggleFavorite, mastersList }) {
   return <><Header subtitle="КАЛИНИНГРАД" />
     <main className="page-content home-page">
-      <section className="hero-block"><div className="hero-kicker"><Sparkles size={13}/> МЕСТО, ГДЕ НАХОДЯТ СВОИХ</div><h1>Найди своего<br/><em>мастера.</em></h1><p>Татуировки, которые становятся частью твоей истории.</p><button className="primary-button" onClick={() => setActive('catalog')}>Найти мастера <ChevronRight size={17}/></button><div className="hero-decoration">✳</div></section>
-      <section className="section-block"><div className="section-heading"><div><span className="eyebrow">ВЫБИРАЙ СВОЁ</span><h2>Популярные стили</h2></div><button className="text-link" onClick={() => setActive('catalog')}>Все <ChevronRight size={15}/></button></div>
-        <div className="style-grid">{[{name:'Blackwork',sub:'Контраст и форма',symbol:'◈'},{name:'Реализм',sub:'Живые детали',symbol:'✺'},{name:'Fine line',sub:'Тонкие линии',symbol:'〰'},{name:'Орнаментал',sub:'Узор и ритм',symbol:'❋'}].map(s=><button className="style-tile" key={s.name} onClick={() => setActive('catalog')}><span>{s.symbol}</span><b>{s.name}</b><small>{s.sub}</small></button>)}</div>
-      </section>
+      <section className="section-block tattoo-category"><button className="primary-button full-button" onClick={() => setActive('catalog')}>Татуировки <ChevronRight size={17}/></button></section>
       <section className="section-block"><div className="section-heading"><div><span className="eyebrow">ВЫБОР MASTER HUB</span><h2>Мастера рядом</h2></div><button className="text-link" onClick={() => setActive('catalog')}>Каталог <ChevronRight size={15}/></button></div>
         <div className="master-list">{mastersList.length ? mastersList.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>) : <div className="empty-state"><b>Пока нет мастеров</b><span>Скоро здесь появятся первые анкеты из Калининграда</span></div>}</div>
       </section>
@@ -64,7 +61,7 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList }) {
   return <><Header title="Каталог мастеров" subtitle="КАЛИНИНГРАД"/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="popular">По рейтингу</option><option value="price">Сначала дешевле</option></select></label></div>
-      <div className="filter-chips">{styles.map(s=><button key={s} className={style===s?'filter-chip selected':'filter-chip'} onClick={()=>setStyle(s)}>{s}</button>)}</div>
+      <div className="tattoo-style-select"><label htmlFor="tattoo-style">Татуировки · стиль</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>
       <div className="master-list catalog-list">{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Ничего не найдено</b><span>Попробуй изменить запрос или стиль</span></div>}</div>
     </main></>
 }
@@ -97,21 +94,34 @@ function BookingsPage({ bookings }) {
   return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{bookings.length ? bookings.map((b,i)=><div className="booking-card" key={i}><div className="booking-status"><span className="status-dot"/> Ожидает подтверждения</div><h3>{b.master.name}</h3><p>{b.service}</p><div className="booking-date"><CalendarDays size={16}/> {b.day} ноября · {b.time}</div></div>) : <div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}</main></>
 }
 
-function ProfilePage({ isMaster, connectionStatus, user, authLoading, onTelegramLogin, onSignOut, authError, onRoleChange, roleLoading }) {
+function ProfilePage({ isMaster, connectionStatus, user, authLoading, onSignOut, authError, onStartRegistration, registrationStatus }) {
   return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">{user ? (user.user_metadata?.first_name?.[0] || user.user_metadata?.full_name?.[0] || 'M') : 'MH'}</div><div><h2>{user ? (user.user_metadata?.first_name || user.user_metadata?.full_name || 'Пользователь Telegram') : 'Гость MASTER HUB'}</h2><span>{user ? (isMaster ? 'Кабинет мастера' : 'Клиентский аккаунт') : 'Войди через Telegram'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
-    {user && <section style={{ margin: '18px 0', padding: '16px', border: '1px solid rgba(180,140,255,.22)', borderRadius: '16px', background: 'rgba(100,70,140,.10)' }}>
-      <div style={{ fontSize: '12px', letterSpacing: '.12em', opacity: .7, marginBottom: '10px' }}>ТИП АККАУНТА</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-        <button type="button" onClick={() => onRoleChange('client')} disabled={roleLoading} style={{ padding: '12px 8px', borderRadius: '12px', border: isMaster ? '1px solid rgba(255,255,255,.12)' : '1px solid #a98aff', background: isMaster ? 'rgba(255,255,255,.04)' : 'rgba(169,138,255,.18)', color: 'inherit', fontWeight: 700 }}>Я клиент</button>
-        <button type="button" onClick={() => onRoleChange('master')} disabled={roleLoading} style={{ padding: '12px 8px', borderRadius: '12px', border: isMaster ? '1px solid #a98aff' : '1px solid rgba(255,255,255,.12)', background: isMaster ? 'rgba(169,138,255,.18)' : 'rgba(255,255,255,.04)', color: 'inherit', fontWeight: 700 }}>Я мастер</button>
-      </div>
-      <p style={{ fontSize: '12px', lineHeight: 1.5, opacity: .7, margin: '10px 0 0' }}>{roleLoading ? 'Сохраняем выбор…' : isMaster ? 'Выбран режим мастера. Анкету и портфолио можно будет заполнить следующим шагом.' : 'Выбран клиентский режим. Его можно сменить в любой момент.'}</p>
-    </section>}
+    {user && !isMaster && <button className="profile-register-master" onClick={onStartRegistration}><BriefcaseBusiness size={18}/><span><b>Стать мастером</b><small>Создать анкету и отправить её на проверку</small></span><ChevronRight size={17}/></button>}
+    {user && isMaster && <div className="muted-note">У тебя профиль мастера. Управление анкетой появится здесь.</div>}
+    {registrationStatus && <p className="muted-note">{registrationStatus}</p>}
     <div className="profile-menu">{(isMaster?['Мой профиль мастера','Портфолио и услуги','Расписание и выходные','Заявки на запись','Статистика']:['Личные данные','Мои отзывы','Уведомления','Помощь и поддержка']).map((x,i)=><button key={x}><span className="menu-icon">{[<UserRound/>,<Camera/>,<CalendarDays/>,<BriefcaseBusiness/>,<Star/>][i]}</span>{x}<ChevronRight size={17}/></button>)}</div>
-    {user ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button> : <button className="primary-button full-button" onClick={onTelegramLogin} disabled={authLoading}>{authLoading ? 'Подключаем Telegram…' : 'Войти через Telegram'} <ChevronRight size={17}/></button>}
+    {user ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button> : <div className="muted-note">{authLoading ? 'Автоматически подключаем Telegram…' : 'Открой приложение через Telegram — профиль подключится автоматически.'}</div>}
     {authError && <p className="muted-note" role="alert">{authError}</p>}
     <p className="muted-note">Связь с Supabase: <b>{connectionStatus}</b>. {user ? 'Аккаунт защищён проверкой Telegram.' : 'Открой приложение через Telegram, чтобы войти.'}</p>
   </main></>
+}
+
+
+function MasterRegistration({ onClose, onSubmit }) {
+  const [form, setForm] = useState({ public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0', starting_price: '' })
+  const [saving, setSaving] = useState(false)
+  const update = (key, value) => setForm(old => ({ ...old, [key]: value }))
+  const submit = async e => { e.preventDefault(); if (!form.public_name.trim()) return; setSaving(true); await onSubmit(form); setSaving(false) }
+  return <div className="modal-backdrop"><form className="master-registration-modal" onSubmit={submit}>
+    <button type="button" className="modal-close" onClick={onClose}><X size={20}/></button>
+    <span className="eyebrow">MASTER HUB · АНКЕТА</span><h2>Регистрация мастера</h2><p>Заполни данные — анкета попадёт на модерацию и после одобрения появится в каталоге.</p>
+    <label>Имя или псевдоним<input required value={form.public_name} onChange={e=>update('public_name',e.target.value)} placeholder="Как тебя показывать клиентам"/></label>
+    <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ"/></label>
+    <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии"/></label>
+    <label>Telegram для связи<input value={form.contact_telegram} onChange={e=>update('contact_telegram',e.target.value)} placeholder="@username"/></label>
+    <div className="registration-row"><label>Опыт, лет<input type="number" min="0" value={form.experience_years} onChange={e=>update('experience_years',e.target.value)}/></label><label>Цена от, ₽<input required type="number" min="0" value={form.starting_price} onChange={e=>update('starting_price',e.target.value)}/></label></div>
+    <button className="primary-button full-button" disabled={saving}>{saving ? 'Отправляем…' : 'Отправить на проверку'} <ChevronRight size={17}/></button>
+  </form></div>
 }
 
 export default function App() {
@@ -129,12 +139,15 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return
     let active = true
-    supabase.auth.getSession().then(({ data }) => {
+    const connectTelegram = async () => {
+      const initData = window.Telegram?.WebApp?.initData
+      const { data } = await supabase.auth.getSession()
       if (!active) return
       const existingUser = data.session?.user || null
       setUser(existingUser)
-      if (!existingUser && window.Telegram?.WebApp?.initData) loginWithTelegram()
-    })
+      if (!existingUser && initData) loginWithTelegram()
+    }
+    connectTelegram()
     window.Telegram?.WebApp?.ready?.()
     window.Telegram?.WebApp?.expand?.()
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user || null))
@@ -166,21 +179,16 @@ export default function App() {
     } catch (error) { console.error('MASTER HUB Telegram auth:', error); setAuthError(error.message || 'Ошибка авторизации. Попробуй ещё раз.') }
     finally { setAuthLoading(false) }
   }
-  const [roleLoading, setRoleLoading] = useState(false)
-  const changeRole = async nextRole => {
-    if (!supabase || !user || !['client', 'master'].includes(nextRole) || nextRole === userRole) return
-    setRoleLoading(true)
-    setAuthError('')
-    try {
-      const { error } = await supabase.from('profiles').update({ role: nextRole }).eq('id', user.id)
-      if (error) throw error
-      setUserRole(nextRole)
-    } catch (error) {
-      console.error('MASTER HUB role update:', error)
-      setAuthError(error.message || 'Не удалось изменить тип аккаунта.')
-    } finally {
-      setRoleLoading(false)
-    }
+  const [registrationStatus, setRegistrationStatus] = useState('')
+  const [registrationOpen, setRegistrationOpen] = useState(false)
+  const submitMasterRegistration = async form => {
+    if (!supabase || !user) return
+    setRegistrationStatus('Отправляем анкету…')
+    const payload = { user_id: user.id, public_name: form.public_name, bio: form.bio, studio_name: form.studio_name || null, city: 'Калининград', contact_telegram: form.contact_telegram || null, experience_years: Number(form.experience_years || 0), starting_price: Number(form.starting_price || 0), status: 'pending' }
+    const { error } = await supabase.from('masters').insert(payload)
+    if (error) { setRegistrationStatus(error.message || 'Не удалось отправить анкету.'); return }
+    setRegistrationOpen(false)
+    setRegistrationStatus('Анкета отправлена на проверку. После одобрения профиль появится в каталоге.')
   }
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(null); setUserRole('client') }
   useEffect(() => {
@@ -229,6 +237,6 @@ export default function App() {
   else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onTelegramLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onRoleChange={changeRole} roleLoading={roleLoading}/>
-  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div></div>
+  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onSignOut={signOut} authError={authError} onStartRegistration={()=>setRegistrationOpen(true)} registrationStatus={registrationStatus}/>
+  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
