@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BriefcaseBusiness, ImagePlus, Plus, Trash2, CalendarClock, CalendarDays, Check, X, Upload, Clock3, Send, House, Eye } from 'lucide-react'
+import { BriefcaseBusiness, ImagePlus, Plus, Trash2, CalendarClock, CalendarDays, ClipboardList, Check, X, Upload, Clock3, Send, House, Eye } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
