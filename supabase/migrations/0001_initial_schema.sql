@@ -239,7 +239,7 @@ create policy "master reads own listing" on public.masters for select to authent
 drop policy if exists "master creates own listing" on public.masters;
 create policy "master creates own listing" on public.masters for insert to authenticated with check (user_id = auth.uid() and status in ('draft','pending'));
 create or replace function public.prevent_master_status_change()
-returns trigger language plpgsql as $
+returns trigger language plpgsql as $master_status_guard$
 begin
   if new.status is distinct from old.status
      and coalesce(auth.role(), '') <> 'service_role'
@@ -248,7 +248,7 @@ begin
   end if;
   return new;
 end;
-$;
+$master_status_guard$;
 drop trigger if exists masters_protect_status on public.masters;
 create trigger masters_protect_status before update on public.masters
 for each row execute function public.prevent_master_status_change();
@@ -310,7 +310,7 @@ with check (exists(select 1 from public.masters m where m.id = master_id and m.u
 
 -- Prevent clients/masters from rewriting the booking owner, service or time window.
 create or replace function public.guard_booking_changes()
-returns trigger language plpgsql as $
+returns trigger language plpgsql as $booking_guard$
 begin
   if new.client_id is distinct from old.client_id
      or new.master_id is distinct from old.master_id
@@ -321,7 +321,7 @@ begin
   end if;
   return new;
 end;
-$;
+$booking_guard$;
 drop trigger if exists bookings_guard_fields on public.bookings;
 create trigger bookings_guard_fields before update on public.bookings
 for each row execute function public.guard_booking_changes();
