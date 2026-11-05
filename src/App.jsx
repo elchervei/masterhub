@@ -49,7 +49,7 @@ function HomePage({ setActive, openMaster, favorites, toggleFavorite, mastersLis
         <div className="style-grid">{[{name:'Blackwork',sub:'Контраст и форма',symbol:'◈'},{name:'Реализм',sub:'Живые детали',symbol:'✺'},{name:'Fine line',sub:'Тонкие линии',symbol:'〰'},{name:'Орнаментал',sub:'Узор и ритм',symbol:'❋'}].map(s=><button className="style-tile" key={s.name} onClick={() => setActive('catalog')}><span>{s.symbol}</span><b>{s.name}</b><small>{s.sub}</small></button>)}</div>
       </section>
       <section className="section-block"><div className="section-heading"><div><span className="eyebrow">ВЫБОР MASTER HUB</span><h2>Мастера рядом</h2></div><button className="text-link" onClick={() => setActive('catalog')}>Каталог <ChevronRight size={15}/></button></div>
-        <div className="master-list">{mastersList.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}</div>
+        <div className="master-list">{mastersList.length ? mastersList.slice(0, 3).map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>) : <div className="empty-state"><b>Пока нет мастеров</b><span>Скоро здесь появятся первые анкеты из Калининграда</span></div>}</div>
       </section>
       <div className="city-note"><MapPin size={16}/><span>Сейчас мы собираем лучших мастеров Калининграда</span></div>
     </main>
@@ -97,8 +97,16 @@ function BookingsPage({ bookings }) {
   return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{bookings.length ? bookings.map((b,i)=><div className="booking-card" key={i}><div className="booking-status"><span className="status-dot"/> Ожидает подтверждения</div><h3>{b.master.name}</h3><p>{b.service}</p><div className="booking-date"><CalendarDays size={16}/> {b.day} ноября · {b.time}</div></div>) : <div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}</main></>
 }
 
-function ProfilePage({ isMaster, connectionStatus, user, authLoading, onTelegramLogin, onSignOut, authError }) {
+function ProfilePage({ isMaster, connectionStatus, user, authLoading, onTelegramLogin, onSignOut, authError, onRoleChange, roleLoading }) {
   return <><Header title="Профиль" subtitle="ТВОЙ MASTER HUB"/><main className="page-content profile-page"><div className="profile-card"><div className="profile-avatar">{user ? (user.user_metadata?.first_name?.[0] || user.user_metadata?.full_name?.[0] || 'M') : 'MH'}</div><div><h2>{user ? (user.user_metadata?.first_name || user.user_metadata?.full_name || 'Пользователь Telegram') : 'Гость MASTER HUB'}</h2><span>{user ? (isMaster ? 'Кабинет мастера' : 'Клиентский аккаунт') : 'Войди через Telegram'}</span></div><button className="icon-button"><Settings size={19}/></button></div>
+    {user && <section style={{ margin: '18px 0', padding: '16px', border: '1px solid rgba(180,140,255,.22)', borderRadius: '16px', background: 'rgba(100,70,140,.10)' }}>
+      <div style={{ fontSize: '12px', letterSpacing: '.12em', opacity: .7, marginBottom: '10px' }}>ТИП АККАУНТА</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <button type="button" onClick={() => onRoleChange('client')} disabled={roleLoading} style={{ padding: '12px 8px', borderRadius: '12px', border: isMaster ? '1px solid rgba(255,255,255,.12)' : '1px solid #a98aff', background: isMaster ? 'rgba(255,255,255,.04)' : 'rgba(169,138,255,.18)', color: 'inherit', fontWeight: 700 }}>Я клиент</button>
+        <button type="button" onClick={() => onRoleChange('master')} disabled={roleLoading} style={{ padding: '12px 8px', borderRadius: '12px', border: isMaster ? '1px solid #a98aff' : '1px solid rgba(255,255,255,.12)', background: isMaster ? 'rgba(169,138,255,.18)' : 'rgba(255,255,255,.04)', color: 'inherit', fontWeight: 700 }}>Я мастер</button>
+      </div>
+      <p style={{ fontSize: '12px', lineHeight: 1.5, opacity: .7, margin: '10px 0 0' }}>{roleLoading ? 'Сохраняем выбор…' : isMaster ? 'Выбран режим мастера. Анкету и портфолио можно будет заполнить следующим шагом.' : 'Выбран клиентский режим. Его можно сменить в любой момент.'}</p>
+    </section>}
     <div className="profile-menu">{(isMaster?['Мой профиль мастера','Портфолио и услуги','Расписание и выходные','Заявки на запись','Статистика']:['Личные данные','Мои отзывы','Уведомления','Помощь и поддержка']).map((x,i)=><button key={x}><span className="menu-icon">{[<UserRound/>,<Camera/>,<CalendarDays/>,<BriefcaseBusiness/>,<Star/>][i]}</span>{x}<ChevronRight size={17}/></button>)}</div>
     {user ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button> : <button className="primary-button full-button" onClick={onTelegramLogin} disabled={authLoading}>{authLoading ? 'Подключаем Telegram…' : 'Войти через Telegram'} <ChevronRight size={17}/></button>}
     {authError && <p className="muted-note" role="alert">{authError}</p>}
@@ -110,18 +118,25 @@ export default function App() {
   const [active,setActive]=useState('home')
   const [selected,setSelected]=useState(null)
   const [bookingMaster,setBookingMaster]=useState(null)
-  const [favorites,setFavorites]=useState([2])
+  const [favorites,setFavorites]=useState([])
   const [bookings,setBookings]=useState([])
   const [user,setUser]=useState(null)
   const [authLoading,setAuthLoading]=useState(false)
   const [authError,setAuthError]=useState('')
   const [userRole,setUserRole]=useState('client')
-  const [mastersList,setMastersList]=useState(masters)
+  const [mastersList,setMastersList]=useState([])
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
   useEffect(() => {
     if (!supabase) return
     let active = true
-    supabase.auth.getSession().then(({ data }) => { if (active) setUser(data.session?.user || null) })
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return
+      const existingUser = data.session?.user || null
+      setUser(existingUser)
+      if (!existingUser && window.Telegram?.WebApp?.initData) loginWithTelegram()
+    })
+    window.Telegram?.WebApp?.ready?.()
+    window.Telegram?.WebApp?.expand?.()
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user || null))
     return () => { active = false; listener.subscription.unsubscribe() }
   }, [])
@@ -150,6 +165,22 @@ export default function App() {
       setUser(data.session.user || null)
     } catch (error) { console.error('MASTER HUB Telegram auth:', error); setAuthError(error.message || 'Ошибка авторизации. Попробуй ещё раз.') }
     finally { setAuthLoading(false) }
+  }
+  const [roleLoading, setRoleLoading] = useState(false)
+  const changeRole = async nextRole => {
+    if (!supabase || !user || !['client', 'master'].includes(nextRole) || nextRole === userRole) return
+    setRoleLoading(true)
+    setAuthError('')
+    try {
+      const { error } = await supabase.from('profiles').update({ role: nextRole }).eq('id', user.id)
+      if (error) throw error
+      setUserRole(nextRole)
+    } catch (error) {
+      console.error('MASTER HUB role update:', error)
+      setAuthError(error.message || 'Не удалось изменить тип аккаунта.')
+    } finally {
+      setRoleLoading(false)
+    }
   }
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(null); setUserRole('client') }
   useEffect(() => {
@@ -182,7 +213,7 @@ export default function App() {
         image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=900&q=85',
         works: []
       }))
-      if (liveMasters.length) setMastersList(liveMasters)
+      setMastersList(liveMasters)
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
     }
     loadMasters()
@@ -198,6 +229,6 @@ export default function App() {
   else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
-  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onTelegramLogin={loginWithTelegram} onSignOut={signOut} authError={authError}/>
+  else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onTelegramLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onRoleChange={changeRole} roleLoading={roleLoading}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner">{content}{!selected&&!bookingMaster&&<BottomNav active={active} setActive={setActive}/>}</div></div>
 }
