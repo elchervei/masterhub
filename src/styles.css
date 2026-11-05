@@ -284,3 +284,66 @@ img{max-width:100%}
  .pixel-art{width:53px;height:57px}
  .category-copy small{max-width:150px}
 }
+
+
+/* Owner-only moderation and role preview */
+.role-preview-switch{margin:0 0 17px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(24,28,29,.82)}
+.role-preview-switch>div{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+.role-preview-switch button,.admin-filters button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 10px;border:1px solid var(--line);border-radius:11px;background:#111416;color:#9da5a5;font-size:11px}
+.role-preview-switch button.selected,.admin-filters button.selected{border-color:#87938d;background:#242b28;color:#f0f2ef}
+.role-preview-switch small{color:var(--muted);font-size:9px}
+.admin-page,.master-workspace{padding-bottom:100px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 17px}
+.admin-stats>div{display:flex;flex-direction:column;gap:5px;padding:13px;border:1px solid var(--line);border-radius:14px;background:rgba(24,28,29,.85)}
+.admin-stats b{font-size:23px;font-weight:600}
+.admin-stats small{color:var(--muted);font-size:9px}
+.admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:13px}
+.admin-filters{display:flex;gap:5px;overflow:auto;max-width:100%}
+.admin-filters button{min-height:33px;white-space:nowrap;font-size:9px}
+.admin-application-list{display:flex;flex-direction:column;gap:10px}
+.admin-application{padding:15px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,#171b1c,#101213)}
+.admin-app-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.admin-app-top h3{margin:6px 0 0;font-size:15px}
+.status-pill{display:inline-flex;align-items:center;padding:6px 8px;border:1px solid #414747;border-radius:20px;color:#c1c8c4;font-size:9px;white-space:nowrap}
+.status-pill.pending{border-color:#695b3e;color:#d7c69b}
+.status-pill.approved{border-color:#3d6251;color:#a9d0ba}
+.status-pill.rejected{border-color:#654343;color:#d8aaaa}
+.admin-app-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin:12px 0;color:#a2aaa6;font-size:9px}
+.admin-app-meta b{color:#e4e8e5}
+.admin-app-studio,.admin-app-contact{margin:4px 0;color:#adb5b1;font-size:10px}
+.admin-app-bio{margin:10px 0;color:#c3c9c5;font-size:10px;line-height:1.55}
+.admin-app-actions{display:flex;gap:8px;margin-top:13px}
+.admin-app-actions button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:37px;border-radius:11px;font-size:10px}
+.approve-button{border:1px solid #476451;background:#1b2921;color:#b7d9c2}
+.reject-button{border:1px solid #644747;background:#281b1b;color:#ddb4b4}
+.workspace-empty{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:25px;padding:20px;border:1px solid var(--line);border-radius:18px;background:#15191a}
+.workspace-empty h2{margin:0;font-size:19px}
+.workspace-empty p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+.workspace-master-card{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 15px;padding:15px;border:1px solid var(--line);border-radius:16px;background:#171b1c}
+.workspace-master-card h2{margin:5px 0 0;font-size:18px}
+.workspace-section{margin:12px 0;padding:15px;border:1px solid var(--line);border-radius:17px;background:rgba(20,24,25,.9)}
+.workspace-section h3{display:flex;align-items:center;gap:8px;margin:0 0 13px;font-size:13px}
+.inline-add-form{display:flex;gap:7px}
+.inline-add-form input,.service-add-form input,.schedule-form select,.schedule-form input{width:100%;min-width:0;padding:11px;border:1px solid #343b3c;border-radius:10px;background:#0d1011;color:var(--text);font-size:10px}
+.inline-add-form button{width:42px;flex:0 0 42px;padding:0}
+.workspace-works{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.workspace-works>div{position:relative;aspect-ratio:1;overflow:hidden;border-radius:10px;background:#252a2b}
+.workspace-works img{width:100%;height:100%;object-fit:cover}
+.workspace-works button{position:absolute;right:5px;top:5px;width:27px;height:27px;display:grid;place-items:center;border:0;border-radius:8px;background:rgba(0,0,0,.75);color:#fff}
+.service-add-form{display:flex;flex-direction:column;gap:8px}
+.service-add-form>div{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.workspace-service-list{display:flex;flex-direction:column;gap:0;margin-top:8px}
+.workspace-service-list>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line);font-size:10px}
+.workspace-service-list span{display:flex;flex-direction:column;gap:4px}
+.workspace-service-list small{color:var(--muted);font-size:9px}
+.schedule-form{display:flex;flex-direction:column;gap:8px}
+.schedule-form>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.schedule-form label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:10px}
+.schedule-form input{flex:1}
+.count-chip{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:20px;background:#2b3430;color:#c4d4c9;font-size:10px}
+.workspace-booking{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 0;border-top:1px solid var(--line)}
+.workspace-booking>div:first-child{display:flex;flex-direction:column;gap:5px}
+.workspace-booking b{font-size:10px}
+.workspace-booking small{color:var(--muted);font-size:9px}
+.workspace-booking>div:last-child{display:flex;gap:5px}
+.workspace-booking button{width:31px;height:31px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:#1b211e;color:#bcd1c2}
