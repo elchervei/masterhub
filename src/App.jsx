@@ -339,7 +339,7 @@ export default function App() {
         experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
         image: m.cover_image_url || m.portfolio_items?.[0]?.image_path || '',
         works: (m.portfolio_items || []).map(w=>w.image_path),
-        services: (m.services || []).filter(service=>service.is_active)
+        services: (m.services || []).filter(service=>service.is_active && service.title?.trim().toLowerCase()==='татуировка')
       }))
       setMastersList(liveMasters)
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
