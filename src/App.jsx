@@ -49,6 +49,25 @@ function Header({ title, subtitle, back, action }) {
   </header>
 }
 
+function PixelArt({ type }) {
+  const palettes = {
+    tattoo: {base:'#aeb8b5',dark:'#414b4a',light:'#e1e4dc',accent:'#b98c79'},
+    nails: {base:'#d0aaa6',dark:'#765b60',light:'#ead7cc',accent:'#a7b7aa'},
+    brows: {base:'#b6b9b0',dark:'#505653',light:'#e0ddd2',accent:'#c59b83'},
+    piercing: {base:'#c7c9c2',dark:'#59605e',light:'#ece9dc',accent:'#b99b70'},
+    makeup: {base:'#c28e87',dark:'#684c50',light:'#e8c9b9',accent:'#b6a0a0'}
+  }
+  const p = palettes[type] || palettes.tattoo
+  const shapes = {
+    tattoo: <><rect x="19" y="11" width="18" height="5" fill={p.light}/><rect x="23" y="16" width="10" height="5" fill={p.base}/><rect x="16" y="21" width="24" height="6" fill={p.dark}/><rect x="21" y="27" width="14" height="8" fill={p.base}/><rect x="25" y="35" width="6" height="10" fill={p.dark}/><rect x="27" y="45" width="2" height="8" fill={p.light}/><rect x="10" y="18" width="7" height="4" fill={p.accent}/><rect x="40" y="18" width="7" height="4" fill={p.accent}/><rect x="22" y="7" width="12" height="4" fill={p.dark}/></>,
+    nails: <><rect x="23" y="9" width="12" height="10" fill={p.light}/><rect x="20" y="19" width="18" height="15" fill={p.base}/><rect x="17" y="34" width="24" height="8" fill={p.dark}/><rect x="13" y="42" width="7" height="12" fill={p.base}/><rect x="22" y="42" width="7" height="12" fill={p.base}/><rect x="31" y="42" width="7" height="12" fill={p.base}/><rect x="40" y="42" width="7" height="12" fill={p.base}/><rect x="25" y="11" width="8" height="5" fill={p.accent}/></>,
+    brows: <><rect x="8" y="25" width="12" height="5" fill={p.dark}/><rect x="15" y="20" width="15" height="5" fill={p.dark}/><rect x="30" y="25" width="15" height="5" fill={p.dark}/><rect x="17" y="30" width="25" height="12" fill={p.light}/><rect x="21" y="32" width="17" height="8" fill={p.base}/><rect x="27" y="32" width="6" height="8" fill={p.dark}/><rect x="28" y="34" width="3" height="3" fill={p.light}/></>,
+    piercing: <><rect x="24" y="8" width="8" height="8" fill={p.accent}/><rect x="18" y="16" width="20" height="5" fill={p.dark}/><rect x="14" y="21" width="5" height="20" fill={p.dark}/><rect x="37" y="21" width="5" height="20" fill={p.dark}/><rect x="19" y="41" width="18" height="5" fill={p.dark}/><rect x="24" y="46" width="8" height="5" fill={p.dark}/><rect x="25" y="16" width="6" height="5" fill={p.light}/></>,
+    makeup: <><rect x="22" y="8" width="14" height="7" fill={p.light}/><rect x="20" y="15" width="18" height="8" fill={p.accent}/><rect x="18" y="23" width="22" height="23" fill={p.base}/><rect x="16" y="46" width="26" height="7" fill={p.dark}/><rect x="24" y="4" width="10" height="4" fill={p.dark}/><rect x="25" y="26" width="8" height="13" fill={p.light}/></>
+  }
+  return <svg className="pixel-art" viewBox="0 0 56 60" role="img" aria-hidden="true" shapeRendering="crispEdges">{shapes[type] || shapes.tattoo}</svg>
+}
+
 function HomePage({ introVisible, onSelectCategory }) {
   if (introVisible) return <main className="page-content home-page home-redesign">
     <section className="home-intro home-intro-only"><h1>Выбери своего мастера</h1></section>
@@ -56,7 +75,7 @@ function HomePage({ introVisible, onSelectCategory }) {
   return <main className="page-content home-page category-home">
     <div className="category-heading"><span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
     <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
-      <span className="category-mark">{item.mark}</span><span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><ChevronRight size={19}/>
+      <span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><span className="category-art"><PixelArt type={item.id}/></span><ChevronRight size={19}/>
     </button>)}</div>
   </main>
 }
