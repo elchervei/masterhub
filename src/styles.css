@@ -400,3 +400,11 @@ img{max-width:100%}
 .master-photo{background-color:#202625;background-image:linear-gradient(135deg,#252d2a,#111515)}
 .detail-cover{background-color:#202625}
 @media(max-width:360px){.calendar-day{min-height:35px}.calendar-legend{gap:8px}.calendar-legend span{font-size:8px}}
+
+
+.booking-contact-card{display:flex;flex-direction:column;gap:11px;margin:13px 0 20px;padding:14px;border:1px solid #34413a;border-radius:14px;background:linear-gradient(145deg,#18211c,#121716)}
+.booking-contact-card>div{display:flex;flex-direction:column;gap:5px}
+.booking-contact-card>div>b{font-size:12px;font-weight:600;color:#e4e9e5}
+.booking-contact-card>div>small{font-size:10px;line-height:1.5;color:#9ba69f}
+.telegram-contact-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border:1px solid #3d6958;border-radius:11px;background:#1b3a2d;color:#d8eee1;text-decoration:none;font-size:11px;font-weight:600}
+.contact-unavailable{font-size:10px;color:#a99a79}
