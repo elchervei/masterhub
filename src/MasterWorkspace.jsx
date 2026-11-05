@@ -4,7 +4,7 @@ import { BriefcaseBusiness, ImagePlus, Plus, Trash2, CalendarClock, CalendarDays
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
 
-export default function MasterWorkspace({ supabase, user, onOpenRegistration }) {
+export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, onOpenRegistration }) {
   const [master, setMaster] = useState(null)
   const [services, setServices] = useState([])
   const [works, setWorks] = useState([])
@@ -74,7 +74,7 @@ export default function MasterWorkspace({ supabase, user, onOpenRegistration }) 
 
   return <>
     <header className="topbar"><div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div><div className="topbar-title"><strong>Кабинет мастера</strong><small>УПРАВЛЕНИЕ ПРОФИЛЕМ</small></div><BriefcaseBusiness size={19}/></header>
-    <main className="page-content master-workspace">
+    <main className="page-content master-workspace">{isAdmin && <section className="role-preview-switch"><span className="eyebrow">РЕЖИМ ПРОСМОТРА · ТОЛЬКО ВЛАДЕЛЕЦ</span><div><button className={viewMode === "client" ? "selected" : ""} onClick={() => setViewMode("client")}>Я клиент</button><button className={viewMode === "master" ? "selected" : ""} onClick={() => setViewMode("master")}>Я мастер</button></div><small>Реальная роль администратора не меняется.</small></section>}
       {loading ? <div className="empty-state">Загружаем кабинет…</div> : !master ? <div className="workspace-empty"><BriefcaseBusiness size={30}/><h2>Профиль мастера ещё не создан</h2><p>Создай свою анкету, чтобы открыть управление портфолио, услугами, расписанием и записями.</p><button className="primary-button" onClick={onOpenRegistration}>Создать анкету мастера</button></div> : <>
         <div className="workspace-master-card"><div><span className="eyebrow">ТВОЯ АНКЕТА</span><h2>{master.public_name}</h2></div><span className={'status-pill ' + master.status}>{master.status === 'approved' ? 'Опубликована' : master.status === 'pending' ? 'На модерации' : 'Отклонена'}</span></div>
         <section className="workspace-section"><h3><ImagePlus size={17}/> Портфолио</h3><form className="inline-add-form" onSubmit={addWork}><input type="url" required value={workUrl} onChange={e => setWorkUrl(e.target.value)} placeholder="Ссылка на фотографию работы"/><button className="primary-button"><Plus size={16}/></button></form><div className="workspace-works">{works.map(work => <div key={work.id}><img src={work.image_path} alt={work.caption || 'Работа мастера'}/><button onClick={() => removeWork(work.id)}><Trash2 size={14}/></button></div>)}</div>{!works.length && <p className="muted-note">Пока нет работ. Добавь прямые ссылки на изображения.</p>}</section>
