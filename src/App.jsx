@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
-import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, Settings, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload } from 'lucide-react'
+import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, Settings, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2 } from 'lucide-react'
 import { masters, styles, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
@@ -41,9 +41,9 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
 
 function BottomNav({ active, setActive, isAdmin, isMaster }) {
   const masterTabs = [
-    { id: 'profile', label: 'Кабинет', icon: BriefcaseBusiness },
-    { id: 'master-inbox', label: 'Заявки', icon: ClipboardList },
-    { id: 'master-bookings', label: 'Записи', icon: CalendarDays },
+    { id: 'profile', label: 'Кабинет', icon: ContactRound },
+    { id: 'master-inbox', label: 'Заявки', icon: Inbox },
+    { id: 'master-bookings', label: 'Записи', icon: CalendarCheck2 },
     { id: 'home', label: 'Клиент', icon: Home }
   ]
   const visibleTabs = isMaster ? masterTabs : isAdmin ? [...tabs, { id: 'admin', label: 'Заявки', icon: ClipboardList }] : tabs
