@@ -214,3 +214,10 @@ img{max-width:100%}
   .date-cell{height:54px}
   .nav-item{font-size:7px}
 }
+
+
+/* Minimal home screen: one heading, no promotional copy or decoration. */
+.home-page.home-redesign{min-height:calc(100svh - 76px);display:flex;align-items:center;padding-top:0;padding-bottom:76px}
+.home-intro-only{width:100%;min-height:calc(100svh - 152px);display:grid;place-items:center;padding:24px 12px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center}
+.home-intro-only h1{max-width:330px;margin:0;font-family:'Manrope',sans-serif;font-size:clamp(28px,8vw,35px);font-weight:600;line-height:1.17;letter-spacing:-1.15px;overflow-wrap:anywhere;color:#eceeee}
+.auth-error{padding:11px 13px;border:1px solid #553d3d;border-radius:13px;background:#1b1414;color:#e0baba}
