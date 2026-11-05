@@ -4,6 +4,14 @@ import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, Arr
 import { masters, styles, workImage } from './data'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n) + ' ₽'
+const categories = [
+  { id: 'tattoo', title: 'Тату', subtitle: 'Эскизы и татуировки', mark: 'T' },
+  { id: 'nails', title: 'Ногти', subtitle: 'Маникюр и педикюр', mark: 'N' },
+  { id: 'brows', title: 'Брови и ресницы', subtitle: 'Форма, окрашивание, ламинирование', mark: 'B' },
+  { id: 'piercing', title: 'Пирсинг', subtitle: 'Украшения и проколы', mark: 'P' },
+  { id: 'makeup', title: 'Макияж', subtitle: 'Образы на каждый день и события', mark: 'M' }
+]
+const categoryLabels = Object.fromEntries(categories.map(item => [item.id, item.title]))
 const tabs = [
   { id: 'home', label: 'Главная', icon: Home },
   { id: 'catalog', label: 'Каталог', icon: Search },
@@ -41,24 +49,29 @@ function Header({ title, subtitle, back, action }) {
   </header>
 }
 
-function HomePage() {
-  return <main className="page-content home-page home-redesign">
-    <section className="home-intro home-intro-only">
-      <h1>Выбери своего мастера</h1>
-    </section>
+function HomePage({ introVisible, onSelectCategory }) {
+  if (introVisible) return <main className="page-content home-page home-redesign">
+    <section className="home-intro home-intro-only"><h1>Выбери своего мастера</h1></section>
+  </main>
+  return <main className="page-content home-page category-home">
+    <div className="category-heading"><span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
+    <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
+      <span className="category-mark">{item.mark}</span><span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><ChevronRight size={19}/>
+    </button>)}</div>
   </main>
 }
 
-function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList }) {
+function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack }) {
   const [query, setQuery] = useState('')
   const [style, setStyle] = useState('Все')
   const [sort, setSort] = useState('popular')
-  const filtered = useMemo(() => mastersList.filter(m => (m.name + m.studio + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (style === 'Все' || m.styles.includes(style))).sort((a,b)=>sort==='price' ? a.price-b.price : b.rating-a.rating), [mastersList, query, style, sort])
-  return <><Header title="Каталог мастеров" subtitle="КАЛИНИНГРАД"/>
+  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || style === 'Все' || m.styles.includes(style))).sort((a,b)=>sort==='price' ? a.price-b.price : b.rating-a.rating), [mastersList, category, query, style, sort])
+  const categoryName = categoryLabels[category] || 'Услуги'
+  return <><Header title={`Мастера · ${categoryName}`} subtitle="КАЛИНИНГРАД" back={onBack}/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="popular">По рейтингу</option><option value="price">Сначала дешевле</option></select></label></div>
-      <div className="tattoo-style-select"><label htmlFor="tattoo-style">Татуировки · стиль</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>
-      <div className="master-list catalog-list">{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Ничего не найдено</b><span>Попробуй изменить запрос или стиль</span></div>}</div>
+      {category === 'tattoo' && <div className="tattoo-style-select"><label htmlFor="tattoo-style">Стиль татуировки</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>}
+      <div className="master-list catalog-list">{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Пока нет мастеров</b><span>В этой категории ещё нет опубликованных анкет. Загляни позже.</span></div>}</div>
     </main></>
 }
 
@@ -108,13 +121,14 @@ function ProfilePage({ isMaster, connectionStatus, user, authLoading, onLogin, o
 
 
 function MasterRegistration({ onClose, onSubmit }) {
-  const [form, setForm] = useState({ public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0', starting_price: '' })
+  const [form, setForm] = useState({ category: 'tattoo', public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0', starting_price: '' })
   const [saving, setSaving] = useState(false)
   const update = (key, value) => setForm(old => ({ ...old, [key]: value }))
   const submit = async e => { e.preventDefault(); if (!form.public_name.trim()) return; setSaving(true); await onSubmit(form); setSaving(false) }
   return <div className="modal-backdrop"><form className="master-registration-modal" onSubmit={submit}>
     <button type="button" className="modal-close" onClick={onClose}><X size={20}/></button>
     <span className="eyebrow">MASTER HUB · АНКЕТА</span><h2>Регистрация мастера</h2><p>Заполни данные — анкета попадёт на модерацию и после одобрения появится в каталоге.</p>
+    <label>Направление<select value={form.category} onChange={e=>update('category',e.target.value)}>{categories.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
     <label>Имя или псевдоним<input required value={form.public_name} onChange={e=>update('public_name',e.target.value)} placeholder="Как тебя показывать клиентам"/></label>
     <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ"/></label>
     <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии"/></label>
@@ -126,6 +140,8 @@ function MasterRegistration({ onClose, onSubmit }) {
 
 export default function App() {
   const [active,setActive]=useState('home')
+  const [introVisible,setIntroVisible]=useState(true)
+  const [selectedCategory,setSelectedCategory]=useState('tattoo')
   const [selected,setSelected]=useState(null)
   const [bookingMaster,setBookingMaster]=useState(null)
   const [favorites,setFavorites]=useState([])
@@ -136,6 +152,7 @@ export default function App() {
   const [userRole,setUserRole]=useState('client')
   const [mastersList,setMastersList]=useState([])
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
+  useEffect(() => { const timer = window.setTimeout(() => setIntroVisible(false), 1500); return () => window.clearTimeout(timer) }, [])
   useEffect(() => {
     if (!supabase) return
     let active = true
@@ -187,7 +204,15 @@ export default function App() {
       const signedUser = sessionData?.user || data.session.user || null
       setUser(signedUser)
       return signedUser
-    } catch (error) { console.error('MASTER HUB Telegram auth:', error); setAuthError(error.message || 'Ошибка авторизации. Попробуй ещё раз.'); return null }
+    } catch (error) {
+      console.error('MASTER HUB Telegram auth:', error)
+      let message = error.message || 'Ошибка авторизации. Попробуй ещё раз.'
+      if (error?.context && typeof error.context.json === 'function') {
+        try { const payload = await error.context.json(); if (payload?.error) message = payload.error } catch {}
+      }
+      setAuthError(message)
+      return null
+    }
     finally { setAuthLoading(false) }
   }
   const startMasterRegistration = async () => {
@@ -202,7 +227,7 @@ export default function App() {
   const submitMasterRegistration = async form => {
     if (!supabase || !user) return
     setRegistrationStatus('Отправляем анкету…')
-    const payload = { user_id: user.id, public_name: form.public_name, bio: form.bio, studio_name: form.studio_name || null, city: 'Калининград', contact_telegram: form.contact_telegram || null, experience_years: Number(form.experience_years || 0), starting_price: Number(form.starting_price || 0), status: 'pending' }
+    const payload = { user_id: user.id, category: form.category, public_name: form.public_name, bio: form.bio, studio_name: form.studio_name || null, city: 'Калининград', contact_telegram: form.contact_telegram || null, experience_years: Number(form.experience_years || 0), starting_price: Number(form.starting_price || 0), status: 'pending' }
     const { error } = await supabase.from('masters').insert(payload)
     if (error) { setRegistrationStatus(error.message || 'Не удалось отправить анкету.'); return }
     const { error: roleError } = await supabase.from('profiles').update({ role: 'master' }).eq('id', user.id)
@@ -218,7 +243,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name))')
+        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, master_styles(styles(name))')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
@@ -229,6 +254,7 @@ export default function App() {
       }
       const liveMasters = (data || []).map(m => ({
         id: m.id,
+        category: m.category || 'tattoo',
         name: m.public_name,
         handle: m.contact_telegram || '',
         studio: m.studio_name || 'Частный мастер',
@@ -254,8 +280,8 @@ export default function App() {
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
-  else if(active==='home') content=<HomePage setActive={setActive} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
-  else if(active==='catalog') content=<CatalogPage openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
+  else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
+  else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
   else if(active==='bookings') content=<BookingsPage bookings={bookings}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else content=<ProfilePage isMaster={userRole==='master'} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
