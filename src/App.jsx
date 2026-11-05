@@ -126,13 +126,12 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
       if(file.size>5*1024*1024){setError('Размер каждого изображения — до 5 МБ.');return}
     }
     setError('')
-    setReferences(old=>[...old,...incoming.map(file=>({file,preview:URL.createObjectURL(file)}))])
+    setReferences(old=>[...old,...incoming])
   }
   const uploadReferences=async()=>{
     if(!user)throw new Error('Подключи Telegram, чтобы отправить заявку.')
     const urls=[]
-    for(const item of references){
-      const file=item.file
+    for(const file of references){
       const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
       const path=user.id+'/inquiry-'+crypto.randomUUID()+'.'+ext
       const {data,error}=await supabase.storage.from('masterhub-media').upload(path,file,{contentType:file.type,upsert:false})
@@ -159,7 +158,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <section className="inquiry-upload-section">
       <label className="upload-control inquiry-upload-control"><Upload size={17}/><span>Добавить фото и эскизы</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{addFiles(e.target.files);e.target.value=''}}/></label>
       <p className="muted-note">До 8 изображений · JPG, PNG или WebP · до 5 МБ каждое</p>
-      {references.length>0&&<div className="inquiry-reference-grid">{references.map((file,i)=><div className="inquiry-reference-thumb" key={i}><img src={file.preview} alt={file.file.name}/><button type="button" onClick={()=>{URL.revokeObjectURL(file.preview);setReferences(old=>old.filter((_,index)=>index!==i))}} aria-label="Убрать изображение"><X size={14}/></button><small>{file.file.name}</small></div>)}</div>}
+      {references.length>0&&<div className="inquiry-reference-grid">{references.map((file,i)=><div className="inquiry-reference-thumb" key={i}><img src={URL.createObjectURL(file)} alt={file.name}/><button type="button" onClick={()=>setReferences(old=>old.filter((_,index)=>index!==i))} aria-label="Убрать изображение"><X size={14}/></button><small>{file.name}</small></div>)}</div>}
     </section>
     {error&&<p className="auth-error">{error}</p>}
     <button className="primary-button full-button" disabled={saving||uploading||!references.length} onClick={submit}>{uploading?'Загружаем изображения…':saving?'Отправляем…':'Отправить материалы мастеру'} <ChevronRight size={17}/></button>
@@ -395,7 +394,7 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=async data=>{if(!user||!supabase)throw new Error('Подключи Telegram, чтобы отправить заявку.');setBookingSaving(true);const {error}=await supabase.from('master_inquiries').insert({client_id:user.id,master_id:data.master.id,reference_image_urls:data.referenceImageUrls||[],client_telegram:user.user_metadata?.username||null});setBookingSaving(false);if(error)throw error;return true}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку.');return false}setBookingSaving(true);const {error}=await supabase.from('master_inquiries').insert({client_id:user.id,master_id:data.master.id,reference_image_urls:data.referenceImageUrls||[]});setBookingSaving(false);if(error){setAuthError(error.message);return false}return true}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
