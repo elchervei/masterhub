@@ -307,8 +307,17 @@ export default function App() {
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
     }
     loadMasters()
-    return () => { active = false }
-  }, [])
+    const refreshMasters = () => {
+      if (document.visibilityState === 'visible') loadMasters()
+    }
+    window.addEventListener('focus', refreshMasters)
+    document.addEventListener('visibilitychange', refreshMasters)
+    return () => {
+      active = false
+      window.removeEventListener('focus', refreshMasters)
+      document.removeEventListener('visibilitychange', refreshMasters)
+    }
+  }, [active])
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
