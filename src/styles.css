@@ -129,3 +129,98 @@ body,.app-shell{background:#070708}
 .profile-card h2{font-size:22px}
 .profile-card span{color:#a79c9d}
 @media(max-width:360px){.home-intro{min-height:290px}.home-intro h1{font-size:38px}}
+
+
+/* MASTER HUB — refined rounded gothic */
+:root{
+  --bg:#09090b;--panel:#121215;--panel2:#19191d;
+  --purple:#7d2938;--lilac:#c4a7aa;--muted:#91888b;
+  --line:rgba(224,210,211,.11);--white:#f0e9e8;
+}
+html,body{background:#09090b}
+body{font-family:'Manrope',sans-serif;color:#eee8e7}
+.app-shell{background:radial-gradient(ellipse at 50% -15%,rgba(102,35,48,.17),transparent 48%),#09090b}
+.app-inner{background:transparent}
+.topbar{height:72px;padding:0 20px;background:rgba(9,9,11,.88);border-bottom:1px solid rgba(224,210,211,.09)}
+.brand-mark{font-family:'Cinzel',serif;font-size:12px;letter-spacing:2.6px}
+.brand-symbol{width:38px;height:38px;border-radius:50%;border:1px solid #68414a;background:#171114;color:#d2aeb2}
+.topbar-title strong{font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px}
+.icon-button{width:42px;height:42px;border-radius:50%;border:1px solid #30272a;background:#151416}
+.page-content{padding:22px 18px 34px}
+.home-intro,.hero-block{
+  min-height:0;padding:30px 24px 26px;border:1px solid rgba(185,139,146,.18);
+  border-radius:30px;background:linear-gradient(145deg,#1b1518 0%,#100e10 72%);
+  box-shadow:0 18px 50px rgba(0,0,0,.2);
+}
+.home-intro h1,.hero-block h1{font-family:'Cormorant Garamond',serif;font-size:clamp(39px,10vw,48px);line-height:.98;letter-spacing:-.4px;margin:22px 0 12px;font-weight:600}
+.home-intro h1 em,.hero-block h1 em{color:#c29a9f;font-style:normal}
+.home-intro p,.hero-block p{max-width:260px;color:#b4a9aa;font-size:12px;line-height:1.75}
+.hero-kicker,.eyebrow{font-size:9px;letter-spacing:2.1px;color:#b47c84}
+.home-orbit{width:174px;height:174px;right:-60px;top:34px;border:1px solid rgba(194,154,159,.15);border-radius:50%;opacity:.8}
+.home-orbit:before,.home-orbit:after{border-color:rgba(194,154,159,.13);border-radius:50%}
+.home-orbit span{font-family:'Cormorant Garamond',serif;color:rgba(194,154,159,.18)}
+.home-orbit i{background:#9a4654;box-shadow:0 0 18px rgba(154,70,84,.5)}
+.primary-button,.home-main-cta{
+  min-height:46px;padding:0 21px;border:1px solid rgba(190,124,135,.5);
+  border-radius:999px;background:linear-gradient(135deg,#74303c,#4e202a);
+  color:#f6eeee;font-size:10px;font-weight:700;letter-spacing:1.15px;
+  text-transform:uppercase;box-shadow:0 8px 26px rgba(76,28,38,.24)
+}
+.primary-button:active,.home-main-cta:active{transform:scale(.98)}
+.section-block,.home-masters-section{margin-top:32px}
+.section-heading{margin-bottom:16px}
+.section-heading h2{font-family:'Cormorant Garamond',serif;font-size:29px;font-weight:600}
+.text-link{color:#c49ba1}
+.home-category-card{
+  display:flex;flex-direction:row;align-items:center;gap:16px;margin-top:14px;
+  min-height:92px;padding:17px 19px;border:1px solid rgba(190,150,155,.16);
+  border-radius:24px;background:linear-gradient(110deg,#1b1518,#111012);
+}
+.home-category-card:before{content:'✳';width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border:1px solid #503139;border-radius:50%;color:#c39ba1;font-size:22px;background:#1c1316}
+.home-category-card>div{flex:1}
+.home-category-index{font-size:8px;color:#ad7b82;letter-spacing:2px}
+.home-category-title{font-family:'Cormorant Garamond',serif;font-size:27px;color:#eee5e4}
+.home-category-bottom{width:auto;min-width:65px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;border:0;padding:0;color:#a79a9b;font-size:9px}
+.home-empty{border:1px solid rgba(190,150,155,.13);border-radius:22px;background:#111012;padding:17px}
+.home-empty-mark,.avatar-placeholder,.profile-avatar{border-radius:50%;background:#211619;border:1px solid #68414a;color:#d4aeb3}
+.master-card,.profile-card,.profile-menu,.booking-card,.booking-master,.option,.date-cell,.time-slot,.search-box,.tattoo-style-select,.profile-register-master{
+  border:1px solid rgba(224,210,211,.12);border-radius:22px;background:#121215;
+}
+.master-card{overflow:hidden}
+.master-photo{height:185px}
+.master-card-body{padding:16px}
+.master-name{font-family:'Cormorant Garamond',serif;font-size:24px}
+.favorite-button{width:38px;height:38px;border-radius:50%;border:1px solid #35282c;background:#191417}
+.style-tag{border-radius:999px;padding:6px 10px;background:#1c1417;border:1px solid #493037;color:#d0b5b8}
+.search-box{height:50px;border-radius:999px;padding:0 17px}
+.filter-chip{border-radius:999px;padding:8px 14px;background:#141316;border-color:#332a2d}
+.filter-chip.selected,.date-cell.selected,.time-slot.selected,.option.selected{background:#4a2029;border-color:#98515e;color:#fff0f0}
+.detail-cover{border-radius:0 0 28px 28px;overflow:hidden}
+.detail-identity h1,.booking-card h3,.profile-card h2{font-family:'Cormorant Garamond',serif}
+.detail-identity h1{font-size:31px}
+.detail-tabs button.selected{color:#d0a1a7;border-color:#9d5964}
+.booking-master{border-radius:22px;padding:13px}
+.booking-master img{border-radius:16px}
+.option{padding:15px 16px;border-radius:17px}
+.date-cell{height:66px;border-radius:17px}
+.time-slot{border-radius:999px;padding:12px}
+.booking-card{padding:19px;border-radius:22px}
+.profile-card{padding:18px;border-radius:24px}
+.profile-menu{overflow:hidden;border-radius:22px}
+.profile-menu button{padding:16px;border-bottom-color:rgba(224,210,211,.09)}
+.menu-icon{width:34px;height:34px;border-radius:50%;background:#211619;color:#c99da3}
+.profile-register-master{padding:17px;border-radius:22px;background:linear-gradient(110deg,#1c1417,#121113);border-color:#56343b}
+.profile-register-master>svg{width:23px;height:23px;color:#d0a2a7}
+.master-registration-modal{border:1px solid #50343a;border-radius:28px;background:#121114;padding:27px 20px}
+.master-registration-modal input,.master-registration-modal textarea{border:1px solid #392b2f;border-radius:15px;background:#0c0b0d;padding:14px}
+.modal-close{width:34px;height:34px;border-radius:50%;background:#211619}
+.bottom-nav{
+  height:82px;padding:9px 8px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(13,12,14,.94);border-top:1px solid rgba(224,210,211,.1);
+  border-radius:24px 24px 0 0;box-shadow:0 -12px 38px rgba(0,0,0,.3)
+}
+.nav-item{font-size:9px;gap:6px}
+.nav-item.active{color:#d1a3a8}
+.nav-item.active svg{filter:drop-shadow(0 0 8px rgba(177,103,114,.25))}
+@media(min-width:600px){.bottom-nav{border-radius:24px 24px 0 0}}
+@media(max-width:360px){.page-content{padding-left:14px;padding-right:14px}.home-intro,.hero-block{padding:25px 19px;border-radius:25px}.home-intro h1,.hero-block h1{font-size:38px}.home-category-card{padding:14px;border-radius:20px}.master-photo{height:160px}}
