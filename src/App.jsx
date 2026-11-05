@@ -197,7 +197,9 @@ export default function App() {
       if (!active) return
       const existingUser = data.session?.user || null
       setUser(existingUser)
-      if (existingUser) return
+      // Telegram WebView can be opened by a different Telegram account while
+      // Supabase still has the previous account's persisted session. Always
+      // exchange the current WebApp initData so the active Telegram ID wins.
       const tryTelegramAuth = () => {
         const initData = window.Telegram?.WebApp?.initData
         if (!active || attempted || !initData) return
