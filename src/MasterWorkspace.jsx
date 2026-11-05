@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BriefcaseBusiness, ImagePlus, Plus, Trash2, CalendarClock, CalendarDays, Check, X, Upload, Clock3, Send } from 'lucide-react'
+import { BriefcaseBusiness, ImagePlus, Plus, Trash2, CalendarClock, CalendarDays, Check, X, Upload, Clock3, Send, House } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
 const localDate = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` }
 const monthLabel = d => d.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})
 
-export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, onOpenRegistration }) {
+export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, onOpenRegistration, onBackToMenu }) {
   const [master,setMaster]=useState(null),[services,setServices]=useState([]),[works,setWorks]=useState([]),[bookings,setBookings]=useState([]),[slots,setSlots]=useState([]),[selectedBooking,setSelectedBooking]=useState(null)
   const [serviceTitle,setServiceTitle]=useState('Татуировка'),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('120')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
@@ -80,7 +80,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     return free===0?'full':free===daySlots.length?'free':'partial'
   }
   return <>
-    <header className="topbar"><div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div><div className="topbar-title"><strong>Кабинет мастера</strong><small>УПРАВЛЕНИЕ ПРОФИЛЕМ</small></div><BriefcaseBusiness size={19}/></header>
+    <header className="topbar"><div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div><div className="topbar-title"><strong>Кабинет мастера</strong><small>УПРАВЛЕНИЕ ПРОФИЛЕМ</small></div><button type="button" className="workspace-home-button" onClick={onBackToMenu}><House size={15}/> Меню</button></header>
     <main className="page-content master-workspace">
       {isAdmin&&<section className="role-preview-switch"><span className="eyebrow">РЕЖИМ ПРОСМОТРА · ТОЛЬКО ВЛАДЕЛЕЦ</span><div><button className={viewMode==="client"?"selected":""} onClick={()=>setViewMode("client")}>Я клиент</button><button className={viewMode==="master"?"selected":""} onClick={()=>setViewMode("master")}>Я мастер</button></div><small>Реальная роль администратора не меняется.</small></section>}
       {loading?<div className="empty-state">Загружаем кабинет…</div>:!master?<div className="workspace-empty"><BriefcaseBusiness size={30}/><h2>Профиль мастера ещё не создан</h2><p>Создай анкету, чтобы управлять фотографиями, свободными интервалами и записями.</p><button className="primary-button" onClick={onOpenRegistration}>Создать анкету мастера</button></div>:<>
