@@ -404,7 +404,7 @@ export default function App() {
         name: m.public_name,
         handle: m.contact_telegram || '',
         studio: m.studio_name || 'Частный мастер',
-        rating: Number(m.rating || 0),
+        rating: (m.reviews||[]).length ? Number(((m.reviews||[]).reduce((sum,item)=>sum+Number(item.rating||0),0)/(m.reviews||[]).length).toFixed(1)) : Number(m.rating || 0),
         reviews: (m.reviews||[]).length || Number(m.reviews_count || 0),
         reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
         workCaptions: (m.portfolio_items||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.caption||''),
