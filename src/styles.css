@@ -1220,3 +1220,28 @@ img{max-width:100%}
   .master-workspace .booking-inbox-section .booking-inbox-card,
   .master-workspace .inquiry-inbox-section .booking-inbox-card{transition:none}
 }
+
+
+/* Client bookings — compact studio cards */
+.client-booking-card{position:relative;overflow:hidden;margin:0 0 13px;padding:16px!important;border:1px solid rgba(180,139,220,.19)!important;border-radius:20px!important;background:radial-gradient(ellipse at 100% 0%,rgba(119,67,157,.16),transparent 48%),linear-gradient(145deg,#19151f,#111116 72%)!important;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.client-booking-card:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:2px;border-radius:4px;background:#8d5ab7;opacity:.9}
+.client-booking-top{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:13px}
+.client-booking-kicker{color:#a99bb2;font-size:8px;font-weight:800;letter-spacing:.16em}
+.client-booking-status{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid rgba(174,139,203,.2);border-radius:30px;background:rgba(126,83,155,.12);color:#d5b7ec;font-size:9px;font-weight:700;white-space:nowrap}
+.client-booking-status i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.client-booking-status.confirmed{color:#a8d7b4;border-color:rgba(120,190,139,.2);background:rgba(65,130,82,.12)}
+.client-booking-status.pending,.client-booking-status.price_proposed{color:#e5c18b;border-color:rgba(220,177,112,.2);background:rgba(155,112,51,.12)}
+.client-booking-status.cancelled,.client-booking-status.declined{color:#d99a9a;border-color:rgba(205,112,112,.2);background:rgba(145,57,57,.12)}
+.client-booking-status.completed{color:#b7a0d4}
+.client-booking-card h3{margin:0 0 5px!important;color:#f3edf7;font-size:19px!important;font-weight:800;letter-spacing:-.35px}
+.client-booking-card .client-booking-note{margin:0 0 13px!important;color:#a99eaf;font-size:11px;line-height:1.45}
+.client-booking-datetime{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(178,143,203,.13);border-radius:13px;background:rgba(8,7,12,.38);color:#c99ce9}
+.client-booking-datetime span{display:flex;flex-direction:column;gap:3px}
+.client-booking-datetime b{color:#eee5f4;font-size:12px}
+.client-booking-datetime small{color:#a99bb0;font-size:10px}
+.client-booking-card .client-reference-link{margin-top:11px}
+.client-booking-card .client-price-offer{border-color:rgba(178,139,213,.23);background:rgba(100,65,130,.13)}
+.client-booking-card .client-price-offer>span{color:#c1a6d5}
+.client-booking-card .client-price-offer>strong{color:#ead8f8}
+.client-booking-card .review-editor{border-color:rgba(178,139,213,.18)}
+@media(max-width:420px){.client-booking-card{padding:14px!important;border-radius:17px!important}.client-booking-card h3{font-size:17px!important}.client-booking-status{font-size:8px;padding:5px 7px}}
