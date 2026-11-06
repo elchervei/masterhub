@@ -278,12 +278,17 @@ img{max-width:100%}
   background:linear-gradient(145deg,rgba(57,68,63,.35),rgba(21,25,25,.7));
   box-shadow:inset 0 1px rgba(255,255,255,.035)
 }
-.pixel-art{width:58px;height:62px;overflow:visible;filter:drop-shadow(0 4px 5px rgba(0,0,0,.28))}
+.category-theme-icon{width:35px;height:35px;filter:drop-shadow(0 3px 7px rgba(0,0,0,.28))}
+.category-theme-tattoo{color:#d0b0e9}
+.category-theme-nails{color:#d7a6bd}
+.category-theme-brows{color:#c6b7a2}
+.category-theme-piercing{color:#c7c1e8}
+.category-theme-makeup{color:#d9a58e}
 .category-choice>svg{position:relative;z-index:1;margin-left:1px;color:#89938e}
 @media(max-width:360px){
  .category-choice{min-height:94px;padding:12px}
  .category-art{width:67px;height:67px;flex-basis:67px}
- .pixel-art{width:53px;height:57px}
+ .category-theme-icon{width:32px;height:32px}
  .category-copy small{max-width:150px}
 }
 
