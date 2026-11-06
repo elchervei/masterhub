@@ -11,27 +11,69 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [inquiries,setInquiries]=useState([]),[selectedInquiry,setSelectedInquiry]=useState(null),[inquiryImage,setInquiryImage]=useState('')
   const [serviceTitle,setServiceTitle]=useState('Татуировка'),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('120')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
-  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false),[copiedLink,setCopiedLink]=useState(false)
+  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('week')
   const load=async()=>{
-    if(!supabase||!user)return
-    setLoading(true)
-    const {data:current}=await supabase.from('masters').select('id,slug,public_name,status,category,cover_image_url,deposit_enabled,deposit_amount').eq('user_id',user.id).maybeSingle()
-    setMaster(current||null)
-    if(current){
+    if(!supabase||!user){setLoading(false);return}
+    setLoading(true);setError('')
+    try{
+      const {data:current,error:masterError}=await supabase.from('masters')
+        .select('id,slug,public_name,bio,studio_name,city,contact_telegram,experience_years,starting_price,status,category,cover_image_url,deposit_enabled,deposit_amount,rating,reviews_count')
+        .eq('user_id',user.id).maybeSingle()
+      if(masterError)throw masterError
+      setMaster(current||null)
+      if(!current){setServices([]);setWorks([]);setBookings([]);setSlots([]);setInquiries([]);return}
+      setProfileDraft({
+        public_name:current.public_name||'',
+        bio:current.bio||'',
+        studio_name:current.studio_name||'',
+        city:current.city||'Калининград',
+        contact_telegram:current.contact_telegram||'',
+        experience_years:String(current.experience_years??0),
+        starting_price:String(current.starting_price??0)
+      })
       const [sv,pf,bk,sl,iq]=await Promise.all([
         supabase.from('services').select('*').eq('master_id',current.id).order('created_at',{ascending:false}),
         supabase.from('portfolio_items').select('*').eq('master_id',current.id).order('sort_order'),
         supabase.from('bookings').select('*').eq('master_id',current.id).order('starts_at'),
-        supabase.from('master_time_slots').select('*').eq('master_id',current.id) .gte('slot_date',localDate(new Date())).order('slot_date').order('starts_at'),
+        supabase.from('master_time_slots').select('*').eq('master_id',current.id).gte('slot_date',localDate(new Date())).order('slot_date').order('starts_at'),
         supabase.from('master_inquiries').select('*').eq('master_id',current.id).order('created_at',{ascending:false})
       ])
+      const firstError=[sv,pf,bk,sl,iq].find(result=>result.error)?.error
+      if(firstError)setError(firstError.message||'Не удалось загрузить часть данных кабинета.')
       setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bk.data||[]);setSlots(sl.data||[]);setInquiries(iq.data||[])
-      setError(sv.error?.message||pf.error?.message||bk.error?.message||sl.error?.message||iq.error?.message||'')
-    }
-    setLoading(false)
+    }catch(loadError){
+      setError(loadError?.message||'Не удалось загрузить кабинет. Попробуй обновить экран.')
+    }finally{setLoading(false)}
   }
   useEffect(()=>{let live=true;let channel=null;const start=async()=>{await load();if(!supabase||!user)return;const {data:current}=await supabase.from('masters').select('id').eq('user_id',user.id).maybeSingle();if(live&&current)channel=supabase.channel('master-bookings-'+current.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings',filter:'master_id=eq.'+current.id},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'master_inquiries',filter:'master_id=eq.'+current.id},()=>load()).subscribe()};start();const handler=()=>load();window.addEventListener('masterhub:master-created',handler);return()=>{live=false;window.removeEventListener('masterhub:master-created',handler);if(channel)supabase.removeChannel(channel)}},[user?.id])
+  const saveMasterProfile=async e=>{
+    e.preventDefault()
+    if(!master||profileSaving)return
+    const experience=Math.max(0,Number(profileDraft.experience_years||0))
+    const price=Math.max(0,Number(profileDraft.starting_price||0))
+    if(!profileDraft.public_name.trim()||!Number.isFinite(experience)||!Number.isFinite(price)){
+      setError('Проверь имя, опыт и стартовую стоимость.')
+      return
+    }
+    setProfileSaving(true);setError('')
+    const payload={
+      public_name:profileDraft.public_name.trim().slice(0,50),
+      bio:profileDraft.bio.trim().slice(0,500),
+      studio_name:profileDraft.studio_name.trim().slice(0,80)||null,
+      city:profileDraft.city.trim().slice(0,60)||'Калининград',
+      contact_telegram:profileDraft.contact_telegram.trim().replace(/^@/,'').slice(0,32)||null,
+      experience_years:Math.floor(experience),
+      starting_price:Math.floor(price)
+    }
+    const {data,error:updateError}=await supabase.from('masters').update(payload).eq('id',master.id)
+      .select('id,public_name,bio,studio_name,city,contact_telegram,experience_years,starting_price').maybeSingle()
+    setProfileSaving(false)
+    if(updateError){setError(updateError.message);return}
+    if(!data){setError('Не удалось сохранить профиль. Проверь доступ к анкете и попробуй ещё раз.');return}
+    setMaster(old=>({...old,...data}))
+    setNote('Профиль мастера сохранён.')
+  }
   const uploadImage=async(file,kind)=>{
     if(!file||!master)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Поддерживаются только JPG, PNG и WebP.');return}
@@ -70,7 +112,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const addService=async e=>{
     e.preventDefault();if(!master||!serviceTitle.trim())return
     const price=Number(servicePrice),duration=Number(serviceDuration||120)
-    if(!Number.isFinite(price)||price<0||!Number.isFinite(duration)||duration<15){setError('Проверь стоимость и длительность услуги.');return}
+    if(!Number.isFinite(price)||price<0||!Number.isFinite(duration)||duration<15||duration>1440){setError('Проверь стоимость и длительность услуги.');return}
     const {error}=await supabase.from('services').insert({master_id:master.id,title:serviceTitle.trim().slice(0,80),price_from:price,duration_minutes:duration,is_active:true})
     if(error)setError(error.message);else{setServicePrice('');setServiceTitle('Татуировка');await load()}
   }
@@ -92,7 +134,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     const {error}=await supabase.from('master_time_slots').delete().eq('id',slot.id)
     if(error)setError(error.message);else load()
   }
-  const updateBooking=async(id,status)=>{const {error}=await supabase.from('bookings').update({status}).eq('id',id);if(error){setError(error.message);return false}await load();return true}
+  const updateBooking=async(id,status)=>{const expectedStatus=selectedBooking?.status;if(!expectedStatus)return false;const {data,error}=await supabase.from('bookings').update({status}).eq('id',id).eq('status',expectedStatus).select('id').maybeSingle();if(error){setError(error.message);return false}if(!data){setError('Статус заявки уже изменился. Обнови список записей.');await load();return false}await load();return true}
   const acceptBooking=async()=>{if(!selectedBooking)return;const ok=await updateBooking(selectedBooking.id,'confirmed');if(ok)setSelectedBooking(null)}
   const sendPriceQuote=async()=>{if(!selectedBooking)return;const amount=Number(quotePrice);if(!Number.isFinite(amount)||amount<=0){setError('Укажи стоимость больше нуля.');return}setQuoteSaving(true);setError('');const {error}=await supabase.from('bookings').update({status:'price_proposed',proposed_price:amount,master_message:quoteMessage.trim().slice(0,300)}).eq('id',selectedBooking.id).eq('status','pending');setQuoteSaving(false);if(error){setError(error.message);return}setSelectedBooking(null);setQuotePrice('');setQuoteMessage('');await load()}
   const selectedSlots=slots.filter(s=>s.slot_date===selectedDate)
@@ -142,6 +184,15 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
           </section>
           {showProfileTools&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">НАСТРОЙКИ ПРОФИЛЯ</span><h3>Управление анкетой</h3></div><button type="button" onClick={()=>setShowProfileTools(false)}>Свернуть</button></div>
+            <form className="workspace-section workspace-profile-form" onSubmit={saveMasterProfile}>
+              <div className="workspace-form-heading"><span className="workspace-section-icon"><UserRound size={17}/></span><div><h3>Основная информация</h3><p>То, что увидят клиенты в твоей анкете</p></div></div>
+              <label>Имя или псевдоним<input required maxLength={50} value={profileDraft.public_name} onChange={e=>setProfileDraft(old=>({...old,public_name:e.target.value}))}/></label>
+              <label>О себе<textarea maxLength={500} rows={3} value={profileDraft.bio} onChange={e=>setProfileDraft(old=>({...old,bio:e.target.value}))} placeholder="Опыт, стиль и особенности твоих работ"/></label>
+              <div className="workspace-form-grid"><label>Студия<input maxLength={80} value={profileDraft.studio_name} onChange={e=>setProfileDraft(old=>({...old,studio_name:e.target.value}))} placeholder="Название студии"/></label><label>Город<input maxLength={60} value={profileDraft.city} onChange={e=>setProfileDraft(old=>({...old,city:e.target.value}))}/></label></div>
+              <label>Telegram для связи<input maxLength={32} autoCapitalize="none" autoCorrect="off" value={profileDraft.contact_telegram} onChange={e=>setProfileDraft(old=>({...old,contact_telegram:e.target.value}))} placeholder="@username"/></label>
+              <div className="workspace-form-grid"><label>Опыт, лет<input type="number" min="0" max="80" step="1" value={profileDraft.experience_years} onChange={e=>setProfileDraft(old=>({...old,experience_years:e.target.value}))}/></label><label>Стартовая цена, ₽<input type="number" min="0" step="100" value={profileDraft.starting_price} onChange={e=>setProfileDraft(old=>({...old,starting_price:e.target.value}))}/></label></div>
+              <button className="primary-button full-button" disabled={profileSaving}>{profileSaving?'Сохраняем…':'Сохранить информацию'}</button>
+            </form>
             <section className="workspace-section"><h3><Images size={17}/> Обложка профиля</h3>{master.cover_image_url&&<img className="master-cover-preview" src={master.cover_image_url} alt="Обложка профиля"/>}<label className="upload-control"><CloudUpload size={16}/>{uploading?'Загружаем…':master.cover_image_url?'Заменить фотографию':'Загрузить фотографию'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={e=>uploadImage(e.target.files?.[0],'cover')}/></label><p className="muted-note">Эта фотография будет показываться в карточке и в профиле мастера.</p></section>
             <section className="workspace-section"><h3><Images size={17}/> Работы / татуировки</h3><label className="upload-control"><Plus size={16}/> Добавить фото работы<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={e=>uploadImage(e.target.files?.[0],'work')}/></label><div className="workspace-works">{works.map(w=><div key={w.id}><img src={w.image_path} alt={w.caption||'Работа мастера'}/><button type="button" onClick={()=>removeWork(w.id)} aria-label="Удалить работу"><Trash2 size={14}/></button><input className="portfolio-caption-input" defaultValue={w.caption||''} maxLength={120} placeholder="Подпись: стиль, размер, детали" onBlur={e=>saveWorkCaption(w,e.target.value)}/></div>)}</div>{!works.length&&<p className="muted-note">Портфолио пока пустое.</p>}</section>
             <section className="workspace-section"><h3><UserRound size={17}/> Цена за татуировку</h3><form className="service-add-form" onSubmit={addService}><input type="text" maxLength="80" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)} placeholder="Название услуги"/><div><input type="number" min="0" required value={servicePrice} onChange={e=>setServicePrice(e.target.value)} placeholder="Цена от, ₽"/><input type="number" min="15" step="15" value={serviceDuration} onChange={e=>setServiceDuration(e.target.value)} placeholder="Минут"/></div><button className="primary-button full-button">Добавить стоимость</button></form><div className="workspace-service-list">{services.map(s=><div key={s.id}><span>{s.title}<small>{s.duration_minutes} мин.</small></span><b>{money(s.price_from)}</b><button className="mini-delete" onClick={()=>deleteService(s.id)} aria-label="Удалить стоимость"><Trash2 size={14}/></button></div>)}</div></section>
