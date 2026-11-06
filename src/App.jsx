@@ -28,11 +28,11 @@ class RenderErrorBoundary extends Component {
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n) + ' ₽'
 const categories = [
-  { id: 'tattoo', title: 'Тату', subtitle: 'Эскизы и татуировки', image: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=320&q=82', position: 'center' },
-  { id: 'nails', title: 'Ногти', subtitle: 'Маникюр и педикюр', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=320&q=82', position: 'center' },
-  { id: 'brows', title: 'Брови и ресницы', subtitle: 'Форма, окрашивание, ламинирование', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=320&q=82', position: 'center' },
-  { id: 'piercing', title: 'Пирсинг', subtitle: 'Украшения и проколы', image: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=320&q=82', position: 'center' },
-  { id: 'makeup', title: 'Макияж', subtitle: 'Образы на каждый день и события', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=320&q=82', position: 'center' }
+  { id: 'tattoo', title: 'Тату', subtitle: 'Эскизы и татуировки' },
+  { id: 'nails', title: 'Ногти', subtitle: 'Маникюр и педикюр' },
+  { id: 'brows', title: 'Брови и ресницы', subtitle: 'Форма, окрашивание, ламинирование' },
+  { id: 'piercing', title: 'Пирсинг', subtitle: 'Украшения и проколы' },
+  { id: 'makeup', title: 'Макияж', subtitle: 'Образы на каждый день и события' }
 ]
 const categoryLabels = Object.fromEntries(categories.map(item => [item.id, item.title]))
 const tabs = [
@@ -102,7 +102,7 @@ function HomePage({ introVisible, onSelectCategory }) {
   return <main className="page-content home-page category-home">
     <div className="category-heading"><span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
     <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
-      <span className="category-art"><img src={item.image} alt="" loading="lazy" decoding="async" style={{objectPosition:item.position}}/><i aria-hidden="true"/></span><span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><ChevronRight size={19}/>
+      <span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><span className="category-art"><CategoryIcon type={item.id}/></span><ChevronRight size={19}/>
     </button>)}</div>
   </main>
 }
