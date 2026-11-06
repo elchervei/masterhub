@@ -1,6 +1,6 @@
 import { Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
-import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, HeartCrack, Eye, Gem, WandSparkles } from 'lucide-react'
+import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
 import { masters, styles, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
@@ -88,11 +88,11 @@ function Header({ title, subtitle, back, action }) {
   </header>
 }
 
-const categoryIcons = { tattoo: HeartCrack, nails: Sparkles, brows: Eye, piercing: Gem, makeup: WandSparkles }
+const categoryIcons = { tattoo: PenTool, nails: Hand, brows: Eye, piercing: CircleDot, makeup: Brush }
 
 function CategoryIcon({ type }) {
   const Icon = categoryIcons[type] || PenTool
-  return <Icon className={`category-theme-icon category-theme-${type}`} size={25} strokeWidth={1.7} aria-hidden="true" />
+  return <Icon className="category-theme-icon" size={23} strokeWidth={1.65} aria-hidden="true" />
 }
 
 function HomePage({ introVisible, onSelectCategory }) {
@@ -102,7 +102,7 @@ function HomePage({ introVisible, onSelectCategory }) {
   return <main className="page-content home-page category-home">
     <div className="category-heading"><span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
     <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
-      <span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><span className="category-art"><CategoryIcon type={item.id}/></span><ChevronRight size={19}/>
+      <span className="category-art"><CategoryIcon type={item.id}/></span><span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><ChevronRight size={19}/>
     </button>)}</div>
   </main>
 }
