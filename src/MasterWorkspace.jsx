@@ -65,7 +65,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       bio:profileDraft.bio.trim().slice(0,500),
       studio_name:profileDraft.studio_name.trim().slice(0,80)||null,
       city:profileDraft.city.trim().slice(0,60)||'Калининград',
-      contact_telegram:(()=>{const raw=profileDraft.contact_telegram.trim();const username=raw.replace(/^https?:\\/\\/(www\\.)?(t\\.me|telegram\\.me)\\//i,'').replace(/^(t\\.me|telegram\\.me)\\//i,'').replace(/^@/,'').split(/[/?#]/)[0];return /^[a-zA-Z0-9_]{5,32}$/.test(username)?username:null})(),
+      contact_telegram:(()=>{const raw=profileDraft.contact_telegram.trim();const lower=raw.toLowerCase();const prefixes=['https://t.me/','http://t.me/','https://www.t.me/','https://telegram.me/','http://telegram.me/','t.me/','telegram.me/'];const prefix=prefixes.find(item=>lower.startsWith(item));const username=(prefix?raw.slice(prefix.length):raw).replace(/^@/,'').split(/[/?#]/)[0];return /^[a-zA-Z0-9_]{5,32}$/.test(username)?username:null})(),
       experience_years:Math.floor(experience)
     }
     const {data,error:updateError}=await supabase.from('masters').update(payload).eq('id',master.id)
