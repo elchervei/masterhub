@@ -7,7 +7,7 @@ const telegramUsername = value => {
   const prefixes=['https://t.me/','http://t.me/','https://www.t.me/','https://telegram.me/','http://telegram.me/','t.me/','telegram.me/']
   const prefix=prefixes.find(item=>lower.startsWith(item))
   const username=(prefix?raw.slice(prefix.length):raw).replace(/^@/,'').split(/[/?#]/)[0]
-  return /^[a-zA-Z0-9_]{5,32}$/.test(username)?username:''
+  return /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/.test(username)?username:''
 }
 const categoryNames = { tattoo: 'татуировки', nails: 'ногти и педикюр', brows: 'брови и ресницы', piercing: 'пирсинг', makeup: 'макияж' }
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
