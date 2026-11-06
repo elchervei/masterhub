@@ -45,7 +45,8 @@ const tabs = [
 
 function MasterCard({ master, favorite, onFavorite, onOpen }) {
   return <article className="master-card">
-    <button className="master-photo" onClick={onOpen} style={{ backgroundImage: master.image ? `url(${master.image})` : undefined }} aria-label={`Открыть профиль ${master.name}`}>
+    <button className={`master-photo ${master.image ? 'has-image' : 'no-image'}`} onClick={onOpen} aria-label={`Открыть профиль ${master.name}`}>
+      {master.image ? <img src={master.image} alt="" loading="lazy" decoding="async" /> : <span className="master-photo-placeholder">MASTER HUB</span>}
       <span className="photo-tag"><span className="online-dot" /> Принимает записи</span>
     </button>
     <div className="master-card-body">
@@ -61,6 +62,13 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
   </article>
 }
 
+function MasterCardSkeleton({ count = 3 }) {
+  return Array.from({ length: count }, (_, index) => <article className="master-card master-card-skeleton" key={index} aria-hidden="true">
+    <div className="skeleton-photo" />
+    <div className="master-card-body"><div className="skeleton-line wide"/><div className="skeleton-line medium"/><div className="skeleton-tags"><i/><i/><i/></div><div className="skeleton-line short"/></div>
+  </article>)
+}
+
 function BottomNav({ active, setActive, isAdmin, isMaster }) {
   const masterTabs = [
     { id: 'profile', label: 'Кабинет', icon: ContactRound },
@@ -69,7 +77,7 @@ function BottomNav({ active, setActive, isAdmin, isMaster }) {
     { id: 'home', label: 'Клиент', icon: Home }
   ]
   const visibleTabs = isMaster ? masterTabs : isAdmin ? [...tabs, { id: 'admin', label: 'Заявки', icon: ClipboardList }] : tabs
-  return <nav className="bottom-nav">{visibleTabs.map(({ id, label, icon: Icon }) => <button key={id} className={active === id ? 'nav-item active' : 'nav-item'} onClick={() => setActive(id)}><Icon size={19} strokeWidth={active === id ? 2.2 : 1.7} /><span>{label}</span></button>)}</nav>
+  return <nav className="bottom-nav" aria-label="Основная навигация" style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>{visibleTabs.map(({ id, label, icon: Icon }) => <button key={id} type="button" aria-current={active === id ? 'page' : undefined} className={active === id ? 'nav-item active' : 'nav-item'} onClick={() => setActive(id)}><Icon size={18} strokeWidth={active === id ? 2.25 : 1.7} /><span>{label}</span></button>)}</nav>
 }
 
 function Header({ title, subtitle, back, action }) {
@@ -99,7 +107,7 @@ function HomePage({ introVisible, onSelectCategory }) {
   </main>
 }
 
-function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack }) {
+function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack, loading }) {
   const [query, setQuery] = useState('')
   const [style, setStyle] = useState('Все')
   const [sort, setSort] = useState('popular')
@@ -109,7 +117,7 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, categ
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="popular">По рейтингу</option><option value="price">Сначала дешевле</option></select></label></div>
       {category === 'tattoo' && <div className="tattoo-style-select"><label htmlFor="tattoo-style">Стиль татуировки</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>}
-      <div className="master-list catalog-list">{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>)}{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Пока нет мастеров</b><span>В этой категории ещё нет опубликованных анкет. Загляни позже.</span></div>}</div>
+      <div className="master-list catalog-list">{loading ? <MasterCardSkeleton count={3}/> : <>{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>) }{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Пока нет мастеров</b><span>В этой категории ещё нет опубликованных анкет. Загляни позже.</span></div>}</>}</div>
     </main></>
 }
 
@@ -272,6 +280,7 @@ export default function App() {
   const [authError,setAuthError]=useState('')
   const [userRole,setUserRole]=useState('client')
   const [mastersList,setMastersList]=useState([])
+  const [mastersLoading,setMastersLoading]=useState(true)
   const [viewMode,setViewMode]=useState('client')
   const [bookingSaving,setBookingSaving]=useState(false)
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
@@ -384,48 +393,64 @@ export default function App() {
   }
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(null); setUserRole('client') }
   useEffect(() => {
-    let active = true
-    async function loadMasters() {
-      if (!supabase) return
-      const { data, error } = await supabase
-        .from('masters')
-        .select('id, slug, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, cover_image_url, master_styles(styles(name)), portfolio_items(image_path,caption,sort_order), services(id,title,description,price_from,duration_minutes,is_active), reviews(id,rating,body,created_at), master_time_slots(slot_date,starts_at,is_active)')
-        .eq('status', 'approved')
-        .order('rating', { ascending: false })
-      if (!active) return
-      if (error) {
-        setConnectionStatus('ошибка чтения базы')
-        console.error('MASTER HUB Supabase:', error.message)
+    let live = true
+    let requestInFlight = false
+    const loadMasters = async () => {
+      if (!supabase || requestInFlight) {
+        if (!supabase) setMastersLoading(false)
         return
       }
-      const liveMasters = (data || []).map(m => ({
-        id: m.id,
-        category: m.category || 'tattoo',
-        name: m.public_name,
-        handle: m.contact_telegram || '',
-        studio: m.studio_name || 'Частный мастер',
-        rating: (m.reviews||[]).length ? Number(((m.reviews||[]).reduce((sum,item)=>sum+Number(item.rating||0),0)/(m.reviews||[]).length).toFixed(1)) : Number(m.rating || 0),
-        reviews: (m.reviews||[]).length || Number(m.reviews_count || 0),
-        reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
-        workCaptions: (m.portfolio_items||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.caption||''),
-        slug: m.slug,
-        price: Number(m.starting_price || 0),
-        styles: (m.master_styles || []).map(item => item.styles?.name).filter(Boolean),
-        city: m.city || 'Калининград',
-        about: m.bio || '',
-        experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
-        image: m.cover_image_url || m.portfolio_items?.[0]?.image_path || '',
-        works: (m.portfolio_items || []).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.image_path),
-        nextAvailable: (m.master_time_slots||[]).filter(slot=>slot.is_active && new Date(slot.starts_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))[0]?.starts_at || '',
-        services: (m.services || []).filter(service=>service.is_active)
-      }))
-      setMastersList(liveMasters)
-      const requestedSlug = new URLSearchParams(window.location.search).get('master')
-      if (requestedSlug) {
-        const publicMaster = liveMasters.find(item=>item.slug===requestedSlug)
-        if (publicMaster) setSelected(publicMaster)
+      requestInFlight = true
+      setMastersLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('masters')
+          .select('id, slug, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, cover_image_url, master_styles(styles(name)), portfolio_items(image_path,caption,sort_order), services(id,title,description,price_from,duration_minutes,is_active), reviews(id,rating,body,created_at), master_time_slots(slot_date,starts_at,is_active)')
+          .eq('status', 'approved')
+          .order('rating', { ascending: false })
+        if (!live) return
+        if (error) {
+          setConnectionStatus('ошибка чтения базы')
+          console.error('MASTER HUB Supabase:', error.message)
+          return
+        }
+        const liveMasters = (data || []).map(m => ({
+          id: m.id,
+          category: m.category || 'tattoo',
+          name: m.public_name,
+          handle: m.contact_telegram || '',
+          studio: m.studio_name || 'Частный мастер',
+          rating: (m.reviews||[]).length ? Number(((m.reviews||[]).reduce((sum,item)=>sum+Number(item.rating||0),0)/(m.reviews||[]).length).toFixed(1)) : Number(m.rating || 0),
+          reviews: (m.reviews||[]).length || Number(m.reviews_count || 0),
+          reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
+          workCaptions: (m.portfolio_items||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.caption||''),
+          slug: m.slug,
+          price: Number(m.starting_price || 0),
+          styles: (m.master_styles || []).map(item => item.styles?.name).filter(Boolean),
+          city: m.city || 'Калининград',
+          about: m.bio || '',
+          experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
+          image: m.cover_image_url || m.portfolio_items?.[0]?.image_path || '',
+          works: (m.portfolio_items || []).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.image_path),
+          nextAvailable: (m.master_time_slots||[]).filter(slot=>slot.is_active && new Date(slot.starts_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))[0]?.starts_at || '',
+          services: (m.services || []).filter(service=>service.is_active)
+        }))
+        setMastersList(liveMasters)
+        const requestedSlug = new URLSearchParams(window.location.search).get('master')
+        if (requestedSlug) {
+          const publicMaster = liveMasters.find(item=>item.slug===requestedSlug)
+          if (publicMaster) setSelected(publicMaster)
+        }
+        setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
+      } catch (error) {
+        if (live) {
+          setConnectionStatus('ошибка загрузки')
+          console.error('MASTER HUB load masters:', error)
+        }
+      } finally {
+        requestInFlight = false
+        if (live) setMastersLoading(false)
       }
-      setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
     }
     loadMasters()
     const refreshMasters = () => {
@@ -434,11 +459,11 @@ export default function App() {
     window.addEventListener('focus', refreshMasters)
     document.addEventListener('visibilitychange', refreshMasters)
     return () => {
-      active = false
+      live = false
       window.removeEventListener('focus', refreshMasters)
       document.removeEventListener('visibilitychange', refreshMasters)
     }
-  }, [active])
+  }, [])
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
@@ -447,9 +472,9 @@ export default function App() {
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
   else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
-  else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList}/>
+  else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList} loading={mastersLoading}/>
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
-  else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
+  else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersLoading?<MasterCardSkeleton count={2}/>:mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!mastersLoading&&!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
   else if(['profile','master-inbox','master-bookings'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')} onNavigate={setActive}/>
   else content=<ProfilePage supabase={supabase} isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
