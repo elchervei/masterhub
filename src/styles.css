@@ -1018,3 +1018,12 @@ img{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   .master-workspace .master-dashboard-actions>button{transition:none}
 }
+
+/* Profile screen: informative rows instead of inactive menu controls */
+.profile-info-menu{display:flex;flex-direction:column;gap:0;padding:5px 14px}
+.profile-info-menu>div{display:flex;align-items:center;gap:11px;min-height:62px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.profile-info-menu>div:last-child{border-bottom:0}
+.profile-info-menu .menu-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid rgba(190,157,222,.16);border-radius:12px;background:rgba(126,91,153,.12);color:#c6a9dc}
+.profile-info-menu>div>span:last-child{min-width:0;display:flex;flex-direction:column;gap:4px}
+.profile-info-menu b{color:#e8e1ec;font-size:11px;font-weight:600}
+.profile-info-menu small{color:#958b9c;font-size:9px;line-height:1.4}
