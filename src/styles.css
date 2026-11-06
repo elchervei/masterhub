@@ -1639,3 +1639,5 @@ img{max-width:100%}
 .client-booking-service span,.booking-service-summary b{min-width:0;color:#e5e5e8;font-size:12px;font-weight:650;overflow-wrap:anywhere}
 .client-booking-service b,.booking-service-summary span{flex:0 0 auto;color:#c7c7cc;font-size:11px;font-weight:700;white-space:nowrap}
 .booking-service-summary{margin:10px 0 12px}
+
+.master-workspace .appointment-card-note{display:block;margin-top:3px;color:#9c9ca3;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
