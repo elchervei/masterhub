@@ -169,7 +169,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     const path=user.id+'/reference-'+crypto.randomUUID()+'.'+ext
     const {data,error}=await supabase.storage.from('masterhub-references').upload(path,reference,{contentType:reference.type,upsert:false})
     if(error)throw error
-    return supabase.storage.from('masterhub-media').getPublicUrl(data.path).data.publicUrl
+    return data.path
   }
   const submit=async()=>{
     if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
