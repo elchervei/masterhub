@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye } from 'lucide-react'
+import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2 } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
@@ -11,12 +11,12 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [inquiries,setInquiries]=useState([]),[selectedInquiry,setSelectedInquiry]=useState(null),[inquiryImage,setInquiryImage]=useState('')
   const [serviceTitle,setServiceTitle]=useState('Татуировка'),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('120')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
-  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false)
+  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false),[copiedLink,setCopiedLink]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('week')
   const load=async()=>{
     if(!supabase||!user)return
     setLoading(true)
-    const {data:current}=await supabase.from('masters').select('id,public_name,status,category,cover_image_url,deposit_enabled,deposit_amount').eq('user_id',user.id).maybeSingle()
+    const {data:current}=await supabase.from('masters').select('id,slug,public_name,status,category,cover_image_url,deposit_enabled,deposit_amount').eq('user_id',user.id).maybeSingle()
     setMaster(current||null)
     if(current){
       const [sv,pf,bk,sl,iq]=await Promise.all([
@@ -50,6 +50,17 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       if(insertError)setError(insertError.message);else await load()
     }
     setCloudUploading(false)
+  }
+  const copyPublicProfile=async()=>{
+    if(!master?.slug)return
+    const url=window.location.origin+'/?master='+encodeURIComponent(master.slug)
+    try{if(navigator.share)await navigator.share({title:'MASTER HUB · '+master.public_name,url});else{await navigator.clipboard.writeText(url);setCopiedLink(true);window.setTimeout(()=>setCopiedLink(false),2200)}}catch(error){if(error?.name!=='AbortError')setError('Не удалось скопировать ссылку. Скопируй её вручную: '+url)}
+  }
+  const saveWorkCaption=async(work,caption)=>{
+    const value=caption.trim().slice(0,120)
+    if(value===(work.caption||''))return
+    const {error}=await supabase.from('portfolio_items').update({caption:value}).eq('id',work.id)
+    if(error)setError(error.message);else setWorks(old=>old.map(item=>item.id===work.id?{...item,caption:value}:item))
   }
   const addService=async e=>{
     e.preventDefault();if(!master||!serviceTitle.trim())return
@@ -117,6 +128,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
               {upcomingAppointment?<button type="button" className="master-next-booking" onClick={()=>setSelectedBooking(upcomingAppointment)}><span className="master-next-date"><b>{new Date(upcomingAppointment.starts_at).toLocaleDateString('ru-RU',{day:'2-digit'})}</b><small>{new Date(upcomingAppointment.starts_at).toLocaleDateString('ru-RU',{month:'short'})}</small></span><span><b>{new Date(upcomingAppointment.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} · {upcomingAppointment.client_telegram||'Клиент'}</b><small>{upcomingAppointment.status==='price_proposed'?'Ожидает подтверждения цены':'Сеанс подтверждён'}</small></span><span className="master-next-arrow">↗</span></button>:<div className="master-dashboard-empty"><CalendarCheck2 size={18}/><span>Пока нет предстоящих сеансов</span></div>}
             </div>
             <div className="master-dashboard-actions">
+              {master.status==='approved'&&<button type="button" onClick={copyPublicProfile}><Share2 size={17}/><span><b>Публичная ссылка</b><small>{copiedLink?'Ссылка скопирована': 'Поделиться профилем мастера'}</small></span><span className="master-action-arrow"><Copy size={15}/></span></button>}
               <button type="button" onClick={()=>setShowProfileTools(v=>!v)}><Images size={17}/><span><b>Профиль и портфолио</b><small>Обложка, работы и стоимость</small></span><span className="master-action-arrow">{showProfileTools?'−':'+'}</span></button>
               {master.status==='approved'&&<button type="button" onClick={()=>setShowProfileTools(true)}><CalendarRange size={17}/><span><b>Управление расписанием</b><small>Добавить свободные интервалы</small></span><span className="master-action-arrow">↗</span></button>}
               <button type="button" onClick={()=>onNavigate?.('master-inbox')}><Inbox size={17}/><span><b>Центр заявок</b><small>{incomingBookings.length ? incomingBookings.length + ' новых обращения' : 'Новых обращений нет'}</small></span><span className="master-action-arrow">↗</span></button>
@@ -125,7 +137,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
           {showProfileTools&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">НАСТРОЙКИ ПРОФИЛЯ</span><h3>Управление анкетой</h3></div><button type="button" onClick={()=>setShowProfileTools(false)}>Свернуть</button></div>
             <section className="workspace-section"><h3><Images size={17}/> Обложка профиля</h3>{master.cover_image_url&&<img className="master-cover-preview" src={master.cover_image_url} alt="Обложка профиля"/>}<label className="upload-control"><CloudUpload size={16}/>{uploading?'Загружаем…':master.cover_image_url?'Заменить фотографию':'Загрузить фотографию'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={e=>uploadImage(e.target.files?.[0],'cover')}/></label><p className="muted-note">Эта фотография будет показываться в карточке и в профиле мастера.</p></section>
-            <section className="workspace-section"><h3><Images size={17}/> Работы / татуировки</h3><label className="upload-control"><Plus size={16}/> Добавить фото работы<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={e=>uploadImage(e.target.files?.[0],'work')}/></label><div className="workspace-works">{works.map(w=><div key={w.id}><img src={w.image_path} alt={w.caption||'Работа мастера'}/><button onClick={()=>removeWork(w.id)}><Trash2 size={14}/></button></div>)}</div>{!works.length&&<p className="muted-note">Портфолио пока пустое.</p>}</section>
+            <section className="workspace-section"><h3><Images size={17}/> Работы / татуировки</h3><label className="upload-control"><Plus size={16}/> Добавить фото работы<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={e=>uploadImage(e.target.files?.[0],'work')}/></label><div className="workspace-works">{works.map(w=><div key={w.id}><img src={w.image_path} alt={w.caption||'Работа мастера'}/><button type="button" onClick={()=>removeWork(w.id)} aria-label="Удалить работу"><Trash2 size={14}/></button><input className="portfolio-caption-input" defaultValue={w.caption||''} maxLength={120} placeholder="Подпись: стиль, размер, детали" onBlur={e=>saveWorkCaption(w,e.target.value)}/></div>)}</div>{!works.length&&<p className="muted-note">Портфолио пока пустое.</p>}</section>
             <section className="workspace-section"><h3><UserRound size={17}/> Цена за татуировку</h3><form className="service-add-form" onSubmit={addService}><input type="text" maxLength="80" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)} placeholder="Название услуги"/><div><input type="number" min="0" required value={servicePrice} onChange={e=>setServicePrice(e.target.value)} placeholder="Цена от, ₽"/><input type="number" min="15" step="15" value={serviceDuration} onChange={e=>setServiceDuration(e.target.value)} placeholder="Минут"/></div><button className="primary-button full-button">Добавить стоимость</button></form><div className="workspace-service-list">{services.map(s=><div key={s.id}><span>{s.title}<small>{s.duration_minutes} мин.</small></span><b>{money(s.price_from)}</b><button className="mini-delete" onClick={()=>deleteService(s.id)} aria-label="Удалить стоимость"><Trash2 size={14}/></button></div>)}</div></section>
             {master.status==='approved'&&<><section className="workspace-section master-calendar-section">
 <div className="smart-calendar-heading"><div><h3><CalendarRange size={17}/> Календарь свободного времени</h3><p>Умный просмотр расписания. Старую версию можно вернуть в любой момент.</p></div><button type="button" className="calendar-mode-toggle" onClick={()=>setSmartCalendar(v=>!v)}>{smartCalendar?'Старая версия':'Умный режим'}</button></div>
