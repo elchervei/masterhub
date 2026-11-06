@@ -728,3 +728,38 @@ img{max-width:100%}
 /* Booking workflow additions */
 .master-appointments-section .master-dashboard-stats{margin:8px 0 12px}
 .schedule-form select{width:100%;min-height:34px}
+
+
+/* Optional smart calendar mode — isolated and reversible */
+.master-calendar-section{border-color:#443653!important;background:linear-gradient(145deg,#191522,#131416)!important}
+.smart-calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.smart-calendar-heading h3{margin:0!important}
+.smart-calendar-heading p{margin:5px 0 0;color:#92889b;font-size:9px}
+.calendar-mode-toggle{flex:0 0 auto;padding:7px 9px;border:1px solid #554366;border-radius:8px;background:#241c30;color:#d1b5eb;font-size:8px}
+.smart-calendar-toolbar{display:flex;flex-direction:column;gap:9px;margin:12px 0 9px}
+.calendar-view-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:3px;border:1px solid #393142;border-radius:9px;background:#100e15}
+.calendar-view-switch button{padding:7px 5px;border:0;border-radius:6px;background:transparent;color:#9e93a8;font-size:9px}
+.calendar-view-switch button.active{background:#49345d;color:#f2e9fa}
+.calendar-date-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#e8dff0}
+.calendar-date-nav b{font-size:11px;text-transform:capitalize}
+.calendar-date-nav button{width:29px;height:28px;border:1px solid #3b3345;border-radius:8px;background:#211b29;color:#d8c3e9;font-size:19px}
+.smart-calendar-days{display:flex;flex-direction:column;gap:7px}
+.smart-calendar-day{padding:8px;border:1px solid #393142;border-radius:10px;background:#17141d}
+.smart-calendar-day.selected{border-color:#80639b;background:#1e1827}
+.smart-calendar-day-title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 1px 7px;border:0;background:none;color:#e9e0ef;text-align:left}
+.smart-calendar-day-title b{font-size:10px;text-transform:capitalize}
+.smart-calendar-day-title span{color:#aa9db5;font-size:8px}
+.smart-calendar-events{display:flex;flex-direction:column;gap:4px}
+.smart-calendar-event{display:flex;align-items:center;gap:5px;padding:6px 7px;border-radius:7px}
+.smart-calendar-event.available{background:#1c2a21;border:1px solid #304938}
+.smart-calendar-event.busy{background:#302333;border:1px solid #59415f}
+.smart-calendar-event>button:first-child{min-width:0;flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0;border:0;background:none;color:#e8e3e9;text-align:left}
+.smart-calendar-event b{font-size:9px;white-space:nowrap}
+.smart-calendar-event span{overflow:hidden;color:#b4aab9;font-size:8px;text-overflow:ellipsis;white-space:nowrap}
+.smart-calendar-delete{width:25px;height:25px;display:grid;place-items:center;border:1px solid #4a3b50;border-radius:6px;background:#211a27;color:#c5b0d0}
+.smart-calendar-empty{display:block;padding:7px 2px;color:#7f7786;font-size:8px}
+.smart-calendar-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:9px 0;padding:8px;border:1px solid #393142;border-radius:9px;background:#15121a}
+.smart-calendar-summary span{display:flex;flex-direction:column;gap:4px;color:#95899e;font-size:8px}
+.smart-calendar-summary b{color:#eee5f5;font-size:15px}
+.smart-calendar-add{margin-top:8px}
+@media(max-width:360px){.smart-calendar-heading{align-items:flex-start}.smart-calendar-heading p{max-width:190px}.calendar-mode-toggle{font-size:7px;padding:6px 7px}.smart-calendar-day-title span{font-size:7px}}
