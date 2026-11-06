@@ -768,3 +768,42 @@ img{max-width:100%}
 .smart-calendar-summary b{color:#eee5f5;font-size:15px}
 .smart-calendar-add{margin-top:8px}
 @media(max-width:360px){.smart-calendar-heading{align-items:flex-start}.smart-calendar-heading p{max-width:190px}.calendar-mode-toggle{font-size:7px;padding:6px 7px}.smart-calendar-day-title span{font-size:7px}}
+
+
+/* Master profile, portfolio, reviews and booking polish */
+.smart-master-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px;color:#a99db4;font-size:8px}
+.smart-master-meta span{padding:4px 7px;border:1px solid #3b3347;border-radius:7px;background:#191522}
+.detail-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.detail-tabs button{font-size:8px;white-space:nowrap}
+.portfolio-intro{display:flex;justify-content:space-between;align-items:center;margin:12px 1px 8px;color:#a99db4;font-size:8px;letter-spacing:.12em}
+.portfolio-intro b{color:#c7b8d3;font-size:9px;letter-spacing:0}
+.work-grid{align-items:start}
+.portfolio-work{position:relative;display:block;min-width:0;padding:0;overflow:hidden;border:1px solid #393142;border-radius:10px;background:#171420;color:#eee7f4;text-align:left}
+.portfolio-work img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.portfolio-work span{display:block;padding:7px 8px;color:#c5b8ce;font-size:8px;line-height:1.35}
+.portfolio-lightbox{z-index:90;display:flex;align-items:center;justify-content:center;padding:28px 14px}
+.portfolio-lightbox img{max-width:100%;max-height:82vh;object-fit:contain;border-radius:12px}
+.master-reviews-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.master-review-card{padding:12px;border:1px solid #3b3347;border-radius:11px;background:#191522}
+.master-review-card>div{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.master-review-card>div>b{color:#eee7f4;font-size:10px}
+.master-review-card>small{display:block;margin-top:5px;color:#8e8298;font-size:8px}
+.master-review-card p{margin:8px 0 0;color:#c9bfce;font-size:10px;line-height:1.55;white-space:pre-wrap}
+.review-stars{color:#d4ad77;font-size:13px;letter-spacing:1px}
+.review-star-picker{display:flex;gap:7px;margin:8px 0}
+.review-star-picker button{padding:0;border:0;background:transparent;color:#554b5e;font-size:27px;line-height:1}
+.review-star-picker button.active{color:#d8b277}
+.review-editor textarea,.booking-note-field textarea{width:100%;min-height:76px;padding:10px;border:1px solid #40364b;border-radius:10px;background:#15121b;color:#eee7f4;font:inherit;font-size:10px;resize:vertical}
+.booking-service-field,.booking-note-field{display:flex;flex-direction:column;gap:7px;margin:8px 0 13px;color:#aa9db4;font-size:8px;letter-spacing:.08em}
+.booking-service-field select{width:100%;min-height:40px;padding:8px 10px;border:1px solid #40364b;border-radius:9px;background:#171420;color:#eee7f4;font-size:10px}
+.booking-note-field textarea{letter-spacing:0}
+.portfolio-caption-input{width:100%;min-width:0;padding:6px 5px;border:0;border-top:1px solid #302738;border-radius:0 0 8px 8px;background:#171420;color:#d9cde1;font-size:8px;outline:none}
+.portfolio-caption-input:focus{border-color:#80639b}
+.master-workspace .workspace-works>div{display:flex;flex-direction:column}
+.master-workspace .workspace-works>div>button{z-index:2}
+.master-dashboard-actions>button .master-action-arrow svg{width:14px;height:14px}
+@media(max-width:360px){
+  .detail-tabs{gap:3px}
+  .detail-tabs button{padding:8px 2px;font-size:7px}
+  .smart-master-meta{font-size:7px}
+}
