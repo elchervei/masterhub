@@ -837,3 +837,184 @@ img{max-width:100%}
 .empty-state b { font-size:14px; } .empty-state span { max-width:265px; font-size:10px; line-height:1.6; } .empty-state .primary-button { margin-top:7px; }
 @media (prefers-reduced-motion:reduce) { .skeleton-photo,.skeleton-line,.skeleton-tags i {animation:none} .master-photo img {transition:none} }
 @media (max-width:360px) { .bottom-nav {height:calc(61px + env(safe-area-inset-bottom));padding-top:5px} .nav-item {font-size:7px} .skeleton-photo {height:145px} }
+
+
+/* MASTER HUB — master cabinet visual refinement */
+.master-workspace{
+  padding-top:10px;
+  color:#eee8f3;
+  font-size:13px;
+}
+.master-workspace .master-dashboard{gap:14px;padding:3px 0 12px}
+.master-workspace .master-dashboard-heading{
+  min-height:116px;padding:18px;gap:14px;border-radius:22px;
+  border:1px solid rgba(190,157,222,.2);
+  background:radial-gradient(ellipse at 100% 0%,rgba(132,91,171,.24),transparent 58%),linear-gradient(145deg,#21192b,#15131b 78%);
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+}
+.master-workspace .master-dashboard-heading .eyebrow{font-size:9px;letter-spacing:.16em}
+.master-workspace .master-dashboard-heading h2{margin:8px 0 6px;font-size:21px;line-height:1.2;letter-spacing:-.45px}
+.master-workspace .master-dashboard-heading p{font-size:11px;line-height:1.5}
+.master-workspace .master-dashboard-avatar{width:60px;height:60px;flex-basis:60px;border-radius:18px;border-color:rgba(205,174,232,.35)}
+.master-workspace .master-dashboard-stats{gap:9px}
+.master-workspace .master-dashboard-stats>button,
+.master-workspace .master-dashboard-stats>div{
+  min-height:100px;justify-content:space-between;gap:8px;padding:13px 12px;
+  border-radius:17px;border-color:rgba(190,157,222,.15);
+  background:linear-gradient(150deg,#201a29,#17151e);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+.master-workspace .master-dashboard-stats>button:active{transform:scale(.985);border-color:#9a79b8}
+.master-workspace .master-dashboard-stats>*>span{font-size:10px;line-height:1.35;color:#c1b4cc}
+.master-workspace .master-dashboard-stats>*>b{font-size:25px;letter-spacing:-.5px}
+.master-workspace .master-dashboard-stats>*>small{font-size:9px;line-height:1.35}
+.master-workspace .master-dashboard-next{padding:15px;border-radius:19px;border-color:rgba(190,157,222,.15);background:#191620}
+.master-workspace .master-dashboard-section-title{margin-bottom:11px}
+.master-workspace .master-dashboard-section-title>span{font-size:9px;letter-spacing:.15em}
+.master-workspace .master-dashboard-section-title button{font-size:10px}
+.master-workspace .master-next-booking{gap:12px;padding:11px;border-radius:14px;background:#241d30;border-color:#4b3b5a}
+.master-workspace .master-next-date{width:46px;height:48px;flex-basis:46px;border-radius:12px}
+.master-workspace .master-next-date b{font-size:18px}
+.master-workspace .master-next-date small{font-size:9px}
+.master-workspace .master-next-booking>span:nth-child(2)>b{font-size:11px}
+.master-workspace .master-next-booking>span:nth-child(2)>small{font-size:10px}
+.master-workspace .master-dashboard-empty{padding:15px;border-radius:14px;font-size:11px}
+.master-workspace .master-dashboard-actions{gap:8px}
+.master-workspace .master-dashboard-actions>button{
+  min-height:62px;gap:12px;padding:12px 14px;border-radius:16px;
+  border-color:rgba(190,157,222,.14);background:linear-gradient(145deg,#1c1923,#15141a);
+  transition:transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.master-workspace .master-dashboard-actions>button:active{transform:scale(.99);border-color:#80639b;background:#211a2a}
+.master-workspace .master-dashboard-actions>button>svg{width:20px;height:20px;flex-basis:20px}
+.master-workspace .master-dashboard-actions b{font-size:11px}
+.master-workspace .master-dashboard-actions small{font-size:9px;line-height:1.4}
+.master-workspace .master-profile-tools{margin-top:14px;padding-top:15px}
+.master-workspace .master-tools-heading{margin-bottom:11px}
+.master-workspace .master-tools-heading .eyebrow{font-size:8px}
+.master-workspace .master-tools-heading h3{font-size:16px}
+.master-workspace .master-tools-heading>button{padding:8px 11px;border-radius:11px;font-size:10px}
+.master-workspace .workspace-section{
+  margin:9px 0;padding:15px;border-radius:19px;
+  border:1px solid rgba(190,157,222,.14);background:linear-gradient(150deg,#1b1821,#151419);
+  box-shadow:0 7px 22px rgba(0,0,0,.12);
+}
+.master-workspace .workspace-section h3{
+  display:flex;align-items:center;gap:9px;margin:0 0 12px;
+  font-size:13px;line-height:1.35;font-weight:650;letter-spacing:0;color:#eee7f4;
+}
+.master-workspace .workspace-section h3>svg{
+  width:30px;height:30px;flex:0 0 30px;padding:7px;border-radius:11px;
+  background:rgba(148,108,180,.13);color:#c5a4df;
+}
+.master-workspace .workspace-profile-form{display:flex;flex-direction:column;gap:10px}
+.master-workspace .workspace-form-heading{display:flex;align-items:center;gap:11px;margin-bottom:2px}
+.master-workspace .workspace-form-heading>div{min-width:0}
+.master-workspace .workspace-form-heading h3{margin:0;font-size:14px}
+.master-workspace .workspace-form-heading p{margin:3px 0 0;color:#9c91a5;font-size:10px;line-height:1.4}
+.master-workspace .workspace-section-icon{
+  width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;
+  border:1px solid rgba(190,157,222,.2);border-radius:13px;background:#292033;color:#c9a9e2;
+}
+.master-workspace .workspace-profile-form label{
+  display:flex;flex-direction:column;gap:6px;margin:0;color:#bdb2c6;font-size:10px;font-weight:550;
+}
+.master-workspace .workspace-profile-form input,
+.master-workspace .workspace-profile-form textarea{
+  width:100%;min-width:0;padding:11px 12px;border:1px solid #3c3546;border-radius:13px;
+  background:#100f14;color:#f0eaf4;font:inherit;font-size:12px;line-height:1.45;outline:none;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.master-workspace .workspace-profile-form textarea{min-height:82px;resize:vertical}
+.master-workspace .workspace-profile-form input:focus,
+.master-workspace .workspace-profile-form textarea:focus{
+  border-color:#9874b7;box-shadow:0 0 0 3px rgba(152,116,183,.13);
+}
+.master-workspace .workspace-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.master-workspace .workspace-profile-form .primary-button{min-height:44px;margin-top:2px;border-radius:14px;font-size:11px}
+.master-workspace .workspace-section .upload-control{
+  min-height:44px;padding:10px 12px;border:1px dashed #574767;border-radius:13px;
+  background:rgba(121,88,149,.09);color:#d8c6e6;font-size:11px;
+}
+.master-workspace .workspace-section .muted-note{margin:8px 1px 2px;font-size:10px;line-height:1.5}
+.master-workspace .master-cover-preview{max-height:170px;border-radius:13px}
+.master-workspace .workspace-works{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.master-workspace .workspace-works>div{border:1px solid #393142;border-radius:12px;background:#100f14}
+.master-workspace .workspace-works img{aspect-ratio:1}
+.master-workspace .workspace-works button{width:28px;height:28px;border-radius:9px}
+.master-workspace .portfolio-caption-input{padding:8px 7px;font-size:9px}
+.master-workspace .service-add-form{gap:9px}
+.master-workspace .service-add-form input,
+.master-workspace .schedule-form input,
+.master-workspace .date-input-label input{
+  min-height:42px;padding:10px 11px;border:1px solid #3c3546;border-radius:12px;
+  background:#100f14;color:#eee7f4;font-size:12px;
+}
+.master-workspace .service-add-form>div:not(.fixed-service-label){gap:8px}
+.master-workspace .primary-button.full-button{min-height:44px;padding:10px 13px;border-radius:13px;font-size:11px}
+.master-workspace .workspace-service-list>div{gap:10px;padding:10px 2px;font-size:11px}
+.master-workspace .workspace-service-list>div span{font-size:11px}
+.master-workspace .workspace-service-list>div span small{display:block;margin:4px 0 0;font-size:9px}
+.master-workspace .workspace-service-list>div>b{font-size:12px}
+.master-workspace .mini-delete{width:32px;height:32px;border-radius:10px}
+.master-workspace .smart-calendar-heading h3{font-size:13px}
+.master-workspace .smart-calendar-heading p{font-size:10px;line-height:1.45}
+.master-workspace .calendar-mode-toggle{padding:8px 10px;border-radius:11px;font-size:9px}
+.master-workspace .smart-calendar-toolbar{gap:10px;margin:14px 0 11px}
+.master-workspace .calendar-view-switch{padding:4px;border-radius:12px}
+.master-workspace .calendar-view-switch button{padding:9px 6px;border-radius:9px;font-size:10px}
+.master-workspace .calendar-date-nav b{font-size:12px}
+.master-workspace .calendar-date-nav button{width:34px;height:34px;border-radius:11px}
+.master-workspace .smart-calendar-day{padding:10px;border-radius:13px}
+.master-workspace .smart-calendar-day-title{padding-bottom:9px}
+.master-workspace .smart-calendar-day-title b{font-size:11px}
+.master-workspace .smart-calendar-day-title span{font-size:9px}
+.master-workspace .smart-calendar-event{gap:8px;padding:8px;border-radius:10px}
+.master-workspace .smart-calendar-event b{font-size:10px}
+.master-workspace .smart-calendar-event span{font-size:9px}
+.master-workspace .smart-calendar-delete{width:30px;height:30px;border-radius:9px}
+.master-workspace .smart-calendar-summary{gap:7px;padding:10px;border-radius:12px}
+.master-workspace .smart-calendar-summary span{font-size:9px}
+.master-workspace .smart-calendar-summary b{font-size:17px}
+.master-workspace .master-tab-intro h2,
+.master-workspace .master-appointments-section h2{font-size:20px;letter-spacing:-.3px}
+.master-workspace .master-tab-intro>p,
+.master-workspace .master-appointments-section>p{font-size:11px;line-height:1.5}
+.master-workspace .master-summary-row{padding:10px 12px;border-radius:12px;font-size:10px}
+.master-workspace .master-summary-row b{font-size:16px}
+.master-workspace .booking-inbox-card{gap:7px;margin:7px 0;padding:13px;border-radius:14px}
+.master-workspace .booking-inbox-card b{font-size:12px}
+.master-workspace .booking-inbox-card>span:last-child{font-size:10px}
+.master-workspace .booking-inbox-date{font-size:10px}
+.master-workspace .master-appointment-card{gap:10px;margin:7px 0;padding:12px;border-radius:14px}
+.master-workspace .appointment-date-block{width:44px;height:46px;flex-basis:44px;border-radius:11px}
+.master-workspace .appointment-date-block b{font-size:17px}
+.master-workspace .appointment-main{gap:5px}
+.master-workspace .appointment-main b{font-size:11px}
+.master-workspace .appointment-main small{font-size:9px}
+.master-workspace .appointment-status{padding:6px 8px;border-radius:999px;font-size:8px}
+.master-workspace .master-empty-state{min-height:140px;gap:9px;padding:18px;border-radius:17px}
+.master-workspace .master-empty-state svg{width:26px;height:26px}
+.master-workspace .master-empty-state b{font-size:12px}
+.master-workspace .master-empty-state span{font-size:10px;line-height:1.5}
+.master-workspace .workspace-home-button{min-height:36px;padding:8px 11px;border:1px solid #41374c;border-radius:999px;background:#201a29;color:#d8c6e6;font-size:9px}
+.master-workspace .role-preview-switch{border-radius:16px}
+.master-workspace button:focus-visible,
+.master-workspace input:focus-visible,
+.master-workspace textarea:focus-visible{outline:2px solid #b995d8;outline-offset:2px}
+@media(max-width:380px){
+  .master-workspace .master-dashboard-heading{padding:14px;border-radius:19px}
+  .master-workspace .master-dashboard-heading h2{font-size:18px}
+  .master-workspace .master-dashboard-stats{gap:6px}
+  .master-workspace .master-dashboard-stats>button,
+  .master-workspace .master-dashboard-stats>div{min-height:92px;padding:10px 8px;border-radius:14px}
+  .master-workspace .master-dashboard-stats>*>span{font-size:9px}
+  .master-workspace .master-dashboard-stats>*>b{font-size:22px}
+  .master-workspace .master-dashboard-stats>*>small{font-size:8px}
+  .master-workspace .workspace-form-grid{gap:7px}
+  .master-workspace .workspace-section{padding:12px;border-radius:16px}
+  .master-workspace .workspace-works{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+  .master-workspace .master-dashboard-actions>button{transition:none}
+}
