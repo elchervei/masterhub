@@ -55,6 +55,7 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
       </div>
       <div className="master-meta"><span className="rating"><Star size={14} fill="currentColor" /> {master.rating.toFixed(1)} <span>({master.reviews})</span></span><span className="meta-separator">·</span><span>{master.studio}</span></div>
       <div className="tag-row">{master.styles.slice(0, 3).map(s => <span className="style-tag" key={s}>{s}</span>)}</div>
+      <div className="smart-master-meta"><span>{master.experience || 'Опыт не указан'}</span>{master.nextAvailable && <span>Ближайшее окно · {new Date(master.nextAvailable).toLocaleDateString('ru-RU',{day:'numeric',month:'short'})}</span>}</div>
       <div className="card-footer"><span className="price-caption">От <b>{money(master.price)}</b></span><button className="text-link" onClick={onOpen}>Профиль <ChevronRight size={15} /></button></div>
     </div>
   </article>
@@ -114,15 +115,18 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, categ
 
 function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
   const [tab, setTab] = useState('works')
+  const [lightbox, setLightbox] = useState('')
   return <><Header title="Профиль мастера" back={onBack} action={<button className={favorite?'icon-button is-favorite':'icon-button'} onClick={toggleFavorite}><Heart size={20} fill={favorite?'currentColor':'none'}/></button>}/>
     <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating"><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
-      <div className="detail-facts"><div><small>ОПЫТ</small><b>{master.experience}</b></div><div><small>СТАРТ ОТ</small><b>{money(master.price)}</b></div><div><small>ГОРОД</small><b>Калининград</b></div></div>
+      <div className="detail-facts"><div><small>ОПЫТ</small><b>{master.experience}</b></div><div><small>СТАРТ ОТ</small><b>{master.price>0?money(master.price):'По запросу'}</b></div><div><small>ГОРОД</small><b>{master.city||'Калининград'}</b></div></div>
       <p className="detail-about">{master.about}</p><div className="tag-row detail-tags">{master.styles.map(s=><span className="style-tag" key={s}>{s}</span>)}</div>
-      <div className="detail-tabs"><button className={tab==='works'?'selected':''} onClick={()=>setTab('works')}>Портфолио</button><button className={tab==='services'?'selected':''} onClick={()=>setTab('services')}>Услуги и цены</button><button className={tab==='info'?'selected':''} onClick={()=>setTab('info')}>О мастере</button></div>
-      {tab==='works'&&<div className="work-grid">{master.works.map((w,i)=><img key={w+i} src={String(w).startsWith('http') ? w : workImage(w)} alt="Работа мастера" loading="lazy"/>)}</div>}
+      <div className="detail-tabs"><button className={tab==='works'?'selected':''} onClick={()=>setTab('works')}>Портфолио</button><button className={tab==='services'?'selected':''} onClick={()=>setTab('services')}>Услуги и цены</button><button className={tab==='reviews'?'selected':''} onClick={()=>setTab('reviews')}>Отзывы · {master.reviews}</button><button className={tab==='info'?'selected':''} onClick={()=>setTab('info')}>О мастере</button></div>
+      {tab==='works'&&<><div className="portfolio-intro"><span>РАБОТЫ МАСТЕРА</span><b>{master.works.length} фото</b></div><div className="work-grid">{master.works.map((w,i)=><button type="button" className="portfolio-work" key={w+i} onClick={()=>setLightbox(w)}><img src={String(w).startsWith('http') ? w : workImage(w)} alt={master.workCaptions?.[i]||'Работа мастера'} loading="lazy"/>{master.workCaptions?.[i]&&<span>{master.workCaptions[i]}</span>}</button>)}</div>{!master.works.length&&<div className="empty-state">Мастер скоро добавит свои работы.</div>}</>}
       {tab==='services'&&<div className="service-list">{master.services?.length ? master.services.map(service=><div key={service.id}><span>{service.title}<small>{service.description||service.duration_minutes+' мин.'}</small></span><b>от {money(service.price_from)}</b></div>) : <><div><span>Стоимость услуг</span><b>от {money(master.price)}</b></div><small>Мастер ещё не добавил подробный прайс. Уточни стоимость при записи.</small></>}</div>}
-      {tab==='info'&&<div className="info-panel"><p>{master.about}</p><p><MapPin size={15}/> Калининград · адрес студии уточняется при записи</p><p><MessageCircle size={15}/> {master.handle}</p></div>}
+      {tab==='reviews'&&<div className="master-reviews-list">{master.reviewItems?.length?master.reviewItems.map(review=><article className="master-review-card" key={review.id}><div><b>Клиент</b><span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span></div><small>{new Date(review.created_at).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</small>{review.body&&<p>{review.body}</p>}</article>):<div className="empty-state">Пока нет отзывов. После первого сеанса клиент сможет оставить оценку.</div>}</div>}
+      {tab==='info'&&<div className="info-panel"><p>{master.about}</p><p><MapPin size={15}/> {master.city||'Калининград'} · адрес студии уточняется при записи</p><p><MessageCircle size={15}/> {master.handle||'Telegram не указан'}</p></div>}
       <button className="primary-button booking-cta" onClick={onBook}>Записаться к мастеру <ChevronRight size={17}/></button>
+      {lightbox&&<div className="modal-backdrop portfolio-lightbox" onClick={()=>setLightbox('')}><button type="button" className="modal-close" onClick={()=>setLightbox('')}><X size={22}/></button><img src={lightbox} alt="Работа мастера" onClick={e=>e.stopPropagation()}/></div>}
     </main>
   </>
 }
@@ -132,6 +136,8 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [busy,setBusy]=useState([])
   const [selectedDate,setSelectedDate]=useState('')
   const [selectedSlot,setSelectedSlot]=useState(null)
+  const [selectedService,setSelectedService]=useState(master.services?.[0]?.id||'')
+  const [clientNote,setClientNote]=useState('')
   const [reference,setReference]=useState(null)
   const [clientTelegram,setClientTelegram]=useState('')
   const [uploading,setUploading]=useState(false)
@@ -160,23 +166,26 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const submit=async()=>{
     if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
     setError('')
-    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,referenceImageUrl,clientTelegram:clientTelegram.trim()})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
+    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,serviceId:selectedService||null,clientNote:clientNote.trim(),referenceImageUrl,clientTelegram:clientTelegram.trim()})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
   }
   return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
     <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали татуировки до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
-    <span className="eyebrow">ШАГ 1 · РЕФЕРЕНС ТАТУИРОВКИ</span>
+    <span className="eyebrow">ШАГ 1 · УСЛУГА И ДЕТАЛИ</span>
+    {master.services?.length>0&&<label className="booking-service-field">ВЫБЕРИ УСЛУГУ<select value={selectedService} onChange={e=>setSelectedService(e.target.value)}>{master.services.map(service=><option key={service.id} value={service.id}>{service.title} · от {money(service.price_from)}</option>)}</select></label>}
+    <label className="booking-note-field">ЧТО ХОЧЕШЬ СДЕЛАТЬ?<textarea value={clientNote} onChange={e=>setClientNote(e.target.value.slice(0,500))} placeholder="Размер, место, идея, пожелания мастеру…" maxLength={500}/></label>
+    <span className="eyebrow">ШАГ 2 · РЕФЕРЕНС / ЭСКИЗ</span>
     <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0]||null;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){setError(file.size>5*1024*1024?'Максимальный размер референса — 5 МБ.':'Поддерживаются только JPG, PNG и WebP.');e.target.value='';setReference(null);return}setError('');setReference(file)}}/></label>
     {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
     <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value.slice(0,32))} placeholder="@username" maxLength={32} autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
-    <span className="eyebrow">ШАГ 2 · ВЫБЕРИ ДЕНЬ</span>
+    <span className="eyebrow">ШАГ 3 · ВЫБЕРИ ДЕНЬ</span>
     <div className="calendar-month-head"><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><b>{month.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b><button onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
     <div className="calendar-weekdays">{['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((x,i)=><span key={i}>{x}</span>)}</div>
     <div className="client-calendar-grid">{days.map((d,i)=>{const key=dateKey(d),same=d.getMonth()===month.getMonth(),past=new Date(key+'T23:59:59')<new Date(new Date().toDateString()),status=statusFor(key);return <button key={i} disabled={!same||past||!slotsFor(key).length||!freeFor(key).length} className={`calendar-day ${same?'':'outside'} ${selectedDate===key?'chosen':''} ${status}`} onClick={()=>chooseDate(key)}><span>{d.getDate()}</span>{status&&<i/>}</button>})}</div>
     <div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично занято</span><span><i className="full"/> Нет мест</span></div>
-    <span className="eyebrow">ШАГ 3 · СВОБОДНОЕ ВРЕМЯ</span>
+    <span className="eyebrow">ШАГ 4 · СВОБОДНОЕ ВРЕМЯ</span>
     <div className="available-slot-list">{selectedDate?freeFor(selectedDate).map(slot=><button key={slot.id} className={selectedSlot?.id===slot.id?'time-slot selected':'time-slot'} onClick={()=>setSelectedSlot(slot)}>{new Date(slot.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(slot.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</button>):<p className="muted-note">Выбери день, отмеченный зелёным или жёлтым.</p>}{selectedDate&&!freeFor(selectedDate).length&&<p className="muted-note">На эту дату свободного времени нет.</p>}</div>
-    <div className="booking-summary"><span>Услуга</span><b>Татуировка · от {money(master.price)}</b></div>
+    <div className="booking-summary"><span>Услуга</span><b>{master.services?.find(s=>s.id===selectedService)?.title||'Уточним с мастером'} · {master.services?.find(s=>s.id===selectedService)?.price_from!=null?('от '+money(master.services.find(s=>s.id===selectedService).price_from)):(master.price>0?'от '+money(master.price):'цена по запросу')}</b></div>
     <p className="muted-note">Мастер увидит выбранный интервал и прикреплённую фотографию.</p>
     {error&&<p className="auth-error">{error}</p>}
     <button className="primary-button full-button" disabled={saving||uploading||!selectedSlot} onClick={submit}>{uploading?'Загружаем фото…':saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button>
@@ -199,8 +208,8 @@ function BookingsPage({ supabase, user }) {
     if(!data){setError('Предложение уже изменилось. Обнови список записей.');return}
     setBookings(old=>old.map(x=>x.id===booking.id?{...x,status:data.status}:x))
   }
-  const sendReview=async booking=>{const body=(reviewText[booking.id]||'').trim();if(!body)return;const {error}=await supabase.from('reviews').insert({booking_id:booking.id,client_id:user.id,master_id:booking.master_id,rating:reviewStars[booking.id]||5,body});if(error){setReviewText(old=>({...old,[booking.id]:'Ошибка: '+error.message}));return}setReviewed(old=>[...old,booking.id])}
-  return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{loading?<div className="empty-state">Загружаем записи…</div>:bookings.length?bookings.map(b=><div className="booking-card booking-card-expanded" key={b.id}><div className="booking-status"><span className="status-dot"/> {b.status==='pending'?'Заявка отправлена · ждём расчёт':b.status==='price_proposed'?'Мастер предложил цену':b.status==='confirmed'?'Цена согласована · запись подтверждена':b.status==='cancelled'?'Отменена':b.status==='declined'?'Предложение отклонено':b.status==='completed'?'Завершена':b.status}</div><h3>{b.masters?.public_name||'Мастер'}</h3><p>{b.client_note||'Запись'}</p><div className="booking-date"><CalendarDays size={16}/> {new Date(b.starts_at).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'})}</div>{b.reference_image_url&&<a className="client-reference-link" href={b.reference_image_url} target="_blank" rel="noopener noreferrer">Открыть мой референс</a>}{b.status==='price_proposed'&&<div className="client-price-offer"><span>ПРЕДЛОЖЕНИЕ МАСТЕРА</span><strong>{new Intl.NumberFormat('ru-RU').format(Number(b.proposed_price||0))} ₽</strong>{b.master_message&&<p>{b.master_message}</p>}<div><button className="approve-button" disabled={savingId===b.id} onClick={()=>respondToPrice(b,true)}>{savingId===b.id?'Отправляем…':'Согласиться'}</button><button className="reject-button" disabled={savingId===b.id} onClick={()=>respondToPrice(b,false)}>Отказаться</button></div></div>}{b.status==='confirmed'&&b.proposed_price&&<p className="muted-note">Согласованная стоимость: <b>{new Intl.NumberFormat('ru-RU').format(Number(b.proposed_price))} ₽</b></p>}{b.status==='completed'&&!reviewed.includes(b.id)&&<div className="review-editor"><b>Оставить отзыв</b><select value={reviewStars[b.id]||5} onChange={e=>setReviewStars(old=>({...old,[b.id]:Number(e.target.value)}))}>{[5,4,3,2,1].map(n=><option key={n} value={n}>{n} из 5</option>)}</select><textarea value={reviewText[b.id]||''} onChange={e=>setReviewText(old=>({...old,[b.id]:e.target.value}))} placeholder="Как всё прошло?"/><button className="primary-button" onClick={()=>sendReview(b)}>Отправить отзыв</button></div>}{reviewed.includes(b.id)&&<p className="muted-note">Отзыв отправлен. Спасибо!</p>}</div>):<div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}{error&&<p className="auth-error">{error}</p>}</main></>
+  const sendReview=async booking=>{const body=(reviewText[booking.id]||'').trim();const {error}=await supabase.from('reviews').insert({booking_id:booking.id,client_id:user.id,master_id:booking.master_id,rating:reviewStars[booking.id]||5,body:body||null});if(error){setError(error.message);return}setReviewed(old=>[...old,booking.id]);setReviewText(old=>({...old,[booking.id]:''}))}
+  return <><Header title="Мои записи" subtitle="ВАШИ ВСТРЕЧИ"/><main className="page-content">{loading?<div className="empty-state">Загружаем записи…</div>:bookings.length?bookings.map(b=><div className="booking-card booking-card-expanded" key={b.id}><div className="booking-status"><span className="status-dot"/> {b.status==='pending'?'Заявка отправлена · ждём расчёт':b.status==='price_proposed'?'Мастер предложил цену':b.status==='confirmed'?'Цена согласована · запись подтверждена':b.status==='cancelled'?'Отменена':b.status==='declined'?'Предложение отклонено':b.status==='completed'?'Завершена':b.status}</div><h3>{b.masters?.public_name||'Мастер'}</h3><p>{b.client_note||'Запись'}</p><div className="booking-date"><CalendarDays size={16}/> {new Date(b.starts_at).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'})}</div>{b.reference_image_url&&<a className="client-reference-link" href={b.reference_image_url} target="_blank" rel="noopener noreferrer">Открыть мой референс</a>}{b.status==='price_proposed'&&<div className="client-price-offer"><span>ПРЕДЛОЖЕНИЕ МАСТЕРА</span><strong>{new Intl.NumberFormat('ru-RU').format(Number(b.proposed_price||0))} ₽</strong>{b.master_message&&<p>{b.master_message}</p>}<div><button className="approve-button" disabled={savingId===b.id} onClick={()=>respondToPrice(b,true)}>{savingId===b.id?'Отправляем…':'Согласиться'}</button><button className="reject-button" disabled={savingId===b.id} onClick={()=>respondToPrice(b,false)}>Отказаться</button></div></div>}{b.status==='confirmed'&&b.proposed_price&&<p className="muted-note">Согласованная стоимость: <b>{new Intl.NumberFormat('ru-RU').format(Number(b.proposed_price))} ₽</b></p>}{b.status==='completed'&&!reviewed.includes(b.id)&&<div className="review-editor"><b>Оценить сеанс</b><div className="review-star-picker">{[1,2,3,4,5].map(n=><button type="button" key={n} className={(reviewStars[b.id]||5)>=n?'active':''} onClick={()=>setReviewStars(old=>({...old,[b.id]:n}))} aria-label={n+' из 5'}>★</button>)}</div><textarea maxLength={1000} value={reviewText[b.id]||''} onChange={e=>setReviewText(old=>({...old,[b.id]:e.target.value}))} placeholder="Расскажи, как всё прошло (необязательно)"/><button className="primary-button" onClick={()=>sendReview(b)}>Отправить отзыв</button></div>}{reviewed.includes(b.id)&&<p className="muted-note">Отзыв отправлен. Спасибо!</p>}</div>):<div className="empty-state tall"><CalendarDays size={34}/><b>Пока нет записей</b><span>Выбери мастера и забронируй удобное время</span></div>}{error&&<p className="auth-error">{error}</p>}</main></>
 }
 
 function ProfilePage({ supabase, isMaster, isAdmin, viewMode, setViewMode, connectionStatus, user, authLoading, onLogin, onSignOut, authError, onStartRegistration, registrationStatus }) {
@@ -380,7 +389,7 @@ export default function App() {
       if (!supabase) return
       const { data, error } = await supabase
         .from('masters')
-        .select('id, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, cover_image_url, master_styles(styles(name)), portfolio_items(image_path), services(id,title,description,price_from,duration_minutes,is_active)')
+        .select('id, slug, category, public_name, bio, studio_name, city, contact_telegram, experience_years, starting_price, rating, reviews_count, cover_image_url, master_styles(styles(name)), portfolio_items(image_path,caption,sort_order), services(id,title,description,price_from,duration_minutes,is_active), reviews(id,rating,body,created_at), master_time_slots(slot_date,starts_at,is_active)')
         .eq('status', 'approved')
         .order('rating', { ascending: false })
       if (!active) return
@@ -396,17 +405,26 @@ export default function App() {
         handle: m.contact_telegram || '',
         studio: m.studio_name || 'Частный мастер',
         rating: Number(m.rating || 0),
-        reviews: Number(m.reviews_count || 0),
+        reviews: (m.reviews||[]).length || Number(m.reviews_count || 0),
+        reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
+        workCaptions: (m.portfolio_items||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.caption||''),
+        slug: m.slug,
         price: Number(m.starting_price || 0),
         styles: (m.master_styles || []).map(item => item.styles?.name).filter(Boolean),
         city: m.city || 'Калининград',
         about: m.bio || '',
         experience: m.experience_years ? `${m.experience_years} лет` : 'Не указан',
         image: m.cover_image_url || m.portfolio_items?.[0]?.image_path || '',
-        works: (m.portfolio_items || []).map(w=>w.image_path),
-        services: (m.services || []).filter(service=>service.is_active && service.title?.trim().toLowerCase()==='татуировка')
+        works: (m.portfolio_items || []).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.image_path),
+        nextAvailable: (m.master_time_slots||[]).filter(slot=>slot.is_active && new Date(slot.starts_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))[0]?.starts_at || '',
+        services: (m.services || []).filter(service=>service.is_active)
       }))
       setMastersList(liveMasters)
+      const requestedSlug = new URLSearchParams(window.location.search).get('master')
+      if (requestedSlug) {
+        const publicMaster = liveMasters.find(item=>item.slug===requestedSlug)
+        if (publicMaster) setSelected(publicMaster)
+      }
       setConnectionStatus(`подключено · мастеров в каталоге: ${liveMasters.length}`)
     }
     loadMasters()
@@ -424,7 +442,7 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
-  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:'Татуировка',reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
+  const confirmBooking=async data=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы отправить заявку на запись.');return}setBookingSaving(true);const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:data.serviceId||null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:data.clientNote||'Запись',reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});setBookingSaving(false);if(error){setAuthError(error.message);return}setBookingMaster(null);setSelected(null);setActive('bookings')}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
