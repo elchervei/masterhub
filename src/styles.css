@@ -1027,3 +1027,85 @@ img{max-width:100%}
 .profile-info-menu>div>span:last-child{min-width:0;display:flex;flex-direction:column;gap:4px}
 .profile-info-menu b{color:#e8e1ec;font-size:11px;font-weight:600}
 .profile-info-menu small{color:#958b9c;font-size:9px;line-height:1.4}
+
+/* Appointment area — underground studio / neon editorial */
+.master-workspace .appointments-hero{position:relative;isolation:isolate;overflow:hidden;margin:2px 0 12px;padding:20px 18px 15px;border:1px solid rgba(184,133,255,.24);border-radius:23px;background:linear-gradient(125deg,#1d1728,#15131d 56%,#111217);box-shadow:0 15px 34px #0004}
+.master-workspace .appointments-hero-glow{position:absolute;z-index:-1;width:210px;height:210px;right:-70px;top:-115px;border-radius:50%;background:radial-gradient(circle,rgba(177,105,255,.31),transparent 70%);pointer-events:none}
+.master-workspace .appointments-hero-top,.master-workspace .appointments-hero-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.master-workspace .appointments-hero .eyebrow{display:inline-flex;align-items:center;gap:6px;color:#c9a4ed;font-size:9px;letter-spacing:.17em;font-weight:800}
+.master-workspace .appointments-live-dot{color:#9d8ca9;font-size:8px;letter-spacing:.1em}
+.master-workspace .appointments-live-dot:first-letter{color:#b5ff9d}
+.master-workspace .appointments-hero h2{margin:16px 0 5px;font-size:35px;line-height:1;letter-spacing:-1.7px;font-weight:800;color:#f5effb}
+.master-workspace .appointments-hero h2>span{color:#c18aff}
+.master-workspace .appointments-hero>p{max-width:270px;margin:0;color:#a99eb2;font-size:10px;line-height:1.55}
+.master-workspace .appointments-hero-bottom{justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:17px}
+.master-workspace .appointments-hero-bottom>span{display:inline-flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid rgba(201,164,237,.16);border-radius:999px;background:#09080e4d;color:#cbbbd6;font-size:9px}
+.master-workspace .appointments-hero-bottom svg{color:#c18aff}
+.master-workspace .appointments-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px}
+.master-workspace .appointment-stat-card{min-width:0;display:flex;flex-direction:column;gap:5px;padding:12px 11px;border:1px solid #ffffff13;border-radius:16px;background:linear-gradient(145deg,#1a1920,#131419)}
+.master-workspace .appointment-stat-card>span{font-size:7px;letter-spacing:.11em;color:#95899f;font-weight:800;white-space:nowrap}
+.master-workspace .appointment-stat-card>b{font-size:24px;line-height:1.1;color:#f0e8f7;letter-spacing:-.8px}
+.master-workspace .appointment-stat-card>small{font-size:8px;color:#79727f}
+.master-workspace .appointments-list-section{padding:16px 13px 13px;border:1px solid rgba(190,157,222,.13);border-radius:21px;background:linear-gradient(155deg,#19171f,#121318);box-shadow:0 10px 26px #0002}
+.master-workspace .appointments-list-heading{display:flex;align-items:center;justify-content:space-between;margin:0 2px 13px}
+.master-workspace .appointments-list-heading .eyebrow{font-size:8px;letter-spacing:.16em;color:#a58bb8}
+.master-workspace .appointments-list-heading h3{display:flex;align-items:center;gap:8px;margin:5px 0 0;font-size:20px;letter-spacing:-.5px;color:#f1eaf6}
+.master-workspace .appointments-list-heading h3>span{display:grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:8px;background:#2b2038;color:#c99bfa;font-size:10px}
+.master-workspace .appointments-list-spark{width:34px;height:34px;display:grid;place-items:center;border:1px solid #c08aff33;border-radius:12px;background:#a069d31a;color:#c18aff}
+.master-workspace .appointments-filter{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px;padding:4px;border:1px solid #ffffff10;border-radius:13px;background:#0e0e13}
+.master-workspace .appointments-filter button{min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 7px;border:0;border-radius:10px;background:transparent;color:#918a98;font-size:10px;font-weight:700;transition:background .16s,color .16s}
+.master-workspace .appointments-filter button b{min-width:19px;padding:2px 5px;border-radius:7px;background:#ffffff10;font-size:8px;color:inherit}
+.master-workspace .appointments-filter button.selected{background:linear-gradient(110deg,#7545a2,#9c61cb);color:#fff;box-shadow:0 4px 13px #7841a440}
+.master-workspace .appointments-filter button.selected b{background:#ffffff2e}
+.master-workspace .appointment-card-v2{position:relative;width:100%;min-width:0;display:grid;grid-template-columns:54px minmax(0,1fr) 27px;align-items:center;gap:10px;margin:8px 0;padding:11px 10px;border:1px solid #ffffff13;border-radius:16px;background:linear-gradient(110deg,#201c28,#17171e 78%);text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease}
+.master-workspace .appointment-card-v2:active{transform:scale(.985)}
+.master-workspace .appointment-card-v2.confirmed{border-left:2px solid #9bdb9b}
+.master-workspace .appointment-card-v2.price_proposed{border-left:2px solid #c99bfa}
+.master-workspace .appointment-card-v2.completed{border-left:2px solid #7f8998}
+.master-workspace .appointment-card-v2.archived{opacity:.83}
+.master-workspace .appointment-card-date{min-height:61px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #c08aff24;border-radius:12px;background:linear-gradient(155deg,#30223e,#211a2b)}
+.master-workspace .appointment-card-date>b{font-size:21px;line-height:1.05;font-weight:800;color:#f4eafa;letter-spacing:-.8px}
+.master-workspace .appointment-card-date>small{margin-top:2px;color:#d1b1ec;font-size:9px;text-transform:uppercase;font-weight:800}
+.master-workspace .appointment-card-date>i{margin-top:3px;color:#8f8498;font-size:8px;font-style:normal}
+.master-workspace .appointment-card-content{min-width:0;display:flex;flex-direction:column;gap:6px}
+.master-workspace .appointment-card-topline{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:5px}
+.master-workspace .appointment-card-topline>b{min-width:0;overflow:hidden;color:#eee7f3;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+.master-workspace .appointment-status-v2{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #ffffff14;border-radius:999px;background:#25212a;color:#b9b0c0;font-size:7px;font-weight:800;white-space:nowrap}
+.master-workspace .appointment-status-v2.confirmed{border-color:#8ecf9330;background:#619c671f;color:#a7e1a9}
+.master-workspace .appointment-status-v2.price_proposed{border-color:#c08aff33;background:#9a60c721;color:#d7b4fa}
+.master-workspace .appointment-status-v2.completed{color:#b3bac5}
+.master-workspace .appointment-card-service{overflow:hidden;color:#a69baf;font-size:9px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.master-workspace .appointment-card-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#8d8794;font-size:8px}
+.master-workspace .appointment-card-meta>span:first-child{display:inline-flex;align-items:center;gap:4px;min-width:0}
+.master-workspace .appointment-card-meta svg{color:#b18bd0}
+.master-workspace .appointment-card-price{color:#d7b2fa;font-weight:800;white-space:nowrap}
+.master-workspace .appointment-card-arrow{display:flex;flex-direction:column;align-items:center;gap:3px;color:#b98be0}
+.master-workspace .appointment-card-arrow>span{font-size:5px;letter-spacing:.08em;font-weight:900}
+.master-workspace .appointments-empty-v2{min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:22px 18px;text-align:center;border:1px dashed #b789db33;border-radius:16px;background:#8a5ead0b}
+.master-workspace .appointments-empty-icon{width:46px;height:46px;display:grid;place-items:center;border:1px solid #be8aea33;border-radius:16px;background:#241b2d;color:#c39be5}
+.master-workspace .appointments-empty-v2>b{font-size:12px;color:#eee5f4}
+.master-workspace .appointments-empty-v2>p{max-width:240px;margin:0;color:#8f8795;font-size:9px;line-height:1.55}
+.master-workspace .archive-booking-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:12px;border:1px solid #be8aea33;border-radius:15px;background:linear-gradient(110deg,#8653aa21,#18151fe6)}
+.master-workspace .archive-booking-panel>div{min-width:0;display:flex;align-items:center;gap:9px}
+.master-workspace .archive-booking-panel>div>svg{flex:0 0 auto;color:#c39be5}
+.master-workspace .archive-booking-panel>div>span{min-width:0;display:flex;flex-direction:column;gap:4px}
+.master-workspace .archive-booking-panel b{font-size:10px;color:#eee6f5}
+.master-workspace .archive-booking-panel small{font-size:8px;line-height:1.4;color:#9b91a3}
+.master-workspace .archive-booking-button,.master-workspace .restore-booking-button{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:35px;padding:8px 10px;border:1px solid #be8aea3d;border-radius:11px;background:#382449;color:#e5cafa;font-size:9px;font-weight:800}
+.master-workspace .restore-booking-button{background:#1d3026;border-color:#8fcf9733;color:#b4e6b8}
+.master-workspace .archive-booking-button:disabled,.master-workspace .restore-booking-button:disabled{opacity:.55}
+@media(max-width:380px){
+.master-workspace .appointments-hero{padding:17px 14px 13px;border-radius:20px}
+.master-workspace .appointments-hero h2{font-size:31px}
+.master-workspace .appointments-stats-grid{gap:6px}
+.master-workspace .appointment-stat-card{padding:10px 8px}
+.master-workspace .appointment-stat-card>span{font-size:6px;letter-spacing:.07em}
+.master-workspace .appointment-stat-card>b{font-size:21px}
+.master-workspace .appointments-list-section{padding:13px 10px 10px}
+.master-workspace .appointment-card-v2{grid-template-columns:48px minmax(0,1fr) 20px;gap:7px;padding:9px 7px}
+.master-workspace .appointment-card-date{min-height:57px}
+.master-workspace .appointment-card-topline>b{font-size:9px}
+.master-workspace .appointment-status-v2{font-size:6px;padding:4px 5px}
+.master-workspace .appointment-card-arrow>span{display:none}
+}
+@media(prefers-reduced-motion:reduce){.master-workspace .appointments-filter button,.master-workspace .appointment-card-v2{transition:none}}
