@@ -123,14 +123,15 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, categ
 
 function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
   const [tab, setTab] = useState('works')
+  const categoryTitle = ({tattoo:'татуировок',nails:'ногтей и педикюра',brows:'бровей и ресниц',piercing:'пирсинга',makeup:'макияжа'})[master.category] || 'услуг'
   const [lightbox, setLightbox] = useState('')
   return <><Header title="Профиль мастера" back={onBack} action={<button className={favorite?'icon-button is-favorite':'icon-button'} onClick={toggleFavorite}><Heart size={20} fill={favorite?'currentColor':'none'}/></button>}/>
     <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</>:'Новый мастер · отзывов пока нет'}</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
       <div className="detail-facts"><div><small>ОПЫТ</small><b>{master.experience}</b></div><div><small>СТАРТ ОТ</small><b>{master.price>0?money(master.price):'По запросу'}</b></div><div><small>ГОРОД</small><b>{master.city||'Калининград'}</b></div></div>
       <p className="detail-about">{master.about}</p><div className="tag-row detail-tags">{master.styles.map(s=><span className="style-tag" key={s}>{s}</span>)}</div>
       <div className="detail-tabs"><button className={tab==='works'?'selected':''} onClick={()=>setTab('works')}>Портфолио</button><button className={tab==='services'?'selected':''} onClick={()=>setTab('services')}>Услуги и цены</button><button className={tab==='reviews'?'selected':''} onClick={()=>setTab('reviews')}>Отзывы · {master.reviews}</button><button className={tab==='info'?'selected':''} onClick={()=>setTab('info')}>О мастере</button></div>
-      {tab==='works'&&<><div className="portfolio-intro"><span>РАБОТЫ МАСТЕРА</span><b>{master.works.length} фото</b></div><div className="work-grid">{master.works.map((w,i)=><button type="button" className="portfolio-work" key={w+i} onClick={()=>setLightbox(w)}><img src={String(w).startsWith('http') ? w : workImage(w)} alt={master.workCaptions?.[i]||'Работа мастера'} loading="lazy"/>{master.workCaptions?.[i]&&<span>{master.workCaptions[i]}</span>}</button>)}</div>{!master.works.length&&<div className="empty-state">Мастер скоро добавит свои работы.</div>}</>}
-      {tab==='services'&&<div className="service-list">{master.services?.length ? master.services.map(service=><div key={service.id}><span>{service.title}<small>{service.description||service.duration_minutes+' мин.'}</small></span><b>от {money(service.price_from)}</b></div>) : <><div><span>Стоимость услуг</span><b>от {money(master.price)}</b></div><small>Мастер ещё не добавил подробный прайс. Уточни стоимость при записи.</small></>}</div>}
+      {tab==='works'&&<><div className="portfolio-intro"><span>ПРИМЕРЫ РАБОТ · {categoryTitle.toUpperCase()}</span><b>{master.works.length} фото</b></div><div className="work-grid">{master.works.map((w,i)=><button type="button" className="portfolio-work" key={w+i} onClick={()=>setLightbox(w)}><img src={String(w).startsWith('http') ? w : workImage(w)} alt={master.workCaptions?.[i]||'Работа мастера'} loading="lazy"/>{master.workCaptions?.[i]&&<span>{master.workCaptions[i]}</span>}</button>)}</div>{!master.works.length&&<div className="empty-state">Мастер скоро добавит свои работы.</div>}</>}
+      {tab==='services'&&<div className="service-list">{master.services?.length ? master.services.map(service=><div key={service.id}><span>{service.title}{service.description&&<small>{service.description}</small>}</span><b>{money(service.price_from)}</b></div>) : <><div><span>Стоимость услуг</span><b>от {money(master.price)}</b></div><small>Мастер ещё не добавил подробный прайс. Уточни стоимость при записи.</small></>}</div>}
       {tab==='reviews'&&<div className="master-reviews-list">{master.reviewItems?.length?master.reviewItems.map(review=><article className="master-review-card" key={review.id}><div><b>Клиент</b><span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span></div><small>{new Date(review.created_at).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</small>{review.body&&<p>{review.body}</p>}</article>):<div className="empty-state">Пока нет отзывов. После первого сеанса клиент сможет оставить оценку.</div>}</div>}
       {tab==='info'&&<div className="info-panel"><p>{master.about}</p><p><MapPin size={15}/> {master.city||'Калининград'} · адрес студии уточняется при записи</p><p><MessageCircle size={15}/> {master.handle||'Telegram не указан'}</p></div>}
       <button className="primary-button booking-cta" onClick={onBook}>Записаться к мастеру <ChevronRight size={17}/></button>
@@ -178,9 +179,9 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   }
   return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
-    <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали татуировки до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
+    <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали услуги до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
     <span className="eyebrow">ШАГ 1 · УСЛУГА И ДЕТАЛИ</span>
-    {master.services?.length>0&&<label className="booking-service-field">ВЫБЕРИ УСЛУГУ<select value={selectedService} onChange={e=>setSelectedService(e.target.value)}>{master.services.map(service=><option key={service.id} value={service.id}>{service.title} · {Number(service.price_from)>0?'от '+money(service.price_from):'цена по запросу'}</option>)}</select></label>}
+    {master.services?.length>0&&<label className="booking-service-field">ВЫБЕРИ УСЛУГУ<select value={selectedService} onChange={e=>setSelectedService(e.target.value)}>{master.services.map(service=><option key={service.id} value={service.id}>{service.title} · {Number(service.price_from)>0?money(service.price_from):'цена по запросу'}</option>)}</select></label>}
     <label className="booking-note-field">ЧТО ХОЧЕШЬ СДЕЛАТЬ?<textarea value={clientNote} onChange={e=>setClientNote(e.target.value.slice(0,300))} placeholder="Размер, место, идея, пожелания мастеру…" maxLength={300}/></label>
     <span className="eyebrow">ШАГ 2 · РЕФЕРЕНС / ЭСКИЗ</span>
     <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0]||null;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){setError(file.size>5*1024*1024?'Максимальный размер референса — 5 МБ.':'Поддерживаются только JPG, PNG и WebP.');e.target.value='';setReference(null);return}setError('');setReference(file)}}/></label>
@@ -257,7 +258,7 @@ function ProfilePage({ supabase, isMaster, isAdmin, viewMode, setViewMode, conne
 
 
 function MasterRegistration({ onClose, onSubmit }) {
-  const [form, setForm] = useState({ category: 'tattoo', public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0', starting_price: '' })
+  const [form, setForm] = useState({ category: 'tattoo', public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0' })
   const [saving, setSaving] = useState(false)
   const update = (key, value) => setForm(old => ({ ...old, [key]: value }))
   const submit = async e => { e.preventDefault(); if (!form.public_name.trim()) return; setSaving(true); await onSubmit(form); setSaving(false) }
@@ -269,7 +270,7 @@ function MasterRegistration({ onClose, onSubmit }) {
     <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ" maxLength={500}/></label>
     <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии" maxLength={80}/></label>
     <label>Telegram для связи<input value={form.contact_telegram} onChange={e=>update('contact_telegram',e.target.value)} placeholder="@username" maxLength={32}/></label>
-    <div className="registration-row"><label>Опыт, лет<input type="number" min="0" value={form.experience_years} onChange={e=>update('experience_years',e.target.value)}/></label><label>Цена от, ₽<input required type="number" min="0" value={form.starting_price} onChange={e=>update('starting_price',e.target.value)}/></label></div>
+    <label>Опыт, лет<input type="number" min="0" value={form.experience_years} onChange={e=>update('experience_years',e.target.value)}/></label>
     <button className="primary-button full-button" disabled={saving}>{saving ? 'Отправляем…' : 'Отправить на проверку'} <ChevronRight size={17}/></button>
   </form></div>
 }
@@ -384,7 +385,7 @@ export default function App() {
       city: 'Калининград',
       contact_telegram: String(form.contact_telegram || '').trim().slice(0, 32) || null,
       experience_years: Math.max(0, Number(form.experience_years || 0)),
-      starting_price: Math.max(0, Number(form.starting_price || 0)),
+      starting_price: 0,
       status: 'pending'
     }
     const { data: existing, error: lookupError } = await supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
@@ -432,7 +433,7 @@ export default function App() {
           reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
           workCaptions: (m.portfolio_items||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(w=>w.caption||''),
           slug: m.slug,
-          price: Number(m.starting_price || 0),
+          price: (m.services || []).filter(service=>service.is_active).length ? Math.min(...(m.services || []).filter(service=>service.is_active).map(service=>Number(service.price_from)||0)) : Number(m.starting_price || 0),
           styles: (m.master_styles || []).map(item => item.styles?.name).filter(Boolean),
           city: m.city || 'Калининград',
           about: m.bio || '',
