@@ -11,7 +11,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [inquiries,setInquiries]=useState([]),[selectedInquiry,setSelectedInquiry]=useState(null),[inquiryImage,setInquiryImage]=useState('')
   const [serviceTitle,setServiceTitle]=useState('Татуировка'),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('120')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
-  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
+  const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[showProfileTools,setShowProfileTools]=useState(false),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({_masterId:null,public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('week')
   const load=async()=>{
     if(!supabase||!user){setLoading(false);return}
@@ -23,7 +23,8 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       if(masterError)throw masterError
       setMaster(current||null)
       if(!current){setServices([]);setWorks([]);setBookings([]);setSlots([]);setInquiries([]);return}
-      setProfileDraft({
+      setProfileDraft(old=>old._masterId===current.id?old:{
+        _masterId:current.id,
         public_name:current.public_name||'',
         bio:current.bio||'',
         studio_name:current.studio_name||'',
