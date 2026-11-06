@@ -37,7 +37,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Поддерживаются только JPG, PNG и WebP.');return}
     if(file.size>5*1024*1024){setError('Максимальный размер фото — 5 МБ.');return}
     setCloudUploading(true);setError('')
-    const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'
+    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
     const path=`${user.id}/${kind}-${crypto.randomUUID() }.${ext}`
     const {data,error:uploadError}=await supabase.storage.from('masterhub-media').upload(path,file,{contentType:file.type,upsert:false})
     if(uploadError){setError(uploadError.message);setCloudUploading(false);return}
@@ -54,7 +54,12 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const copyPublicProfile=async()=>{
     if(!master?.slug)return
     const url=window.location.origin+'/?master='+encodeURIComponent(master.slug)
-    try{if(navigator.share)await navigator.share({title:'MASTER HUB · '+master.public_name,url});else{await navigator.clipboard.writeText(url);setCopiedLink(true);window.setTimeout(()=>setCopiedLink(false),2200)}}catch(error){if(error?.name!=='AbortError')setError('Не удалось скопировать ссылку. Скопируй её вручную: '+url)}
+    if(navigator.share){
+      try{await navigator.share({title:'MASTER HUB · '+master.public_name,text:'Профиль мастера в MASTER HUB',url});return}
+      catch(error){if(error?.name==='AbortError')return}
+    }
+    try{await navigator.clipboard.writeText(url);setCopiedLink(true);window.setTimeout(()=>setCopiedLink(false),2200)}
+    catch{setError('Скопируй публичную ссылку: '+url)}
   }
   const saveWorkCaption=async(work,caption)=>{
     const value=caption.trim().slice(0,120)
@@ -75,6 +80,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     e.preventDefault();if(!master)return
     if(endTime<=startTime){setError('Время окончания должно быть позже начала.');return}
     const start=new Date(`${selectedDate}T${startTime}:00`),end=new Date(`${selectedDate}T${endTime}:00`)
+    if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||start<=new Date()){setError('Нельзя добавить интервал в прошлом.');return}
     const overlaps=slots.some(s=>s.slot_date===selectedDate&&new Date(s.starts_at)<end&&new Date(s.ends_at)>start)
     if(overlaps){setError('Этот интервал пересекается с уже добавленным.');return}
     const {error}=await supabase.from('master_time_slots').insert({master_id:master.id,slot_date:selectedDate,starts_at:start.toISOString(),ends_at:end.toISOString(),is_active:true})
