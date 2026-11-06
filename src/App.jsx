@@ -193,7 +193,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const submit=async()=>{
     if(!selectedSlot){setError('Сначала выбери свободный интервал.');return}
     setError('')
-    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,serviceId:selectedService||null,clientNote:clientNote.trim(),referenceImageUrl,clientTelegram:clientTelegram.trim()})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
+    try{setUploading(true);const referenceImageUrl=await uploadReference();setUploading(false);await onConfirm({master,slotId:selectedSlot.id,startsAt:selectedSlot.starts_at,endsAt:selectedSlot.ends_at,serviceId:selectedService||null,clientNote:clientNote.trim(),referenceImageUrl,clientTelegram:telegramUsername(clientTelegram)||''})}catch(e){setUploading(false);setError(e.message||'Не удалось загрузить фотографию.')}
   }
   return <><Header title="Онлайн-запись" back={onBack}/><main className="page-content booking-page">
     <div className="booking-master">{master.image&&<img src={master.image} alt=""/>}<div><b>{master.name}</b><small>{master.studio}</small></div></div>
