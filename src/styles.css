@@ -1620,3 +1620,15 @@ img{max-width:100%}
   .category-art{width:32px;height:32px;flex-basis:32px}
 }
 @media(prefers-reduced-motion:reduce){.category-choice{transition:none}}
+
+
+/* Universal service price list: title, price and add action */
+.master-workspace .service-pricing-section>.muted-note{margin:5px 0 10px;color:#a6a6ad;font-size:10px;line-height:1.45}
+.master-workspace .service-add-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(88px,.72fr) auto;align-items:center;gap:7px}
+.master-workspace .service-add-form input{width:100%;min-width:0}
+.master-workspace .service-add-form .service-add-button{display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;min-height:37px;padding:0 11px;white-space:nowrap;font-size:10px}
+.master-workspace .workspace-service-list>div{border-color:rgba(255,255,255,.10)}
+.master-workspace .workspace-service-list>div span{color:#e2e2e5}
+.master-workspace .workspace-service-list>div>b{color:#f0f0f2;white-space:nowrap}
+.master-workspace .service-empty-note{margin:8px 0 0}
+@media(max-width:390px){.master-workspace .service-add-form{grid-template-columns:minmax(0,1fr) minmax(82px,.7fr)}.master-workspace .service-add-form .service-add-button{grid-column:1/-1;width:100%}}
