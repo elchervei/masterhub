@@ -1632,3 +1632,10 @@ img{max-width:100%}
 .master-workspace .workspace-service-list>div>b{color:#f0f0f2;white-space:nowrap}
 .master-workspace .service-empty-note{margin:8px 0 0}
 @media(max-width:390px){.master-workspace .service-add-form{grid-template-columns:minmax(0,1fr) minmax(82px,.7fr)}.master-workspace .service-add-form .service-add-button{grid-column:1/-1;width:100%}}
+
+
+/* Selected service is visible in both sides of the booking flow */
+.client-booking-service,.booking-service-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.035)}
+.client-booking-service span,.booking-service-summary b{min-width:0;color:#e5e5e8;font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.client-booking-service b,.booking-service-summary span{flex:0 0 auto;color:#c7c7cc;font-size:11px;font-weight:700;white-space:nowrap}
+.booking-service-summary{margin:10px 0 12px}
