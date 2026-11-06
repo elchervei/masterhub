@@ -238,12 +238,9 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
         <section className="workspace-section inquiry-inbox-section"><h3><Images size={15}/> Заявки с эскизами <span className="count-chip">{inquiries.filter(x=>x.status==='pending').length}</span></h3>{inquiries.length?inquiries.map(item=><button type="button" className="booking-inbox-card inquiry-inbox-card" key={item.id} onClick={()=>setSelectedInquiry(item)}><span className="booking-inbox-date">{new Date(item.created_at).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'})}</span><b>{item.client_telegram?'@'+item.client_telegram+' · ':''}{item.reference_image_urls?.length||0} изображений</b><span>{item.status==='pending'?'Новая заявка · открыть материалы':item.status==='reviewed'?'Просмотрена':'Отклонена'}</span></button>):<p className="muted-note">Пока никто не отправил фото или эскизы.</p>}</section>
         </>}
         {activeTab==='master-bookings'&&<>
-        <section className="appointments-hero">
-          <div className="appointments-hero-glow"/>
-          <div className="appointments-hero-top"><span className="eyebrow"><Sparkles size={12}/> STUDIO FLOW</span><span className="appointments-live-dot">● ТВОЙ РИТМ</span></div>
-          <h2>Сеансы<span>.</span></h2>
-          <p>Все встречи с клиентами — в одном месте. Выбирай, открывай, управляй.</p>
-          <div className="appointments-hero-bottom"><span><CalendarDays size={14}/>{appointmentBookings.length} активных в списке</span><span><CheckCircle2 size={14}/>{bookings.filter(b=>b.status==='completed').length} завершено</span></div>
+        <section className="appointments-heading-simple">
+          <h2>Сеансы</h2>
+          <p>Все записи клиентов в одном месте.</p>
         </section>
         <section className="appointments-stats-grid">
           <div className="appointment-stat-card"><span>НОВЫЕ ЗАЯВКИ</span><b>{bookings.filter(b=>new Date(b.created_at)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length}</b><small>за этот месяц</small></div>
