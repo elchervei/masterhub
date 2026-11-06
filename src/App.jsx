@@ -146,6 +146,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [selectedDate,setSelectedDate]=useState('')
   const [selectedSlot,setSelectedSlot]=useState(null)
   const [selectedService,setSelectedService]=useState(master.services?.[0]?.id||'')
+  const taskPlaceholder = ({tattoo:'Размер, место, идея, пожелания мастеру…',nails:'Процедура, форма, длина, дизайн…',brows:'Желаемая форма, эффект, пожелания…',piercing:'Место прокола, украшение, пожелания…',makeup:'Образ, повод, стиль и пожелания…'})[master.category] || 'Опиши, что хочешь сделать…'
   const [clientNote,setClientNote]=useState('')
   const [reference,setReference]=useState(null)
   const [clientTelegram,setClientTelegram]=useState(()=>window.Telegram?.WebApp?.initDataUnsafe?.user?.username||'')
@@ -182,8 +183,8 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <section className="booking-contact-card"><div><span className="eyebrow">ЕСТЬ ВОПРОСЫ?</span><b>Свяжись с мастером напрямую</b><small>Можно уточнить детали услуги до отправки заявки.</small></div>{telegramContact?<a href={telegramContact} target="_blank" rel="noopener noreferrer" className="telegram-contact-button"><Send size={16}/> Написать в Telegram</a>:<span className="contact-unavailable">Мастер пока не указал Telegram для связи</span>}</section>
     <span className="eyebrow">ШАГ 1 · УСЛУГА И ДЕТАЛИ</span>
     {master.services?.length>0&&<label className="booking-service-field">ВЫБЕРИ УСЛУГУ<select value={selectedService} onChange={e=>setSelectedService(e.target.value)}>{master.services.map(service=><option key={service.id} value={service.id}>{service.title} · {Number(service.price_from)>0?money(service.price_from):'цена по запросу'}</option>)}</select></label>}
-    <label className="booking-note-field">ЧТО ХОЧЕШЬ СДЕЛАТЬ?<textarea value={clientNote} onChange={e=>setClientNote(e.target.value.slice(0,300))} placeholder="Размер, место, идея, пожелания мастеру…" maxLength={300}/></label>
-    <span className="eyebrow">ШАГ 2 · РЕФЕРЕНС / ЭСКИЗ</span>
+    <label className="booking-note-field">ЧТО ХОЧЕШЬ СДЕЛАТЬ?<textarea value={clientNote} onChange={e=>setClientNote(e.target.value.slice(0,300))} placeholder={taskPlaceholder} maxLength={300}/></label>
+    <span className="eyebrow">ШАГ 2 · ФОТО / ПРИМЕР</span>
     <label className="upload-control booking-reference"><Upload size={16}/>{reference?reference.name:'Прикрепить фото или эскиз'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0]||null;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){setError(file.size>5*1024*1024?'Максимальный размер референса — 5 МБ.':'Поддерживаются только JPG, PNG и WebP.');e.target.value='';setReference(null);return}setError('');setReference(file)}}/></label>
     {reference&&<p className="muted-note">Фото будет прикреплено к заявке мастеру.</p>}
     <label className="client-telegram-field">ТВОЙ TELEGRAM ДЛЯ СВЯЗИ<input value={clientTelegram} onChange={e=>setClientTelegram(e.target.value.slice(0,32))} placeholder="@username" maxLength={32} autoCapitalize="none" autoCorrect="off"/><small>Мастер сможет написать тебе, чтобы уточнить детали записи.</small></label>
@@ -194,7 +195,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
     <div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично занято</span><span><i className="full"/> Нет мест</span></div>
     <span className="eyebrow">ШАГ 4 · СВОБОДНОЕ ВРЕМЯ</span>
     <div className="available-slot-list">{selectedDate?freeFor(selectedDate).map(slot=><button key={slot.id} className={selectedSlot?.id===slot.id?'time-slot selected':'time-slot'} onClick={()=>setSelectedSlot(slot)}>{new Date(slot.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(slot.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</button>):<p className="muted-note">Выбери день, отмеченный зелёным или жёлтым.</p>}{selectedDate&&!freeFor(selectedDate).length&&<p className="muted-note">На эту дату свободного времени нет.</p>}</div>
-    <div className="booking-summary"><span>Услуга</span><b>{master.services?.find(s=>s.id===selectedService)?.title||'Уточним с мастером'} · {master.services?.find(s=>s.id===selectedService)?.price_from>0?('от '+money(master.services.find(s=>s.id===selectedService).price_from)):(master.price>0?'от '+money(master.price):'цена по запросу')}</b></div>
+    <div className="booking-summary"><span>Услуга</span><b>{master.services?.find(s=>s.id===selectedService)?.title||'Уточним с мастером'} · {master.services?.find(s=>s.id===selectedService)?.price_from>0?money(master.services.find(s=>s.id===selectedService).price_from):(master.price>0?money(master.price):'цена по запросу')}</b></div>
     <p className="muted-note">Мастер увидит выбранный интервал и прикреплённую фотографию.</p>
     {error&&<p className="auth-error">{error}</p>}
     <button className="primary-button full-button" disabled={saving||uploading||!selectedSlot} onClick={submit}>{uploading?'Загружаем фото…':saving?'Отправляем…':'Отправить заявку'} <ChevronRight size={17}/></button>
