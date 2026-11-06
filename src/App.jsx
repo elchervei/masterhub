@@ -147,7 +147,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [selectedService,setSelectedService]=useState(master.services?.[0]?.id||'')
   const [clientNote,setClientNote]=useState('')
   const [reference,setReference]=useState(null)
-  const [clientTelegram,setClientTelegram]=useState('')
+  const [clientTelegram,setClientTelegram]=useState(()=>window.Telegram?.WebApp?.initDataUnsafe?.user?.username||'')
   const [uploading,setUploading]=useState(false)
   const [error,setError]=useState('')
   const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
