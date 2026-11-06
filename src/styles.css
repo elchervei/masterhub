@@ -1251,3 +1251,55 @@ img{max-width:100%}
 
 .client-booking-card .client-telegram-chat{display:flex;align-items:center;justify-content:center;gap:8px;margin:11px 0 3px;padding:12px 14px;border:1px solid rgba(173,132,204,.24);border-radius:13px;background:rgba(117,73,149,.13);color:#d9b8f0;font-size:11px;font-weight:750;text-decoration:none;transition:background .18s ease,border-color .18s ease}
 .client-booking-card .client-telegram-chat:active{background:rgba(117,73,149,.24);border-color:rgba(190,150,220,.4)}
+
+
+/* Master cabinet palette aligned with the app's graphite UI */
+.master-workspace .master-dashboard-heading{
+ border-color:rgba(255,255,255,.11);
+ background:radial-gradient(ellipse at 100% 0%,rgba(255,255,255,.055),transparent 55%),linear-gradient(135deg,#29292f,#19191e);
+}
+.master-workspace .master-dashboard-heading .eyebrow,
+.master-workspace .master-dashboard-stats>button>small span,
+.master-workspace .master-dashboard-section-title button,
+.master-workspace .master-next-arrow,
+.master-workspace .master-action-arrow,
+.master-workspace .master-tools-heading .eyebrow{color:#c4c4ca}
+.master-workspace .master-dashboard-heading h2,
+.master-workspace .master-dashboard-stats>*>b,
+.master-workspace .master-next-booking,
+.master-workspace .master-dashboard-actions b,
+.master-workspace .master-tools-heading h3{color:#f0f0f2}
+.master-workspace .master-dashboard-heading p,
+.master-workspace .master-dashboard-stats>*>span,
+.master-workspace .master-dashboard-section-title>span,
+.master-workspace .master-next-booking>span:nth-child(2)>small,
+.master-workspace .master-dashboard-empty,
+.master-workspace .master-dashboard-actions small{color:#a4a4aa}
+.master-workspace .master-dashboard-avatar{border-color:rgba(255,255,255,.18);background:#29292f}
+.master-workspace .master-dashboard-placeholder,
+.master-workspace .master-dashboard-actions>button>svg,
+.master-workspace .master-dashboard-empty svg{color:#c2c2c8}
+.master-workspace .master-dashboard-stats>button,
+.master-workspace .master-dashboard-stats>div,
+.master-workspace .master-dashboard-next,
+.master-workspace .master-dashboard-actions>button{border-color:rgba(255,255,255,.10);background:linear-gradient(145deg,#242429,#19191e);color:#d5d5d9}
+.master-workspace .master-dashboard-stats>button:active{border-color:rgba(255,255,255,.24);background:#303036}
+.master-workspace .master-next-booking{border-color:rgba(255,255,255,.12);background:#29292f}
+.master-workspace .master-next-date{background:#3a3a40}
+.master-workspace .master-next-date small{color:#d0d0d5}
+.master-workspace .master-dashboard-empty{border-color:rgba(255,255,255,.18)}
+.master-workspace .master-profile-tools{border-color:rgba(255,255,255,.12)}
+.master-workspace .master-tools-heading>button{border-color:rgba(255,255,255,.14);background:#29292f;color:#dedee2}
+.master-workspace .master-profile-tools .workspace-section{border-color:rgba(255,255,255,.10);background:linear-gradient(145deg,#242429,#19191e)}
+.master-workspace .master-calendar-section{border-color:rgba(255,255,255,.12)!important;background:linear-gradient(145deg,#242429,#19191e)!important}
+.master-workspace .calendar-mode-toggle{border-color:rgba(255,255,255,.14);background:#303036;color:#e0e0e4}
+.master-workspace .calendar-view-switch{border-color:rgba(255,255,255,.10);background:#17171b}
+.master-workspace .calendar-view-switch button.active{background:#414147;color:#fff}
+.master-workspace .smart-calendar-day{border-color:rgba(255,255,255,.10);background:#202025}
+.master-workspace .smart-calendar-day.selected{border-color:rgba(255,255,255,.26);background:#2c2c32}
+.master-workspace .calendar-date-nav button{border-color:rgba(255,255,255,.14);background:#303036;color:#e0e0e4}
+.master-workspace .workspace-section h3>svg{border-color:rgba(255,255,255,.12);background:#303036;color:#d1d1d6}
+.master-workspace .nav-item.active svg{color:#e0e0e4}
+.master-workspace .workspace-master-card{border-color:rgba(255,255,255,.12);background:linear-gradient(135deg,#29292f,#19191e)}
+.master-workspace .workspace-section{border-color:rgba(255,255,255,.10);background:rgba(28,28,33,.92)}
+.master-workspace .workspace-section input:focus,.master-workspace .workspace-section textarea:focus,.master-workspace .workspace-section select:focus{border-color:rgba(255,255,255,.3);box-shadow:0 0 0 2px rgba(255,255,255,.045)}
