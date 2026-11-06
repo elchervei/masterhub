@@ -436,7 +436,13 @@ export default function App() {
           services: (m.services || []).filter(service=>service.is_active)
         }))
         setMastersList(liveMasters)
-        const requestedSlug = new URLSearchParams(window.location.search).get('master')
+        const launchParams = new URLSearchParams(window.location.search)
+        const telegramStartParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param
+          || launchParams.get('tgWebAppStartParam')
+          || launchParams.get('startapp')
+          || ''
+        const requestedSlug = launchParams.get('master')
+          || (telegramStartParam.startsWith('master_') ? telegramStartParam.slice('master_'.length) : '')
         if (requestedSlug) {
           const publicMaster = liveMasters.find(item=>item.slug===requestedSlug)
           if (publicMaster) setSelected(publicMaster)
