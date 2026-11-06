@@ -1437,3 +1437,121 @@ img{max-width:100%}
   background:#303036;
   color:#e0e0e4;
 }
+
+
+/* Master inbox / requests: graphite-only palette across every state and action */
+.master-workspace .booking-inbox-section,
+.master-workspace .inquiry-inbox-section {
+  border-color:rgba(255,255,255,.11);
+  background:linear-gradient(150deg,#29292f 0%,#202025 58%,#17171b 100%);
+  box-shadow:none;
+}
+.master-workspace .booking-inbox-section:before,
+.master-workspace .inquiry-inbox-section:before {background:radial-gradient(circle,rgba(220,220,225,.07),transparent 70%)}
+.master-workspace .booking-inbox-section>.eyebrow,
+.master-workspace .inquiry-inbox-section>.eyebrow,
+.master-workspace .booking-inbox-section .booking-inbox-date,
+.master-workspace .inquiry-inbox-section .booking-inbox-date,
+.master-workspace .inquiry-inbox-section>h3>svg {color:#c7c7cc}
+.master-workspace .booking-inbox-section>h2,
+.master-workspace .inquiry-inbox-section>h3 {color:#f0f0f2}
+.master-workspace .booking-inbox-section>p,
+.master-workspace .inquiry-inbox-section>p.muted-note {color:#a6a6ad}
+.master-workspace .booking-inbox-section .master-summary-row {
+  border-color:rgba(255,255,255,.11);
+  background:#303036;
+  color:#d0d0d5;
+}
+.master-workspace .booking-inbox-section .master-summary-row b,
+.master-workspace .inquiry-inbox-section .count-chip {
+  border:1px solid rgba(255,255,255,.13);
+  background:#414147;
+  color:#f0f0f2;
+}
+.master-workspace .booking-inbox-section .booking-inbox-card,
+.master-workspace .inquiry-inbox-section .booking-inbox-card {
+  border:1px solid rgba(255,255,255,.12);
+  border-left:2px solid #77777f;
+  background:linear-gradient(110deg,#303036,#202025 78%);
+  color:#e5e5e8;
+  box-shadow:none;
+}
+.master-workspace .booking-inbox-section .booking-inbox-card:active,
+.master-workspace .inquiry-inbox-section .booking-inbox-card:active {
+  border-color:rgba(255,255,255,.28);
+  background:#38383f;
+}
+.master-workspace .booking-inbox-section .booking-inbox-card>b,
+.master-workspace .inquiry-inbox-section .booking-inbox-card>b {color:#f0f0f2}
+.master-workspace .booking-inbox-section .booking-inbox-card>span:last-child,
+.master-workspace .inquiry-inbox-section .booking-inbox-card>span:last-child {color:#b0b0b6}
+.master-workspace .booking-inbox-section .booking-inbox-card>span:last-child:after,
+.master-workspace .inquiry-inbox-section .booking-inbox-card>span:last-child:after {color:#c8c8ce}
+.master-workspace .inquiry-inbox-section .inquiry-inbox-card {border-left-color:#77777f}
+.master-workspace .inquiry-inbox-section .inquiry-master-gallery button {
+  border-color:rgba(255,255,255,.15);
+  background:#202025;
+}
+.master-workspace .booking-inbox-section>.master-empty-state,
+.master-workspace .inquiry-inbox-section>p.muted-note {
+  border-color:rgba(255,255,255,.16);
+  background:#202025;
+}
+.master-workspace .booking-inbox-section>.master-empty-state svg,
+.master-workspace .booking-inbox-section>.master-empty-state b,
+.master-workspace .booking-inbox-section>.master-empty-state span {color:#c7c7cc}
+.master-workspace .booking-detail-modal,
+.master-workspace .booking-detail-modal.inquiry-detail-modal {
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(150deg,#29292f,#1c1c21 62%,#141418);
+  color:#dedee2;
+}
+.master-workspace .booking-detail-modal .eyebrow,
+.master-workspace .booking-detail-modal h2,
+.master-workspace .booking-detail-modal>p,
+.master-workspace .booking-detail-modal .booking-action-heading b,
+.master-workspace .booking-detail-modal .booking-action-heading span,
+.master-workspace .booking-detail-modal label {color:#d2d2d7}
+.master-workspace .booking-detail-modal input,
+.master-workspace .booking-detail-modal textarea {
+  border:1px solid rgba(255,255,255,.15);
+  background:#141418;
+  color:#f0f0f2;
+}
+.master-workspace .booking-detail-modal input:focus,
+.master-workspace .booking-detail-modal textarea:focus {
+  border-color:rgba(255,255,255,.32);
+  box-shadow:0 0 0 2px rgba(255,255,255,.05);
+}
+.master-workspace .booking-detail-modal .approve-button,
+.master-workspace .booking-detail-modal .reject-button,
+.master-workspace .booking-detail-modal .primary-button,
+.master-workspace .booking-detail-modal .telegram-contact-button,
+.master-workspace .booking-detail-modal .open-reference-button,
+.master-workspace .booking-detail-modal .modal-close {
+  border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(145deg,#414147,#29292f);
+  color:#eeeeF1;
+  box-shadow:none;
+}
+.master-workspace .booking-detail-modal .approve-button:active,
+.master-workspace .booking-detail-modal .reject-button:active,
+.master-workspace .booking-detail-modal .primary-button:active,
+.master-workspace .booking-detail-modal .telegram-contact-button:active,
+.master-workspace .booking-detail-modal .open-reference-button:active {
+  border-color:rgba(255,255,255,.3);
+  background:#4a4a51;
+}
+.master-workspace .booking-detail-modal .quote-editor,
+.master-workspace .booking-detail-modal .quote-waiting-note {
+  border-color:rgba(255,255,255,.13);
+  background:#202025;
+}
+.master-workspace .booking-detail-modal .quote-waiting-note b,
+.master-workspace .booking-detail-modal .quote-waiting-note strong,
+.master-workspace .booking-detail-modal .quote-waiting-note p {color:#d8d8dc}
+.master-workspace .booking-detail-modal .contact-unavailable,
+.master-workspace .booking-detail-modal .optional-label {color:#a6a6ad}
+.master-workspace .booking-detail-modal .booking-modal-actions {gap:8px}
+.master-workspace .booking-detail-modal .modal-close {background:#303036}
+.master-workspace .modal-backdrop .booking-detail-modal a {text-decoration:none}
