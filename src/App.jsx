@@ -31,7 +31,7 @@ const telegramProfileUrl = value => {
   const raw = String(value || '').trim()
   if (!raw) return ''
   const username = raw.replace(/^https?:\/\/(www\.)?(t\.me|telegram\.me)\//i, '').replace(/^(t\.me|telegram\.me)\//i, '').replace(/^@/, '').split(/[/?#]/)[0]
-  if (!/^[a-zA-Z0-9_]{5,32}$/.test(username)) return ''
+  if (!/^[a-zA-Z][a-zA-Z0-9_]{4,31}$/.test(username)) return ''
   return 'https://t.me/' + username
 }
 const telegramUsername = value => { const url = telegramProfileUrl(value); return url ? url.slice('https://t.me/'.length) : '' }
