@@ -53,13 +53,13 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   }
   const copyPublicProfile=async()=>{
     if(!master?.slug)return
-    const url=window.location.origin+'/?master='+encodeURIComponent(master.slug)
+    const url='https://t.me/mastershubs_bot?startapp='+encodeURIComponent('master_'+master.slug)
     if(navigator.share){
-      try{await navigator.share({title:'MASTER HUB · '+master.public_name,text:'Профиль мастера в MASTER HUB',url});return}
+      try{await navigator.share({title:'MASTER HUB · '+master.public_name,text:'Открой профиль мастера в Telegram',url});return}
       catch(error){if(error?.name==='AbortError')return}
     }
     try{await navigator.clipboard.writeText(url);setCopiedLink(true);window.setTimeout(()=>setCopiedLink(false),2200)}
-    catch{setError('Скопируй публичную ссылку: '+url)}
+    catch{setError('Скопируй ссылку на профиль в Telegram: '+url)}
   }
   const saveWorkCaption=async(work,caption)=>{
     const value=caption.trim().slice(0,120)
