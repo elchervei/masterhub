@@ -42,7 +42,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       ])
       const firstError=[sv,pf,bk,sl,iq].find(result=>result.error)?.error
       if(firstError)setError(firstError.message||'Не удалось загрузить часть данных кабинета.')
-      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const raw=booking.reference_image_url;if(!raw)return booking;if(/^https?:\\/\\//i.test(raw))return {...booking,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[])
+      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const raw=booking.reference_image_url;if(!raw)return booking;if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[])
     }catch(loadError){
       setError(loadError?.message||'Не удалось загрузить кабинет. Попробуй обновить экран.')
     }finally{setLoading(false)}
