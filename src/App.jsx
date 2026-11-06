@@ -34,6 +34,7 @@ const telegramProfileUrl = value => {
   if (!/^[a-zA-Z0-9_]{5,32}$/.test(username)) return ''
   return 'https://t.me/' + username
 }
+const telegramUsername = value => { const url = telegramProfileUrl(value); return url ? url.slice('https://t.me/'.length) : '' }
 const openTelegramLink = event => {
   const telegram = window.Telegram?.WebApp
   if (telegram?.openTelegramLink) {
@@ -399,7 +400,7 @@ export default function App() {
       bio: String(form.bio || '').trim().slice(0, 500),
       studio_name: String(form.studio_name || '').trim().slice(0, 80) || null,
       city: 'Калининград',
-      contact_telegram: String(form.contact_telegram || '').trim().slice(0, 32) || null,
+      contact_telegram: telegramUsername(form.contact_telegram) || null,
       experience_years: Math.max(0, Number(form.experience_years || 0)),
       starting_price: 0,
       status: 'pending'
