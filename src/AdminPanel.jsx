@@ -16,7 +16,7 @@ export default function AdminPanel({supabase,currentUserId}){
       supabase.from('bookings').select('id,starts_at,ends_at,status,client_note,reference_image_url,masters(public_name)').order('starts_at',{ascending:false})
     ])
     if(real.error||demo.error||bk.error)setError(real.error?.message||demo.error?.message||bk.error?.message||'Не удалось загрузить данные')
-    const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const raw=booking.reference_image_url;if(!raw)return booking;if(/^https?:\\/\\//i.test(raw))return {...booking,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,referenceImageSignedUrl:signed?.signedUrl||''}}));setRealRows(real.data||[]);setTestRows(demo.data||[]);setBookings(bookingRows);setLoading(false)
+    const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const raw=booking.reference_image_url;if(!raw)return booking;if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,referenceImageSignedUrl:signed?.signedUrl||''}}));setRealRows(real.data||[]);setTestRows(demo.data||[]);setBookings(bookingRows);setLoading(false)
   }
   useEffect(()=>{load()},[])
   const moderate=async(row,status)=>{const {error}=await supabase.from('masters').update({status}).eq('id',row.id);if(error)setError(error.message);else load()}
