@@ -53,7 +53,7 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
         <button className="master-name" onClick={onOpen}>{master.name}</button>
         <button className={`icon-button favorite-button ${favorite ? 'is-favorite' : ''}`} onClick={onFavorite} aria-label="В избранное"><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
       </div>
-      <div className="master-meta"><span className="rating"><Star size={14} fill="currentColor" /> {master.rating.toFixed(1)} <span>({master.reviews})</span></span><span className="meta-separator">·</span><span>{master.studio}</span></div>
+      <div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor" /> {master.rating.toFixed(1)} <span>({master.reviews})</span></>:'Новый мастер'}</span><span className="meta-separator">·</span><span>{master.studio}</span></div>
       <div className="tag-row">{master.styles.slice(0, 3).map(s => <span className="style-tag" key={s}>{s}</span>)}</div>
       <div className="smart-master-meta"><span>{master.experience || 'Опыт не указан'}</span>{master.nextAvailable && <span>Ближайшее окно · {new Date(master.nextAvailable).toLocaleDateString('ru-RU',{day:'numeric',month:'short'})}</span>}</div>
       <div className="card-footer"><span className="price-caption">{master.price>0?<>От <b>{money(master.price)}</b></>:<b>Цена по запросу</b>}</span><button className="text-link" onClick={onOpen}>Профиль <ChevronRight size={15} /></button></div>
@@ -146,9 +146,9 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const telegramContact=useMemo(()=>{const raw=String(master.handle||'').trim();if(!raw)return '';if(raw.startsWith('https://')||raw.startsWith('http://'))return raw;if(raw.startsWith('t.me/'))return 'https://'+raw;const username=raw.startsWith('@')?raw.slice(1):raw;return 'https://t.me/'+username},[master.handle])
   const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
   const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=(first.getDay()+6)%7;return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
-  useEffect(()=>{let live=true;async function load(){if(!supabase)return;const today=dateKey(new Date());const limit=new Date();limit.setDate(limit.getDate()+60);const s=await supabase.from('master_time_slots').select('*').eq('master_id',master.id).gte('slot_date',today).lte('slot_date',dateKey(limit)).order('slot_date').order('starts_at');if(live){setSlots(s.data||[]);if(s.error)setError(s.error.message);if(!selectedDate){const firstFree=(s.data||[]).find(slot=>slot.is_active);if(firstFree){setSelectedDate(firstFree.slot_date);setMonth(new Date(firstFree.slot_date+'T12:00:00'))}}}}load();return()=>{live=false}},[supabase,master.id])
+  useEffect(()=>{let live=true;async function load(){if(!supabase)return;const today=dateKey(new Date());const limit=new Date();limit.setDate(limit.getDate()+60);const s=await supabase.from('master_time_slots').select('*').eq('master_id',master.id).gte('slot_date',today).lte('slot_date',dateKey(limit)).order('slot_date').order('starts_at');if(live){setSlots(s.data||[]);if(s.error)setError(s.error.message);if(!selectedDate){const firstFree=(s.data||[]).find(slot=>slot.is_active&&new Date(slot.starts_at)>new Date());if(firstFree){setSelectedDate(firstFree.slot_date);setMonth(new Date(firstFree.slot_date+'T12:00:00'))}}}}load();return()=>{live=false}},[supabase,master.id])
   const slotsFor=key=>slots.filter(s=>s.slot_date===key)
-  const freeFor=key=>slotsFor(key).filter(s=>s.is_active)
+  const freeFor=key=>slotsFor(key).filter(s=>s.is_active&&new Date(s.starts_at)>new Date())
   const statusFor=key=>{const all=slotsFor(key);if(!all.length)return '';const free=freeFor(key).length;return free===0?'full':free===all.length?'free':'partial'}
   const chooseDate=key=>{setSelectedDate(key);setSelectedSlot(null)}
   const uploadReference=async()=>{
