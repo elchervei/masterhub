@@ -99,7 +99,10 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       .on('postgres_changes',{event:'*',schema:'public',table:'bookings'},fetchCalendar)
       .on('postgres_changes',{event:'*',schema:'public',table:'master_time_slots'},fetchCalendar)
       .subscribe()
-    return()=>{live=false;supabase.removeChannel(channel)}
+    const poll=window.setInterval(fetchCalendar,15000)
+    const onVisible=()=>{if(document.visibilityState==='visible')fetchCalendar()}
+    document.addEventListener('visibilitychange',onVisible)
+    return()=>{live=false;window.clearInterval(poll);document.removeEventListener('visibilitychange',onVisible);supabase.removeChannel(channel)}
   },[studio?.id,user?.id])
 
   const toggleCategory=(id)=>{
@@ -244,7 +247,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
 
     <div className="studio-category-tags">{selectedCategories.map(id=><span key={id}>{categoryLabel(id)}</span>)}</div>
 
-    <nav className="studio-section-nav">
+    <nav className={`studio-section-nav ${isOwner?'has-settings':''}`}>
       <button type="button" className={section==='overview'?'selected':''} onClick={()=>setSection('overview')}><BarChart3 size={15}/>Обзор</button>
       <button type="button" className={section==='calendar'?'selected':''} onClick={()=>setSection('calendar')}><CalendarDays size={15}/>Календарь</button>
       <button type="button" className={section==='team'?'selected':''} onClick={()=>setSection('team')}><Users size={15}/>Команда <i>{members.length}</i></button>
@@ -278,9 +281,9 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
     {section==='calendar'&&<div className="studio-calendar-section">
       <div className="studio-section-intro"><div><span className="eyebrow">SHARED SCHEDULE</span><h4>Общий график студии</h4></div><span>Все мастера</span></div>
       <div className="studio-calendar-week">
-        <button type="button" aria-label="Предыдущая неделя" onClick={()=>{setCalendarOffset(v=>v-1);setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-7);return dateKey(x)})}}><ChevronLeft size={16}/></button>
+        <button type="button" aria-label="Предыдущая неделя" onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-7);return dateKey(x)})}}><ChevronLeft size={16}/></button>
         <div className="studio-calendar-days">{calendarDays.map(day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return <button type="button" key={key} className={calendarDate===key?'selected':''} onClick={()=>setCalendarDate(key)}><small>{day.toLocaleDateString('ru-RU',{weekday:'short'}).replace('.','')}</small><b>{day.getDate()}</b><i className={busy?'has-busy':free?'has-free':''}/></button>})}</div>
-        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>v+1);setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
+        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>Math.min(8,v+1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
       </div>
       <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} занято</span><span><i className="free-dot"/> {freeCount} свободно</span></div>
       {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
