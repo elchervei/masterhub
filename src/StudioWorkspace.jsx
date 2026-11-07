@@ -293,7 +293,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       :dayEntries.length?<div className="studio-calendar-agenda">{dayEntries.map(item=><article className={'studio-calendar-entry '+(item.entry_type==='busy'?'is-busy':'is-free')} key={item.entry_type+'-'+item.entry_id}>
         <div className="studio-calendar-time"><b>{timeLabel(item.starts_at)}</b><small>{timeLabel(item.ends_at)}</small></div>
         <span className="studio-calendar-entry-mark">{item.entry_type==='busy'?<Clock3 size={15}/>:<Check size={15}/>}</span>
-        <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер'):'Окно доступно для записи'}</small></div>
+        <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято мастером':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер'):'Окно доступно для записи'}</small></div>
         {item.entry_type==='busy'&&<span className="studio-calendar-status">ЗАНЯТО</span>}
       </article>)}</div>
       :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату нет занятых интервалов и открытых окон в расписании команды.</span></div>}
