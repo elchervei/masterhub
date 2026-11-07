@@ -212,8 +212,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const calendarDays=Array.from({length:42},(_,i)=>{const d=new Date(monthStart);d.setDate(d.getDate()+i);return d})
   const dayEntries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===calendarDate).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))
   const busyCount=dayEntries.filter(item=>item.entry_type==='busy').length
-  const freeCount=dayEntries.filter(item=>item.entry_type==='free').length
-  const getDayState=day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return busy&&free?'partial':busy?'full':free?'free':'empty'}
+  const getDayState=day=>calendarEntries.some(item=>dateKey(new Date(item.starts_at))===dateKey(day)?true:false)?'full':'empty'
 
   if(loading)return <section className="studio-workspace-card studio-loading"><RefreshCw size={17}/><p>Загружаем кабинет студии…</p></section>
   if(!master)return null
@@ -293,8 +292,8 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
         {['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map(day=><span className="studio-calendar-weekday" key={day}>{day}</span>)}
         {calendarDays.map(day=>{const key=dateKey(day);const state=getDayState(day);const outside=day.getMonth()!==calendarMonth.getMonth();return <button type="button" key={key} disabled={outside} className={['studio-calendar-day',state,calendarDate===key?'selected':'',outside?'outside':''].filter(Boolean).join(' ')} onClick={()=>setCalendarDate(key)}><b>{day.getDate()}</b>{state!=='empty'&&<i/>}</button>})}
       </div>
-      <div className="studio-calendar-legend"><span><i className="legend-free"/>Свободно</span><span><i className="legend-partial"/>Частично занято</span><span><i className="legend-full"/>Полностью занято</span></div>
-      <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} занято</span><span><i className="free-dot"/> {freeCount} свободно</span></div>
+      <div className="studio-calendar-legend"><span><i className="legend-full"/>Время зарезервировано за мастером</span></div>
+      <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} интервалов зарезервировано</span></div>
       {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
       :calendarError?<div className="studio-calendar-empty studio-calendar-error">{calendarError}</div>
       :dayEntries.length?<div className="studio-calendar-agenda">{dayEntries.map(item=><article className={'studio-calendar-entry '+(item.entry_type==='busy'?'is-busy':'is-free')} key={item.entry_type+'-'+item.entry_id}>
@@ -303,8 +302,8 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
         <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято мастером':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер'):'Окно доступно для записи'}</small></div>
         {item.entry_type==='busy'&&<span className="studio-calendar-status">ЗАНЯТО</span>}
       </article>)}</div>
-      :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату нет занятых интервалов и открытых окон в расписании команды.</span></div>}
-      <p className="studio-calendar-note">Записи всех участников студии занимают одно общее время. Клиентские данные здесь не показываются.</p>
+      :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату никто из мастеров пока не зарезервировал время в студии.</span></div>}
+      <p className="studio-calendar-note">Каждый интервал, который мастер добавил в своё расписание, сразу резервирует это время в студии — даже если клиент ещё не записался. Клиентские данные здесь не показываются.</p>
     </div>}
 
     {section==='team'&&<div className="studio-team-section">
