@@ -1939,3 +1939,8 @@ img{max-width:100%}
 .portfolio-story .work-grid{margin-top:0}
 .portfolio-stage-label{margin:0 7px 7px}
 @media(max-width:420px){.portfolio-type-switch button,.flash-filter-row button{padding:9px 11px;font-size:12px}.workspace-works{gap:9px}}
+
+
+.studio-calendar-category-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 4px;padding:10px 12px;border:1px solid rgba(207,216,211,.12);border-radius:12px;background:rgba(215,225,218,.025)}
+.studio-calendar-category-filter label{color:#9aa39d;font-size:10px}
+.studio-calendar-category-filter select{max-width:62%;min-width:0;padding:8px 28px 8px 10px;border:1px solid rgba(207,216,211,.16);border-radius:9px;background:#171a1c;color:#e2e7e3;font:inherit;font-size:11px}
