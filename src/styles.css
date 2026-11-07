@@ -1843,3 +1843,17 @@ img{max-width:100%}
 .tattoo-style-chips button{padding:7px 9px;border:1px solid rgba(190,190,190,.16);border-radius:999px;background:rgba(255,255,255,.025);color:#bbb;font-size:10px}
 .tattoo-style-chips button.selected{border-color:rgba(230,230,230,.6);background:rgba(255,255,255,.13);color:#fff}
 .tattoo-style-no-results{display:block;padding:12px 0;color:#999;font-size:11px}
+
+
+/* Studio public identity and owner media controls */
+.public-studio-hero{background-size:cover;background-position:center;min-height:190px}
+.public-studio-brand-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.public-studio-brand-row .public-studio-emblem{margin:0;flex:0 0 auto}
+.public-studio-emblem img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.public-studio-hero h1{max-width:100%;overflow-wrap:anywhere}
+.studio-media-editor{display:flex;flex-direction:column;gap:10px;margin:4px 0 18px;padding:12px;border:1px solid rgba(190,190,190,.14);border-radius:14px;background:rgba(255,255,255,.025)}
+.studio-media-cover{height:116px;display:grid;place-items:center;overflow:hidden;border:1px dashed rgba(190,190,190,.25);border-radius:11px;background:#171717;color:#888;font-size:10px;letter-spacing:.12em}
+.studio-media-cover img{width:100%;height:100%;object-fit:cover}
+.studio-logo-editor{display:flex;align-items:center;gap:12px}
+.studio-logo-editor>img,.studio-logo-editor>span{width:58px;height:58px;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;border:1px solid rgba(190,190,190,.2);border-radius:15px;background:#202020;color:#aaa;object-fit:cover}
+.studio-media-editor>small{color:#888;font-size:10px;line-height:1.4}
