@@ -216,6 +216,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
             </div>
           </section>
 
+          <StudioWorkspace supabase={supabase} user={user} master={master} compact onNavigate={onNavigate}/>
           {masterToolsView&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">{masterToolsView==='profile'?'ПРОФИЛЬ МАСТЕРА':'РАСПИСАНИЕ'}</span><h3>{masterToolsView==='profile'?'Редактирование профиля':'Управление расписанием'}</h3></div><button type="button" onClick={()=>setMasterToolsView(null)}>Закрыть</button></div>
             {masterToolsView==='profile'&&<>
