@@ -84,7 +84,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
     let live=true
     let firstFetch=true
     const from=new Date();from.setHours(0,0,0,0)
-    const to=new Date(from);to.setDate(to.getDate()+60)
+    const to=new Date(from);to.setDate(to.getDate()+89)
     const fetchCalendar=async()=>{
       if(firstFetch)setCalendarLoading(true)
       const {data,error:calendarLoadError}=await supabase.rpc('get_studio_calendar',{
@@ -207,11 +207,13 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const selectedCategories=Array.isArray(studio?.categories)&&studio.categories.length?studio.categories:[studio?.category||'tattoo']
   const statMembers=Array.isArray(stats?.members)?stats.members:[]
   const maxSessions=Math.max(1,...statMembers.map(item=>Number(item.sessions)||0))
-  const calendarStart=new Date();calendarStart.setHours(0,0,0,0);calendarStart.setDate(calendarStart.getDate()+calendarOffset*7)
-  const calendarDays=Array.from({length:7},(_,i)=>{const d=new Date(calendarStart);d.setDate(d.getDate()+i);return d})
+  const calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset,1)
+  const monthStart=new Date(calendarMonth);monthStart.setDate(1-((monthStart.getDay()+6)%7))
+  const calendarDays=Array.from({length:42},(_,i)=>{const d=new Date(monthStart);d.setDate(d.getDate()+i);return d})
   const dayEntries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===calendarDate).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))
   const busyCount=dayEntries.filter(item=>item.entry_type==='busy').length
   const freeCount=dayEntries.filter(item=>item.entry_type==='free').length
+  const getDayState=day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return busy&&free?'partial':busy?'full':free?'free':'empty'}
 
   if(loading)return <section className="studio-workspace-card studio-loading"><RefreshCw size={17}/><p>Загружаем кабинет студии…</p></section>
   if(!master)return null
@@ -282,11 +284,16 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
 
     {section==='calendar'&&<div className="studio-calendar-section">
       <div className="studio-section-intro"><div><span className="eyebrow">SHARED SCHEDULE</span><h4>Общий график студии</h4></div><span>Все мастера</span></div>
-      <div className="studio-calendar-week">
-        <button type="button" aria-label="Предыдущая неделя" onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-7);return dateKey(x)})}}><ChevronLeft size={16}/></button>
-        <div className="studio-calendar-days">{calendarDays.map(day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return <button type="button" key={key} className={calendarDate===key?'selected':''} onClick={()=>setCalendarDate(key)}><small>{day.toLocaleDateString('ru-RU',{weekday:'short'}).replace('.','')}</small><b>{day.getDate()}</b><i className={busy?'has-busy':free?'has-free':''}/></button>})}</div>
-        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>Math.min(7,v+1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
+      <div className="studio-calendar-month-head">
+        <button type="button" aria-label="Предыдущий месяц" disabled={calendarOffset===0} onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(dateKey(new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset-1,1)))}}><ChevronLeft size={17}/></button>
+        <b>{calendarMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b>
+        <button type="button" aria-label="Следующий месяц" disabled={calendarOffset>=1} onClick={()=>{setCalendarOffset(v=>Math.min(1,v+1));setCalendarDate(dateKey(new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset+1,1)))}}><ChevronRight size={17}/></button>
       </div>
+      <div className="studio-calendar-grid">
+        {['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map(day=><span className="studio-calendar-weekday" key={day}>{day}</span>)}
+        {calendarDays.map(day=>{const key=dateKey(day);const state=getDayState(day);const outside=day.getMonth()!==calendarMonth.getMonth();return <button type="button" key={key} disabled={outside} className={['studio-calendar-day',state,calendarDate===key?'selected':'',outside?'outside':''].filter(Boolean).join(' ')} onClick={()=>setCalendarDate(key)}><b>{day.getDate()}</b>{state!=='empty'&&<i/>}</button>})}
+      </div>
+      <div className="studio-calendar-legend"><span><i className="legend-free"/>Свободно</span><span><i className="legend-partial"/>Частично занято</span><span><i className="legend-full"/>Полностью занято</span></div>
       <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} занято</span><span><i className="free-dot"/> {freeCount} свободно</span></div>
       {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
       :calendarError?<div className="studio-calendar-empty studio-calendar-error">{calendarError}</div>
