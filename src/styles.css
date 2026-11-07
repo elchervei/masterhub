@@ -1864,7 +1864,7 @@ img{max-width:100%}
 
 
 /* Shared studio calendar — compact mobile-first agenda */
-.studio-section-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.studio-section-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.studio-section-nav.has-settings{grid-template-columns:repeat(4,minmax(0,1fr))}
 .studio-section-nav button{min-width:0;white-space:nowrap;font-size:9px;gap:4px;padding:9px 2px}
 .studio-calendar-section{padding-top:2px}
 .studio-calendar-week{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;align-items:center;gap:4px;margin:12px 0 14px}
