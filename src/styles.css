@@ -1778,3 +1778,10 @@ img{max-width:100%}
 @media(max-width:370px){.studio-form-row{grid-template-columns:1fr}.studio-invite-panel{align-items:flex-start;flex-direction:column}.studio-invite-code{width:100%;justify-content:space-between}.studio-section-nav button{font-size:9px}.studio-category-grid{grid-template-columns:1fr 1fr}}
 
 .studio-tab-page{padding:2px 0 20px}.studio-compact-card{padding:13px;margin:16px 0}.studio-compact-card .studio-card-heading{align-items:center}.studio-compact-card .studio-card-heading h3{font-size:15px}.studio-open-link{display:flex;align-items:center;gap:4px;flex:0 0 auto;padding:9px 10px;border:1px solid rgba(207,216,211,.16);border-radius:10px;background:#29332d;color:#dce5de;font-size:10px}.studio-role-tag{display:flex;align-items:center;gap:4px;flex:0 0 auto;color:#8e9b93;font-size:8px;letter-spacing:.06em}.studio-role-tag.owner{color:#c7d1ca}.studio-role-tag.moderator{color:#b8c5bc}.studio-member-actions{display:flex;flex-direction:column;gap:4px;margin-left:4px}.studio-member-actions button{padding:5px 7px;border:1px solid rgba(207,216,211,.14);border-radius:7px;background:#27312b;color:#c9d4cc;font-size:8px;white-space:nowrap}.studio-member-actions .studio-remove-member{border-color:rgba(190,130,130,.17);background:rgba(110,45,45,.13);color:#c99d9d}@media(max-width:390px){.studio-team-member{flex-wrap:wrap}.studio-member-actions{margin-left:auto;flex-direction:row}.studio-role-tag{font-size:7px}}
+
+/* Studio membership and catalog sorting */
+.studio-inline-label{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 8px;border:1px solid rgba(190,190,190,.18);border-radius:999px;color:#c8c8c8;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,255,255,.035)}
+.studio-inline-label svg{flex:0 0 auto;color:#a9a9a9}
+.filter-head label{max-width:72%;}
+.filter-head select{max-width:100%;min-width:0}
+@media(max-width:380px){.studio-inline-label{max-width:145px}.filter-head label{max-width:68%}}
