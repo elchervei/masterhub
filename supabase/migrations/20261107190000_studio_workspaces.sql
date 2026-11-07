@@ -23,29 +23,25 @@ create table if not exists public.studio_members (
 create index if not exists studio_members_studio_id_idx on public.studio_members(studio_id);
 alter table public.studios enable row level security;
 alter table public.studio_members enable row level security;
+create or replace function public.is_studio_member(p_studio_id uuid)
+returns boolean language sql stable security definer set search_path=public
+as $$ select exists(select 1 from public.studio_members sm join public.masters m on m.id=sm.master_id where sm.studio_id=p_studio_id and m.user_id=auth.uid()) $$;
+revoke all on function public.is_studio_member(uuid) from public;
+grant execute on function public.is_studio_member(uuid) to authenticated;
 drop policy if exists "Studio members can read studio" on public.studios;
-create policy "Studio members can read studio" on public.studios for select to authenticated
-using (exists (select 1 from public.studio_members sm join public.masters m on m.id=sm.master_id where sm.studio_id=studios.id and m.user_id=auth.uid()));
+create policy "Studio members can read studio" on public.studios for select to authenticated using (public.is_studio_member(id));
 drop policy if exists "Users create own studio" on public.studios;
-create policy "Users create own studio" on public.studios for insert to authenticated
-with check (owner_user_id=auth.uid());
+create policy "Users create own studio" on public.studios for insert to authenticated with check (owner_user_id=auth.uid());
 drop policy if exists "Owners update studio" on public.studios;
-create policy "Owners update studio" on public.studios for update to authenticated
-using (owner_user_id=auth.uid()) with check (owner_user_id=auth.uid());
+create policy "Owners update studio" on public.studios for update to authenticated using (owner_user_id=auth.uid()) with check (owner_user_id=auth.uid());
 drop policy if exists "Studio members read team" on public.studio_members;
-create policy "Studio members read team" on public.studio_members for select to authenticated
-using (exists (select 1 from public.studio_members mine join public.masters m on m.id=mine.master_id where mine.studio_id=studio_members.studio_id and m.user_id=auth.uid()));
-drop policy if exists "Owners add members" on public.studio_members;
-create policy "Owners add members" on public.studio_members for insert to authenticated
-with check (exists (select 1 from public.studios s where s.id=studio_members.studio_id and s.owner_user_id=auth.uid()) and exists (select 1 from public.masters m where m.id=studio_members.master_id and m.user_id=auth.uid()) and studio_members.role='owner');
+create policy "Studio members read team" on public.studio_members for select to authenticated using (public.is_studio_member(studio_id));
+drop policy if exists "Owners add own master as owner" on public.studio_members;
+create policy "Owners add own master as owner" on public.studio_members for insert to authenticated with check (role='owner' and exists(select 1 from public.studios s where s.id=studio_id and s.owner_user_id=auth.uid()) and exists(select 1 from public.masters m where m.id=master_id and m.user_id=auth.uid()));
 drop policy if exists "Members leave or owners remove members" on public.studio_members;
-create policy "Members leave or owners remove members" on public.studio_members for delete to authenticated
-using (exists (select 1 from public.masters m where m.id=studio_members.master_id and m.user_id=auth.uid()) or exists (select 1 from public.studios s where s.id=studio_members.studio_id and s.owner_user_id=auth.uid()));
+create policy "Members leave or owners remove members" on public.studio_members for delete to authenticated using (exists(select 1 from public.masters m where m.id=master_id and m.user_id=auth.uid()) or exists(select 1 from public.studios s where s.id=studio_id and s.owner_user_id=auth.uid()));
 create or replace function public.join_studio_by_code(p_code text)
-returns void
-language plpgsql
-security definer
-set search_path=public
+returns void language plpgsql security definer set search_path=public
 as $$
 declare v_studio_id uuid; v_master_id uuid;
 begin
