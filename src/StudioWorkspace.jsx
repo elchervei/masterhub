@@ -30,6 +30,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const [section,setSection]=useState('overview')
   const [draft,setDraft]=useState({name:'',categories:[master?.category||'tattoo'],description:'',city:master?.city||'Калининград',address:''})
   const [editing,setEditing]=useState(false)
+  const [mediaUploading,setMediaUploading]=useState(false)
   const isOwner=studio?.owner_user_id===user?.id
   const isModerator=membershipRole==='moderator'
   const canInvite=isOwner||isModerator
@@ -104,6 +105,25 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       await load()
     }catch(e){setError(e.message||'Не удалось создать студию.')}
     finally{setSaving(false)}
+  }
+
+  const uploadStudioImage=async(file,kind)=>{
+    if(!file||!studio||!isOwner)return
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Поддерживаются JPG, PNG и WebP.');return}
+    if(file.size>5*1024*1024){setError('Максимальный размер фото — 5 МБ.');return}
+    setMediaUploading(true);setError('');setNotice('')
+    try{
+      const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg'
+      const path=`${user.id}/studios/${studio.id}/${kind}-${Date.now()}.${ext}`
+      const {error:uploadError}=await supabase.storage.from('masterhub-media').upload(path,file,{contentType:file.type,upsert:true})
+      if(uploadError)throw uploadError
+      const {data}=supabase.storage.from('masterhub-media').getPublicUrl(path)
+      const field=kind==='logo'?'logo_image_url':'cover_image_url'
+      const {data:updated,error:updateError}=await supabase.from('studios').update({[field]:data.publicUrl}).eq('id',studio.id).select('*').single()
+      if(updateError)throw updateError
+      setStudio(updated);setNotice(kind==='logo'?'Логотип студии обновлён.':'Обложка студии обновлена.')
+    }catch(e){setError(e.message||'Не удалось загрузить изображение.')}
+    finally{setMediaUploading(false)}
   }
 
   const saveStudio=async e=>{
@@ -233,6 +253,12 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
 
     {section==='settings'&&isOwner&&<form className="studio-edit-form" onSubmit={saveStudio}>
       <div className="studio-section-intro"><div><span className="eyebrow">STUDIO PROFILE</span><h4>Настройки студии</h4></div></div>
+      <div className="studio-media-editor">
+        <div className="studio-media-cover">{studio.cover_image_url?<img src={studio.cover_image_url} alt="Обложка студии"/>:<span>ОБЛОЖКА СТУДИИ</span>}</div>
+        <label className="upload-control"><Building2 size={15}/>{mediaUploading?'Загружаем…':'Загрузить обложку'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={e=>uploadStudioImage(e.target.files?.[0],'cover')}/></label>
+        <div className="studio-logo-editor">{studio.logo_image_url?<img src={studio.logo_image_url} alt="Логотип студии"/>:<span><Building2 size={22}/></span>}<label className="upload-control">{mediaUploading?'Загружаем…':'Логотип / аватар'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={e=>uploadStudioImage(e.target.files?.[0],'logo')}/></label></div>
+        <small>JPG, PNG или WebP · до 5 МБ. Эти изображения увидят клиенты на странице студии.</small>
+      </div>
       <label>Название<input required maxLength={80} value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))}/></label>
       <div className="studio-category-picker"><div className="studio-field-heading"><b>Направления</b><small>Можно выбрать несколько</small></div><div className="studio-category-grid">{categories.map(c=><button type="button" key={c.id} className={'studio-category-chip '+(draft.categories.includes(c.id)?'selected':'')} onClick={()=>toggleCategory(c.id)}><span>{draft.categories.includes(c.id)?<Check size={13}/>:<Plus size={13}/>}</span>{c.label}</button>)}</div></div>
       <div className="studio-form-row"><label>Город<input maxLength={60} value={draft.city} onChange={e=>setDraft(v=>({...v,city:e.target.value}))}/></label><label>Адрес<input maxLength={160} value={draft.address} onChange={e=>setDraft(v=>({...v,address:e.target.value}))}/></label></div>
