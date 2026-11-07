@@ -16,7 +16,7 @@ const days = ['Воскресенье','Понедельник','Вторник'
 const localDate = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` }
 const monthLabel = d => d.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})
 
-export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, activeTab='profile', onOpenRegistration, onBackToMenu, onNavigate }) {
+export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, activeTab='profile', onOpenRegistration, onBackToMenu, onNavigate, onOpenMasterProfile }) {
   const [master,setMaster]=useState(null),[services,setServices]=useState([]),[works,setWorks]=useState([]),[bookings,setBookings]=useState([]),[slots,setSlots]=useState([]),[selectedBooking,setSelectedBooking]=useState(null),[referenceOpen,setReferenceOpen]=useState(false),[quotePrice,setQuotePrice]=useState(''),[quoteMessage,setQuoteMessage]=useState(''),[quoteSaving,setQuoteSaving]=useState(false),[appointmentView,setAppointmentView]=useState('active'),[archiveSaving,setArchiveSaving]=useState(false)
   const [inquiries,setInquiries]=useState([]),[selectedInquiry,setSelectedInquiry]=useState(null),[inquiryImage,setInquiryImage]=useState('')
   const [telegramNotice,setTelegramNotice]=useState('')
@@ -213,7 +213,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       {isAdmin&&<section className="role-preview-switch"><span className="eyebrow">РЕЖИМ ПРОСМОТРА · ТОЛЬКО ВЛАДЕЛЕЦ</span><div><button className={viewMode==="client"?"selected":""} onClick={()=>setViewMode("client")}>Я клиент</button><button className={viewMode==="master"?"selected":""} onClick={()=>setViewMode("master")}>Я мастер</button></div><small>Реальная роль администратора не меняется.</small></section>}
       {loading?<div className="empty-state">Загружаем кабинет…</div>:!master?<div className="workspace-empty"><UserRound size={30}/><h2>Профиль мастера ещё не создан</h2><p>Создай анкету, чтобы управлять фотографиями, свободными интервалами и записями.</p><button className="primary-button" onClick={onOpenRegistration}>Создать анкету мастера</button></div>:<>
 
-        {activeTab==='studio'&&<section className="studio-tab-page"><StudioWorkspace supabase={supabase} user={user} master={master}/></section>}
+        {activeTab==='studio'&&<section className="studio-tab-page"><StudioWorkspace supabase={supabase} user={user} master={master} onOpenMasterProfile={onOpenMasterProfile}/></section>}
         {activeTab==='profile'&&<>
           <section className="master-dashboard">
             <div className="master-dashboard-heading">
@@ -237,7 +237,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
             </div>
           </section>
 
-          <StudioWorkspace supabase={supabase} user={user} master={master} compact onNavigate={onNavigate}/>
+          <StudioWorkspace supabase={supabase} user={user} master={master} compact onNavigate={onNavigate} onOpenMasterProfile={onOpenMasterProfile}/>
           {masterToolsView&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">{masterToolsView==='profile'?'ПРОФИЛЬ МАСТЕРА':'РАСПИСАНИЕ'}</span><h3>{masterToolsView==='profile'?'Редактирование профиля':'Управление расписанием'}</h3></div><button type="button" onClick={()=>setMasterToolsView(null)}>Закрыть</button></div>
             {masterToolsView==='profile'&&<>
