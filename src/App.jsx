@@ -143,12 +143,13 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, categ
     </main></>
 }
 
-function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
+function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook, onOpenStudio }) {
   const [tab, setTab] = useState('works')
   const categoryTitle = ({tattoo:'татуировок',nails:'ногтей и педикюра',brows:'бровей и ресниц',piercing:'пирсинга',makeup:'макияжа'})[master.category] || 'услуг'
   const [lightbox, setLightbox] = useState('')
   return <><Header title="Профиль мастера" back={onBack} action={<button className={favorite?'icon-button is-favorite':'icon-button'} onClick={toggleFavorite}><Heart size={20} fill={favorite?'currentColor':'none'}/></button>}/>
     <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studioName || master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</>:'Новый мастер · отзывов пока нет'}</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
+      {master.studioId&&<button type="button" className="master-studio-link" onClick={()=>onOpenStudio?.(master)}><span className="master-studio-link-icon"><Building2 size={18}/></span><span><small>МАСТЕР В КОМАНДЕ</small><b>{master.studioName||master.studio}</b><em>Открыть страницу студии</em></span><ChevronRight size={18}/></button>}
       <div className="detail-facts"><div><small>ОПЫТ</small><b>{master.experience}</b></div><div><small>СТАРТ ОТ</small><b>{master.price>0?money(master.price):'По запросу'}</b></div><div><small>ГОРОД</small><b>{master.city||'Калининград'}</b></div></div>
       <p className="detail-about">{master.about}</p><div className="tag-row detail-tags">{master.styles.map(s=><span className="style-tag" key={s}>{s}</span>)}</div>
       <div className="detail-tabs"><button className={tab==='works'?'selected':''} onClick={()=>setTab('works')}>Портфолио</button><button className={tab==='services'?'selected':''} onClick={()=>setTab('services')}>Услуги и цены</button><button className={tab==='reviews'?'selected':''} onClick={()=>setTab('reviews')}>Отзывы · {master.reviews}</button><button className={tab==='info'?'selected':''} onClick={()=>setTab('info')}>О мастере</button></div>
@@ -158,6 +159,54 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
       {tab==='info'&&<div className="info-panel"><p>{master.about}</p><p><MapPin size={15}/> {master.city||'Калининград'} · адрес студии уточняется при записи</p><p><MessageCircle size={15}/> {master.handle?telegramProfileUrl(master.handle)?<a href={telegramProfileUrl(master.handle)} onClick={openTelegramLink} target="_blank" rel="noopener noreferrer">{master.handle}</a>:master.handle:'Telegram не указан'}</p></div>}
       <button className="primary-button booking-cta" onClick={onBook}>Записаться к мастеру <ChevronRight size={17}/></button>
       {lightbox&&<div className="modal-backdrop portfolio-lightbox" onClick={()=>setLightbox('')}><button type="button" className="modal-close" onClick={()=>setLightbox('')}><X size={22}/></button><img src={lightbox} alt="Работа мастера" onClick={e=>e.stopPropagation()}/></div>}
+    </main>
+  </>
+
+}
+
+function PublicStudioPage({ supabase, studioId, onBack, onOpenMaster }) {
+  const [studio,setStudio]=useState(null)
+  const [loading,setLoading]=useState(true)
+  const [error,setError]=useState('')
+  useEffect(()=>{
+    let live=true
+    async function load(){
+      if(!supabase||!studioId){setLoading(false);return}
+      setLoading(true);setError('')
+      const {data,error}=await supabase.rpc('get_public_studio_profile',{p_studio_id:studioId})
+      if(!live)return
+      if(error){setError(error.message||'Не удалось загрузить студию.');setStudio(null)}
+      else setStudio(data||null)
+      setLoading(false)
+    }
+    load()
+    return()=>{live=false}
+  },[supabase,studioId])
+  const labels={tattoo:'Тату',piercing:'Пирсинг',nails:'Маникюр и ногти',brows:'Брови и ресницы',makeup:'Макияж'}
+  return <><Header title="Студия" subtitle="ПРОСТРАНСТВО КОМАНДЫ" back={onBack}/>
+    <main className="page-content public-studio-page">
+      {loading?<div className="empty-state"><Building2 size={28}/><b>Загружаем студию…</b></div>
+      :error?<div className="empty-state"><b>Не удалось открыть студию</b><span>{error}</span></div>
+      :!studio?<div className="empty-state"><Building2 size={28}/><b>Студия не найдена</b><span>Возможно, она больше не опубликована.</span></div>
+      :<>
+        <section className="public-studio-hero">
+          <div className="public-studio-emblem"><Building2 size={27}/></div>
+          <span className="eyebrow">MASTER HUB · STUDIO</span>
+          <h1>{studio.name}</h1>
+          <p><MapPin size={14}/>{[studio.city,studio.address].filter(Boolean).join(' · ')}</p>
+          <div className="public-studio-categories">{(studio.categories||[]).map(id=><span key={id}>{labels[id]||id}</span>)}</div>
+          {studio.description&&<div className="public-studio-description">{studio.description}</div>}
+          <div className="public-studio-count"><Users size={16}/><b>{(studio.members||[]).length}</b> {(studio.members||[]).length===1?'мастер в команде':'мастеров в команде'}</div>
+        </section>
+        <section className="public-studio-team">
+          <div className="public-studio-section-head"><div><span className="eyebrow">THE PEOPLE</span><h2>Команда студии</h2></div><span>{(studio.members||[]).length} мастеров</span></div>
+          {(studio.members||[]).length?<div className="public-studio-member-list">{studio.members.map(member=><button type="button" className="public-studio-member" key={member.id} onClick={()=>onOpenMaster(member.id)}>
+            <span className="public-studio-member-avatar">{member.cover_image_url?<img src={member.cover_image_url} alt=""/>:<UserRound size={22}/>}</span>
+            <span className="public-studio-member-copy"><b>{member.name}</b><small>{labels[member.category]||member.category} · {member.experience_years?member.experience_years+' лет опыта':'Опыт не указан'}</small><span className="public-studio-member-tags">{(member.styles||[]).slice(0,3).map(style=><i key={style}>{style}</i>)}</span></span>
+            <span className="public-studio-member-rating">{Number(member.rating)>0?<><Star size={13} fill="currentColor"/>{Number(member.rating).toFixed(1)}<small>({member.reviews_count||0})</small></>:'Новый' }<ChevronRight size={16}/></span>
+          </button>)}</div>:<div className="empty-state">В студии пока нет опубликованных мастеров.</div>}
+        </section>
+      </>}
     </main>
   </>
 }
@@ -307,6 +356,9 @@ export default function App() {
   const [selectedCategory,setSelectedCategory]=useState('tattoo')
   const [selected,setSelected]=useState(null)
   const [bookingMaster,setBookingMaster]=useState(null)
+  const [publicStudioId,setPublicStudioId]=useState(null)
+  const [studioOriginMaster,setStudioOriginMaster]=useState(null)
+  const [returnToStudio,setReturnToStudio]=useState(false)
   const [favorites,setFavorites]=useState([])
   const [bookings,setBookings]=useState([])
   const [user,setUser]=useState(null)
@@ -473,6 +525,7 @@ export default function App() {
           name: m.public_name,
           handle: m.contact_telegram || '',
           studio: m.studio_name || 'Частный мастер',
+          studioId: catalogMetaByMasterId.get(m.id)?.studio_id || null,
           studioName: catalogMetaByMasterId.get(m.id)?.studio_name || '',
           sessionsWeek: Number(catalogMetaByMasterId.get(m.id)?.sessions_week || 0),
           sessionsMonth: Number(catalogMetaByMasterId.get(m.id)?.sessions_month || 0),
@@ -529,10 +582,14 @@ export default function App() {
   useEffect(()=>{let live=true;async function loadFavorites(){if(!supabase||!user){setFavorites([]);return}const {data}=await supabase.from('favorites').select('master_id').eq('client_id',user.id);if(live)setFavorites((data||[]).map(x=>x.master_id))}loadFavorites();return()=>{live=false}},[user])
   const toggleFavorite=async id=>{if(!user||!supabase){setAuthError('Подключи Telegram, чтобы сохранять избранное.');return}const exists=favorites.includes(id);setFavorites(old=>exists?old.filter(x=>x!==id):[...old,id]);const result=exists?await supabase.from('favorites').delete().eq('client_id',user.id).eq('master_id',id):await supabase.from('favorites').insert({client_id:user.id,master_id:id});if(result.error){setAuthError(result.error.message);setFavorites(old=>exists?[...old,id]:old.filter(x=>x!==id))}}
   const goBack=()=>{setSelected(null);setBookingMaster(null)}
+  const openStudioFromMaster=master=>{setStudioOriginMaster(master);setPublicStudioId(master.studioId);setSelected(null);setReturnToStudio(false);setActive('public-studio')}
+  const openStudioMember=masterId=>{const member=mastersList.find(item=>item.id===masterId);if(member){setReturnToStudio(true);setSelected(member)}}
+  const backFromStudio=()=>{if(studioOriginMaster){setSelected(studioOriginMaster);setStudioOriginMaster(null)}else setActive('catalog')}
   const confirmBooking=async data=>{if(!user||!supabase)throw new Error('Подключи Telegram, чтобы отправить заявку на запись.');setBookingSaving(true);try{const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:data.serviceId||null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:(data.clientNote||'Запись').slice(0,300),reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});if(error)throw error;setBookingMaster(null);setSelected(null);setActive('bookings')}finally{setBookingSaving(false)}}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
-  else if(selected) content=<MasterDetail master={selected} onBack={()=>setSelected(null)} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)}/>
+  else if(selected) content=<MasterDetail master={selected} onBack={()=>{setSelected(null);if(returnToStudio){setReturnToStudio(false);setActive('public-studio')}}} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)} onOpenStudio={openStudioFromMaster}/>
+  else if(active==='public-studio') content=<PublicStudioPage supabase={supabase} studioId={publicStudioId} onBack={backFromStudio} onOpenMaster={openStudioMember}/>
   else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
   else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList} loading={mastersLoading}/>
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
