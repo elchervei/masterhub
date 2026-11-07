@@ -169,7 +169,7 @@ function BookingPage({ master, onBack, onConfirm, saving, supabase, user }) {
   const [uploading,setUploading]=useState(false)
   const [error,setError]=useState('')
   const [contactNotice,setContactNotice]=useState('')
-  const [month,setMonth=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
+  const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
   const telegramContact=useMemo(()=>telegramProfileUrl(master.handle),[master.handle])
   const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
   const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const offset=(first.getDay()+6)%7;return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[month])
