@@ -1641,3 +1641,52 @@ img{max-width:100%}
 .booking-service-summary{margin:10px 0 12px}
 
 .master-workspace .appointment-card-note{display:block;margin-top:3px;color:#9c9ca3;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+
+
+/* Studio workspace — graphite / silver, matching the master cabinet */
+.studio-workspace-card{margin:14px 0 22px;padding:17px;border:1px solid rgba(255,255,255,.12);border-radius:19px;background:linear-gradient(145deg,#25252b,#17171c 76%);box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.studio-card-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:15px}
+.studio-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:#33333a;color:#dedee2}
+.studio-card-heading>div{min-width:0}
+.studio-card-heading .eyebrow{color:#aeb0b7;font-size:9px;letter-spacing:.13em}
+.studio-card-heading h3{margin:4px 0;color:#f0f0f2;font-size:18px;font-weight:700}
+.studio-card-heading p{display:flex;align-items:center;gap:4px;margin:0;color:#a5a5ad;font-size:11px;line-height:1.5}
+.studio-form,.studio-edit-form{display:grid;gap:11px}
+.studio-workspace-card label{display:grid;gap:6px;color:#c8c8ce;font-size:10px;font-weight:650}
+.studio-workspace-card input,.studio-workspace-card textarea,.studio-workspace-card select{width:100%;min-width:0;min-height:42px;padding:10px 11px;border:1px solid rgba(255,255,255,.13);border-radius:11px;outline:none;background:#141418;color:#ededf0;font:inherit;font-size:12px}
+.studio-workspace-card textarea{resize:vertical;min-height:76px}
+.studio-workspace-card input:focus,.studio-workspace-card textarea:focus,.studio-workspace-card select:focus{border-color:rgba(255,255,255,.34);box-shadow:0 0 0 2px rgba(255,255,255,.045)}
+.studio-form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.studio-optional{color:#85858d;font-weight:400}
+.studio-join-divider{display:flex;align-items:center;gap:10px;margin:15px 0;color:#777780;font-size:9px;letter-spacing:.12em}
+.studio-join-divider:before,.studio-join-divider:after{content:"";height:1px;flex:1;background:rgba(255,255,255,.1)}
+.studio-join-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
+.studio-workspace-card .secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 13px;border:1px solid rgba(255,255,255,.15);border-radius:11px;background:#303036;color:#e4e4e8;font-size:11px;font-weight:650}
+.studio-footnote{margin:13px 0 0;color:#85858d;font-size:10px;line-height:1.5}
+.studio-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;padding:10px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.025)}
+.studio-stats-row>div{display:grid;gap:3px}
+.studio-stats-row b{color:#f0f0f2;font-size:16px}
+.studio-stats-row span{color:#92929a;font-size:9px}
+.studio-team-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 9px}
+.studio-team-heading>div{display:flex;align-items:center;gap:7px;color:#dedee2}
+.studio-team-heading>b{color:#dedee2;font-size:12px}
+.studio-team-heading>span{color:#909099;font-size:10px}
+.studio-team-heading button{border:0;background:none;color:#c9c9cf;font-size:10px}
+.studio-team-list{display:grid;gap:7px}
+.studio-team-member{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}
+.studio-member-avatar{display:grid;place-items:center;overflow:hidden;flex:0 0 34px;width:34px;height:34px;border:1px solid rgba(255,255,255,.13);border-radius:10px;background:#34343a;color:#eee}
+.studio-member-avatar img{width:100%;height:100%;object-fit:cover}
+.studio-team-member>span:nth-child(2){display:grid;gap:3px;min-width:0;flex:1}
+.studio-team-member b{color:#e8e8eb;font-size:11px}
+.studio-team-member small{color:#92929a;font-size:9px}
+.studio-owner-tag{color:#bfc0c6;font-size:8px;letter-spacing:.08em}
+.studio-invite-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#202025}
+.studio-invite-panel>div{display:grid;gap:4px;min-width:0}
+.studio-invite-panel .eyebrow{color:#9999a1;font-size:8px;letter-spacing:.1em}
+.studio-invite-panel b{color:#e9e9ec;font-size:11px}
+.studio-invite-panel small{max-width:220px;color:#92929a;font-size:9px;line-height:1.4}
+.studio-invite-code{display:flex;align-items:center;gap:7px;flex:0 0 auto;padding:9px;border:1px solid rgba(255,255,255,.15);border-radius:10px;background:#35353c;color:#f0f0f2;font-size:11px;font-weight:750;letter-spacing:.08em}
+.studio-edit-form{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.09)}
+.studio-description{margin:13px 0 0;color:#a4a4ab;font-size:11px;line-height:1.55}
+.studio-leave-button{width:100%;margin-top:13px}
+@media(max-width:370px){.studio-form-row{grid-template-columns:1fr}.studio-invite-panel{align-items:flex-start;flex-direction:column}.studio-invite-code{width:100%;justify-content:space-between}}
