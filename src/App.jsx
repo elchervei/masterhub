@@ -69,7 +69,7 @@ function MasterCard({ master, favorite, onFavorite, onOpen }) {
         <button className="master-name" onClick={onOpen}>{master.name}</button>
         <button className={`icon-button favorite-button ${favorite ? 'is-favorite' : ''}`} onClick={onFavorite} aria-label="В избранное"><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
       </div>
-      <div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor" /> {master.rating.toFixed(1)} <span>({master.reviews})</span></>:'Новый мастер'}</span><span className="meta-separator">·</span><span>{master.studio}</span></div>
+      <div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor" /> {master.rating.toFixed(1)} <span>({master.reviews})</span></>:'Новый мастер'}</span>{master.studioName && <span className="studio-inline-label"><Building2 size={12}/>{master.studioName}</span>}</div>
       <div className="tag-row">{master.styles.slice(0, 3).map(s => <span className="style-tag" key={s}>{s}</span>)}</div>
       <div className="smart-master-meta"><span>{master.experience || 'Опыт не указан'}</span>{master.nextAvailable && <span>Ближайшее окно · {new Date(master.nextAvailable).toLocaleDateString('ru-RU',{day:'numeric',month:'short'})}</span>}</div>
       <div className="card-footer"><span className="price-caption">{master.price>0?<>От <b>{money(master.price)}</b></>:<b>Цена по запросу</b>}</span><button className="text-link" onClick={onOpen}>Профиль <ChevronRight size={15} /></button></div>
@@ -126,12 +126,18 @@ function HomePage({ introVisible, onSelectCategory }) {
 function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack, loading }) {
   const [query, setQuery] = useState('')
   const [style, setStyle] = useState('Все')
-  const [sort, setSort] = useState('popular')
-  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || style === 'Все' || m.styles.includes(style))).sort((a,b)=>sort==='price' ? a.price-b.price : b.rating-a.rating), [mastersList, category, query, style, sort])
+  const [sort, setSort] = useState('month')
+  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + (m.studioName||'') + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || style === 'Все' || m.styles.includes(style))).sort((a,b)=>{
+    if(sort==='price') return a.price-b.price
+    if(sort==='rating') return b.rating-a.rating || b.reviews-a.reviews
+    if(sort==='reviews') return b.reviews-a.reviews || b.rating-a.rating
+    if(sort==='week') return b.sessionsWeek-a.sessionsWeek || b.rating-a.rating
+    return b.sessionsMonth-a.sessionsMonth || b.rating-a.rating
+  }), [mastersList, category, query, style, sort])
   const categoryName = categoryLabels[category] || 'Услуги'
   return <><Header title={`Мастера · ${categoryName}`} subtitle="КАЛИНИНГРАД" back={onBack}/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
-      <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="popular">По рейтингу</option><option value="price">Сначала дешевле</option></select></label></div>
+      <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="month">Популярные · 30 дней</option><option value="week">Популярные · 7 дней</option><option value="rating">Выше средняя оценка</option><option value="reviews">Больше отзывов</option><option value="price">Сначала дешевле</option></select></label></div>
       {category === 'tattoo' && <div className="tattoo-style-select"><label htmlFor="tattoo-style">Стиль татуировки</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>}
       <div className="master-list catalog-list">{loading ? <MasterCardSkeleton count={3}/> : <>{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>) }{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Пока нет мастеров</b><span>В этой категории ещё нет опубликованных анкет. Загляни позже.</span></div>}</>}</div>
     </main></>
@@ -142,7 +148,7 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook }) {
   const categoryTitle = ({tattoo:'татуировок',nails:'ногтей и педикюра',brows:'бровей и ресниц',piercing:'пирсинга',makeup:'макияжа'})[master.category] || 'услуг'
   const [lightbox, setLightbox] = useState('')
   return <><Header title="Профиль мастера" back={onBack} action={<button className={favorite?'icon-button is-favorite':'icon-button'} onClick={toggleFavorite}><Heart size={20} fill={favorite?'currentColor':'none'}/></button>}/>
-    <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</>:'Новый мастер · отзывов пока нет'}</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
+    <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studioName || master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</>:'Новый мастер · отзывов пока нет'}</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
       <div className="detail-facts"><div><small>ОПЫТ</small><b>{master.experience}</b></div><div><small>СТАРТ ОТ</small><b>{master.price>0?money(master.price):'По запросу'}</b></div><div><small>ГОРОД</small><b>{master.city||'Калининград'}</b></div></div>
       <p className="detail-about">{master.about}</p><div className="tag-row detail-tags">{master.styles.map(s=><span className="style-tag" key={s}>{s}</span>)}</div>
       <div className="detail-tabs"><button className={tab==='works'?'selected':''} onClick={()=>setTab('works')}>Портфолио</button><button className={tab==='services'?'selected':''} onClick={()=>setTab('services')}>Услуги и цены</button><button className={tab==='reviews'?'selected':''} onClick={()=>setTab('reviews')}>Отзывы · {master.reviews}</button><button className={tab==='info'?'selected':''} onClick={()=>setTab('info')}>О мастере</button></div>
@@ -458,12 +464,18 @@ export default function App() {
           console.error('MASTER HUB Supabase:', error.message)
           return
         }
+        const { data: catalogMeta, error: catalogMetaError } = await supabase.rpc('get_public_master_catalog_meta')
+        if (catalogMetaError) console.warn('MASTER HUB catalog meta:', catalogMetaError.message)
+        const catalogMetaByMasterId = new Map((catalogMeta || []).map(item => [item.master_id, item]))
         const liveMasters = (data || []).map(m => ({
           id: m.id,
           category: m.category || 'tattoo',
           name: m.public_name,
           handle: m.contact_telegram || '',
           studio: m.studio_name || 'Частный мастер',
+          studioName: catalogMetaByMasterId.get(m.id)?.studio_name || '',
+          sessionsWeek: Number(catalogMetaByMasterId.get(m.id)?.sessions_week || 0),
+          sessionsMonth: Number(catalogMetaByMasterId.get(m.id)?.sessions_month || 0),
           rating: (m.reviews||[]).length ? Number(((m.reviews||[]).reduce((sum,item)=>sum+Number(item.rating||0),0)/(m.reviews||[]).length).toFixed(1)) : Number(m.rating || 0),
           reviews: (m.reviews||[]).length || Number(m.reviews_count || 0),
           reviewItems: (m.reviews||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
