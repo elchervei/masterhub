@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import StudioWorkspace from './StudioWorkspace'
 import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2 } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
@@ -213,6 +214,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
               <button type="button" onClick={()=>onNavigate?.('master-inbox')}><Inbox size={17}/><span><b>Центр заявок</b><small>{incomingBookings.length ? incomingBookings.length + ' новых обращения' : 'Новых обращений нет'}</small></span><span className="master-action-arrow">↗</span></button>
             </div>
           </section>
+          <StudioWorkspace supabase={supabase} user={user} master={master}/>
           {masterToolsView&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">{masterToolsView==='profile'?'ПРОФИЛЬ МАСТЕРА':'РАСПИСАНИЕ'}</span><h3>{masterToolsView==='profile'?'Редактирование профиля':'Управление расписанием'}</h3></div><button type="button" onClick={()=>setMasterToolsView(null)}>Закрыть</button></div>
             {masterToolsView==='profile'&&<>
