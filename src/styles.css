@@ -1857,3 +1857,7 @@ img{max-width:100%}
 .studio-logo-editor{display:flex;align-items:center;gap:12px}
 .studio-logo-editor>img,.studio-logo-editor>span{width:58px;height:58px;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;border:1px solid rgba(190,190,190,.2);border-radius:15px;background:#202020;color:#aaa;object-fit:cover}
 .studio-media-editor>small{color:#888;font-size:10px;line-height:1.4}
+
+.public-studio-hero{background-position:center;background-size:cover;background-repeat:no-repeat}
+.public-studio-emblem{overflow:hidden}
+.public-studio-emblem img{width:100%;height:100%;object-fit:cover}
