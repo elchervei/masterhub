@@ -82,10 +82,11 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   useEffect(()=>{
     if(!studio?.id||!user?.id)return
     let live=true
+    let firstFetch=true
     const from=new Date();from.setHours(0,0,0,0)
     const to=new Date(from);to.setDate(to.getDate()+60)
     const fetchCalendar=async()=>{
-      setCalendarLoading(true)
+      if(firstFetch)setCalendarLoading(true)
       const {data,error:calendarLoadError}=await supabase.rpc('get_studio_calendar',{
         p_studio_id:studio.id,p_from:dateKey(from),p_to:dateKey(to)
       })
@@ -93,6 +94,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       if(calendarLoadError){setCalendarError(calendarLoadError.message||'Не удалось загрузить календарь.');setCalendarEntries([])}
       else{setCalendarError('');setCalendarEntries(data||[])}
       setCalendarLoading(false)
+      firstFetch=false
     }
     fetchCalendar()
     const channel=supabase.channel('studio-calendar-'+studio.id)
@@ -283,7 +285,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       <div className="studio-calendar-week">
         <button type="button" aria-label="Предыдущая неделя" onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-7);return dateKey(x)})}}><ChevronLeft size={16}/></button>
         <div className="studio-calendar-days">{calendarDays.map(day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return <button type="button" key={key} className={calendarDate===key?'selected':''} onClick={()=>setCalendarDate(key)}><small>{day.toLocaleDateString('ru-RU',{weekday:'short'}).replace('.','')}</small><b>{day.getDate()}</b><i className={busy?'has-busy':free?'has-free':''}/></button>})}</div>
-        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>Math.min(8,v+1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
+        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>Math.min(7,v+1));setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
       </div>
       <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} занято</span><span><i className="free-dot"/> {freeCount} свободно</span></div>
       {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
