@@ -17,8 +17,9 @@ const categoryLabel = id => categories.find(item=>item.id===id)?.label || id || 
 const plural = (n,one,few,many) => n%10===1&&n%100!==11?one:n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?few:many
 const count = n => new Intl.NumberFormat('ru-RU').format(Number(n)||0)
 
-export default function StudioWorkspace({supabase,user,master}) {
+export default function StudioWorkspace({supabase,user,master,compact=false,onNavigate}) {
   const [studio,setStudio]=useState(null)
+  const [membershipRole,setMembershipRole]=useState('member')
   const [members,setMembers]=useState([])
   const [stats,setStats]=useState(null)
   const [loading,setLoading]=useState(true)
@@ -30,6 +31,8 @@ export default function StudioWorkspace({supabase,user,master}) {
   const [draft,setDraft]=useState({name:'',categories:[master?.category||'tattoo'],description:'',city:master?.city||'Калининград',address:''})
   const [editing,setEditing]=useState(false)
   const isOwner=studio?.owner_user_id===user?.id
+  const isModerator=membershipRole==='moderator'
+  const canInvite=isOwner||isModerator
 
   const load=async()=>{
     if(!supabase||!user||!master){setLoading(false);return}
@@ -37,7 +40,8 @@ export default function StudioWorkspace({supabase,user,master}) {
     try{
       const {data:membership,error:memberError}=await supabase.from('studio_members').select('studio_id,role').eq('master_id',master.id).maybeSingle()
       if(memberError)throw memberError
-      if(!membership){setStudio(null);setMembers([]);setStats(null);setLoading(false);return}
+      if(!membership){setStudio(null);setMembers([]);setStats(null);setMembershipRole('member');setLoading(false);return}
+      setMembershipRole(membership.role||'member')
       const {data:studioData,error:studioError}=await supabase.from('studios').select('*').eq('id',membership.studio_id).single()
       if(studioError)throw studioError
       setStudio(studioData)
@@ -131,7 +135,7 @@ export default function StudioWorkspace({supabase,user,master}) {
   const leave=async()=>{
     if(!studio||!master||isOwner)return
     if(!window.confirm('Выйти из команды этой студии?'))return
-    const {error:leaveError}=await supabase.from('studio_members').delete().eq('studio_id',studio.id).eq('master_id',master.id)
+    const {error:leaveError}=await supabase.rpc('studio_remove_member',{p_studio_id:studio.id,p_master_id:master.id})
     if(leaveError)setError(leaveError.message)
     else{setStudio(null);setMembers([]);setStats(null);setNotice('Ты вышел из команды.')}
   }
@@ -142,6 +146,8 @@ export default function StudioWorkspace({supabase,user,master}) {
   }
 
   const refresh=async()=>{await load();setNotice('Данные студии обновлены.')}
+  const changeMemberRole=async(member,nextRole)=>{if(!isOwner||member.role==='owner')return;const {error:roleError}=await supabase.rpc('studio_set_member_role',{p_studio_id:studio.id,p_master_id:member.master_id,p_role:nextRole});if(roleError){setError(roleError.message);return}setNotice(nextRole==='moderator'?'Мастеру выданы права модератора.':'Права модератора сняты.');await load()}
+  const removeMember=async(member)=>{if(!canInvite||member.role==='owner')return;if(!window.confirm('Удалить '+(member.master?.public_name||'мастера')+' из студии?'))return;const {error:removeError}=await supabase.rpc('studio_remove_member',{p_studio_id:studio.id,p_master_id:member.master_id});if(removeError){setError(removeError.message);return}setNotice('Мастер удалён из команды.');await load()}
   const selectedCategories=Array.isArray(studio?.categories)&&studio.categories.length?studio.categories:[studio?.category||'tattoo']
   const statMembers=Array.isArray(stats?.members)?stats.members:[]
   const maxSessions=Math.max(1,...statMembers.map(item=>Number(item.sessions)||0))
@@ -149,6 +155,7 @@ export default function StudioWorkspace({supabase,user,master}) {
   if(loading)return <section className="studio-workspace-card studio-loading"><RefreshCw size={17}/><p>Загружаем кабинет студии…</p></section>
   if(!master)return null
 
+  if(compact&&studio)return <section className="studio-workspace-card studio-compact-card"><div className="studio-dashboard-head"><div className="studio-card-heading"><span className="studio-icon"><Building2 size={20}/></span><div><span className="eyebrow">ТВОЯ КОМАНДА</span><h3>{studio.name}</h3><p>{members.length} участников</p></div></div><button type="button" className="studio-open-link" onClick={()=>onNavigate?.('studio')}>Открыть <ArrowUpRight size={15}/></button></div></section>
   if(!studio)return <section className="studio-workspace-card studio-create-card">
     <div className="studio-card-heading">
       <span className="studio-icon"><Building2 size={20}/></span>
@@ -215,10 +222,11 @@ export default function StudioWorkspace({supabase,user,master}) {
       <div className="studio-section-intro"><div><span className="eyebrow">YOUR PEOPLE</span><h4>Команда студии</h4></div><span>{members.length} {plural(members.length,'мастер','мастера','мастеров')}</span></div>
       <div className="studio-team-list">{members.map(item=><div className="studio-team-member" key={item.master_id}>
         <span className="studio-member-avatar">{item.master?.cover_image_url?<img src={item.master.cover_image_url} alt=""/>:(item.master?.public_name||'M').slice(0,1).toUpperCase()}</span>
-        <span className="studio-member-copy"><b>{item.master?.public_name||'Мастер'}</b><small>{categoryLabel(item.master?.category)} · {item.role==='owner'?'Владелец':'Участник'}</small></span>
-        {item.role==='owner'&&<span className="studio-owner-tag"><Crown size={12}/> ВЛАДЕЛЕЦ</span>}
+        <span className="studio-member-copy"><b>{item.master?.public_name||'Мастер'}</b><small>{categoryLabel(item.master?.category)} · {item.role==='owner'?'Владелец':item.role==='moderator'?'Модератор':'Участник'}</small></span>
+        <span className={'studio-role-tag '+(item.role==='owner'?'owner':item.role==='moderator'?'moderator':'')}>{item.role==='owner'?<><Crown size={12}/> ВЛАДЕЛЕЦ</>:item.role==='moderator'?'МОДЕРАТОР':'МАСТЕР'}</span>
+        {(isOwner&&item.role!=='owner'||isModerator&&item.role==='member')&&<div className="studio-member-actions">{isOwner&&<button type="button" onClick={()=>changeMemberRole(item,item.role==='moderator'?'member':'moderator')}>{item.role==='moderator'?'Снять права':'Модератор'}</button>}<button type="button" className="studio-remove-member" onClick={()=>removeMember(item)}>Удалить</button></div>}
       </div>)}</div>
-      {isOwner&&<div className="studio-invite-panel"><div><span className="eyebrow">INVITE TO STUDIO</span><b>Пригласить мастера</b><small>Отправь код — мастер введёт его в своём кабинете и появится в команде.</small></div><button type="button" className="studio-invite-code" onClick={copyInvite}>{studio.invite_code}<Copy size={14}/></button></div>}
+      {canInvite&&<div className="studio-invite-panel"><div><span className="eyebrow">INVITE TO STUDIO</span><b>Пригласить мастера</b><small>Отправь код — мастер введёт его в своём кабинете и появится в команде.</small></div><button type="button" className="studio-invite-code" onClick={copyInvite}>{studio.invite_code}<Copy size={14}/></button></div>}
       {!isOwner&&<button type="button" className="secondary-button studio-leave-button" onClick={leave}><LogOut size={15}/> Выйти из студии</button>}
     </div>}
 
