@@ -151,6 +151,10 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     if(endTime<=startTime){setError('Время окончания должно быть позже начала.');return}
     const start=new Date(`${selectedDate}T${startTime}:00`),end=new Date(`${selectedDate}T${endTime}:00`)
     if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||start<=new Date()){setError('Нельзя добавить интервал в прошлом.');return}
+    const {data:studioBusy,error:busyError}=await supabase.rpc('get_master_studio_busy_times',{p_master_id:master.id,p_from:selectedDate,p_to:selectedDate})
+    if(busyError){setError('Не удалось проверить занятость студии: '+busyError.message);return}
+    const conflict=(studioBusy||[]).find(item=>new Date(item.starts_at)<end&&new Date(item.ends_at)>start)
+    if(conflict){const who=conflict.master_name||'другим мастером';const from=new Date(conflict.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});const to=new Date(conflict.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});setError(`Это время уже занято мастером «${who}» (${from}–${to}). Выбери другое окно.`);return}
     const overlaps=slots.some(s=>s.slot_date===selectedDate&&new Date(s.starts_at)<end&&new Date(s.ends_at)>start)
     if(overlaps){setError('Этот интервал пересекается с уже добавленным.');return}
     const {error}=await supabase.from('master_time_slots').insert({master_id:master.id,slot_date:selectedDate,starts_at:start.toISOString(),ends_at:end.toISOString(),is_active:true})
