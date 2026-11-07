@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   Building2, Users, Plus, Copy, LogOut, MapPin, Check, RefreshCw,
   BarChart3, CalendarCheck2, CalendarDays, UserRound, Settings,
-  Crown, ArrowUpRight, Sparkles, X
+  Crown, ArrowUpRight, Sparkles, X, ChevronLeft, ChevronRight, Clock3
 } from 'lucide-react'
 
 const categories = [
@@ -16,6 +16,8 @@ const categories = [
 const categoryLabel = id => categories.find(item=>item.id===id)?.label || id || 'Мастер'
 const plural = (n,one,few,many) => n%10===1&&n%100!==11?one:n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?few:many
 const count = n => new Intl.NumberFormat('ru-RU').format(Number(n)||0)
+const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+const timeLabel = value => new Date(value).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})
 
 export default function StudioWorkspace({supabase,user,master,compact=false,onNavigate}) {
   const [studio,setStudio]=useState(null)
@@ -31,6 +33,11 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const [draft,setDraft]=useState({name:'',categories:[master?.category||'tattoo'],description:'',city:master?.city||'Калининград',address:''})
   const [editing,setEditing]=useState(false)
   const [mediaUploading,setMediaUploading]=useState(false)
+  const [calendarEntries,setCalendarEntries]=useState([])
+  const [calendarLoading,setCalendarLoading]=useState(false)
+  const [calendarError,setCalendarError]=useState('')
+  const [calendarDate,setCalendarDate]=useState(dateKey(new Date()))
+  const [calendarOffset,setCalendarOffset]=useState(0)
   const isOwner=studio?.owner_user_id===user?.id
   const isModerator=membershipRole==='moderator'
   const canInvite=isOwner||isModerator
@@ -71,6 +78,29 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   }
 
   useEffect(()=>{load()},[user?.id,master?.id])
+
+  useEffect(()=>{
+    if(!studio?.id||!user?.id)return
+    let live=true
+    const from=new Date();from.setHours(0,0,0,0)
+    const to=new Date(from);to.setDate(to.getDate()+60)
+    const fetchCalendar=async()=>{
+      setCalendarLoading(true)
+      const {data,error:calendarLoadError}=await supabase.rpc('get_studio_calendar',{
+        p_studio_id:studio.id,p_from:dateKey(from),p_to:dateKey(to)
+      })
+      if(!live)return
+      if(calendarLoadError){setCalendarError(calendarLoadError.message||'Не удалось загрузить календарь.');setCalendarEntries([])}
+      else{setCalendarError('');setCalendarEntries(data||[])}
+      setCalendarLoading(false)
+    }
+    fetchCalendar()
+    const channel=supabase.channel('studio-calendar-'+studio.id)
+      .on('postgres_changes',{event:'*',schema:'public',table:'bookings'},fetchCalendar)
+      .on('postgres_changes',{event:'*',schema:'public',table:'master_time_slots'},fetchCalendar)
+      .subscribe()
+    return()=>{live=false;supabase.removeChannel(channel)}
+  },[studio?.id,user?.id])
 
   const toggleCategory=(id)=>{
     setDraft(current=>{
@@ -172,6 +202,11 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const selectedCategories=Array.isArray(studio?.categories)&&studio.categories.length?studio.categories:[studio?.category||'tattoo']
   const statMembers=Array.isArray(stats?.members)?stats.members:[]
   const maxSessions=Math.max(1,...statMembers.map(item=>Number(item.sessions)||0))
+  const calendarStart=new Date();calendarStart.setHours(0,0,0,0);calendarStart.setDate(calendarStart.getDate()+calendarOffset*7)
+  const calendarDays=Array.from({length:7},(_,i)=>{const d=new Date(calendarStart);d.setDate(d.getDate()+i);return d})
+  const dayEntries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===calendarDate).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))
+  const busyCount=dayEntries.filter(item=>item.entry_type==='busy').length
+  const freeCount=dayEntries.filter(item=>item.entry_type==='free').length
 
   if(loading)return <section className="studio-workspace-card studio-loading"><RefreshCw size={17}/><p>Загружаем кабинет студии…</p></section>
   if(!master)return null
@@ -211,6 +246,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
 
     <nav className="studio-section-nav">
       <button type="button" className={section==='overview'?'selected':''} onClick={()=>setSection('overview')}><BarChart3 size={15}/>Обзор</button>
+      <button type="button" className={section==='calendar'?'selected':''} onClick={()=>setSection('calendar')}><CalendarDays size={15}/>Календарь</button>
       <button type="button" className={section==='team'?'selected':''} onClick={()=>setSection('team')}><Users size={15}/>Команда <i>{members.length}</i></button>
       {isOwner&&<button type="button" className={section==='settings'?'selected':''} onClick={()=>setSection('settings')}><Settings size={15}/>Настройки</button>}
     </nav>
@@ -237,6 +273,26 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
         }):<div className="studio-empty-state"><BarChart3 size={22}/><b>Статистика появится здесь</b><span>Когда мастера начнут закрывать записи как завершённые, здесь появятся реальные показатели команды.</span></div>}
       </div>
       <div className="studio-insight-note"><Sparkles size={15}/><span>Сеанс попадает в статистику после того, как запись получает статус «Завершена». Клиенты считаются без повторов.</span></div>
+    </div>}
+
+    {section==='calendar'&&<div className="studio-calendar-section">
+      <div className="studio-section-intro"><div><span className="eyebrow">SHARED SCHEDULE</span><h4>Общий график студии</h4></div><span>Все мастера</span></div>
+      <div className="studio-calendar-week">
+        <button type="button" aria-label="Предыдущая неделя" onClick={()=>{setCalendarOffset(v=>v-1);setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-7);return dateKey(x)})}}><ChevronLeft size={16}/></button>
+        <div className="studio-calendar-days">{calendarDays.map(day=>{const key=dateKey(day);const entries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===key);const busy=entries.filter(item=>item.entry_type==='busy').length;const free=entries.filter(item=>item.entry_type==='free').length;return <button type="button" key={key} className={calendarDate===key?'selected':''} onClick={()=>setCalendarDate(key)}><small>{day.toLocaleDateString('ru-RU',{weekday:'short'}).replace('.','')}</small><b>{day.getDate()}</b><i className={busy?'has-busy':free?'has-free':''}/></button>})}</div>
+        <button type="button" aria-label="Следующая неделя" onClick={()=>{setCalendarOffset(v=>v+1);setCalendarDate(d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+7);return dateKey(x)})}}><ChevronRight size={16}/></button>
+      </div>
+      <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} занято</span><span><i className="free-dot"/> {freeCount} свободно</span></div>
+      {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
+      :calendarError?<div className="studio-calendar-empty studio-calendar-error">{calendarError}</div>
+      :dayEntries.length?<div className="studio-calendar-agenda">{dayEntries.map(item=><article className={'studio-calendar-entry '+(item.entry_type==='busy'?'is-busy':'is-free')} key={item.entry_type+'-'+item.entry_id}>
+        <div className="studio-calendar-time"><b>{timeLabel(item.starts_at)}</b><small>{timeLabel(item.ends_at)}</small></div>
+        <span className="studio-calendar-entry-mark">{item.entry_type==='busy'?<Clock3 size={15}/>:<Check size={15}/>}</span>
+        <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер'):'Можно выбрать для записи'}</small></div>
+        {item.entry_type==='busy'&&<span className="studio-calendar-status">ЗАНЯТО</span>}
+      </article>)}</div>
+      :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату нет занятых интервалов и открытых окон в расписании команды.</span></div>}
+      <p className="studio-calendar-note">Записи всех участников студии занимают одно общее время. Клиентские данные здесь не показываются.</p>
     </div>}
 
     {section==='team'&&<div className="studio-team-section">
