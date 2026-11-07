@@ -363,6 +363,17 @@ export default function App() {
     loadRole()
     return () => { active = false }
   }, [user])
+  useEffect(() => {
+    if (!supabase || !user) return
+    const refreshStudioMembership = async () => {
+      const { data: ownMaster } = await supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
+      if (!ownMaster) { setHasStudio(false); return }
+      const { data: membership } = await supabase.from('studio_members').select('studio_id').eq('master_id', ownMaster.id).maybeSingle()
+      setHasStudio(!!membership)
+    }
+    window.addEventListener('masterhub:studio-membership-changed', refreshStudioMembership)
+    return () => window.removeEventListener('masterhub:studio-membership-changed', refreshStudioMembership)
+  }, [supabase, user])
   const loginWithTelegram = async () => {
     setAuthError('')
     const initData = window.Telegram?.WebApp?.initData
