@@ -19,7 +19,7 @@ const count = n => new Intl.NumberFormat('ru-RU').format(Number(n)||0)
 const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 const timeLabel = value => new Date(value).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})
 
-export default function StudioWorkspace({supabase,user,master,compact=false,onNavigate}) {
+export default function StudioWorkspace({supabase,user,master,compact=false,onNavigate,onOpenMasterProfile}) {
   const [studio,setStudio]=useState(null)
   const [membershipRole,setMembershipRole]=useState('member')
   const [members,setMembers]=useState([])
@@ -315,7 +315,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       <div className="studio-section-intro"><div><span className="eyebrow">YOUR PEOPLE</span><h4>Команда студии</h4></div><span>{members.length} {plural(members.length,'мастер','мастера','мастеров')}</span></div>
       <div className="studio-team-list">{members.map(item=><div className="studio-team-member" key={item.master_id}>
         <span className="studio-member-avatar">{item.master?.cover_image_url?<img src={item.master.cover_image_url} alt=""/>:(item.master?.public_name||'M').slice(0,1).toUpperCase()}</span>
-        <span className="studio-member-copy"><b>{item.master?.public_name||'Мастер'}</b><small>{categoryLabel(item.master?.category)} · {item.role==='owner'?'Владелец':item.role==='moderator'?'Модератор':'Участник'}</small></span>
+        <button type="button" className="studio-member-profile" onClick={()=>onOpenMasterProfile?.(item.master_id)} disabled={!item.master||item.master.status!=='approved'} aria-label={'Открыть профиль мастера '+(item.master?.public_name||'')}><span className="studio-member-copy"><b>{item.master?.public_name||'Мастер'}</b><small>{categoryLabel(item.master?.category)} · {item.role==='owner'?'Владелец':item.role==='moderator'?'Модератор':'Участник'}</small></span><span className="studio-profile-open">Профиль <ArrowUpRight size={13}/></span></button>
         <span className={'studio-role-tag '+(item.role==='owner'?'owner':item.role==='moderator'?'moderator':'')}>{item.role==='owner'?<><Crown size={12}/> ВЛАДЕЛЕЦ</>:item.role==='moderator'?'МОДЕРАТОР':'МАСТЕР'}</span>
         {(isOwner&&item.role!=='owner'||isModerator&&item.role==='member')&&<div className="studio-member-actions">{isOwner&&<button type="button" onClick={()=>changeMemberRole(item,item.role==='moderator'?'member':'moderator')}>{item.role==='moderator'?'Снять права':'Модератор'}</button>}<button type="button" className="studio-remove-member" onClick={()=>removeMember(item)}>Удалить</button></div>}
       </div>)}</div>
