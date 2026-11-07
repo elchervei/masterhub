@@ -1861,3 +1861,44 @@ img{max-width:100%}
 .public-studio-hero{background-position:center;background-size:cover;background-repeat:no-repeat}
 .public-studio-emblem{overflow:hidden}
 .public-studio-emblem img{width:100%;height:100%;object-fit:cover}
+
+
+/* Shared studio calendar — compact mobile-first agenda */
+.studio-section-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.studio-section-nav button{min-width:0;white-space:nowrap;font-size:9px;gap:4px;padding:9px 2px}
+.studio-calendar-section{padding-top:2px}
+.studio-calendar-week{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;align-items:center;gap:4px;margin:12px 0 14px}
+.studio-calendar-week>button{width:28px;height:34px;display:grid;place-items:center;border:1px solid rgba(207,216,211,.12);border-radius:9px;background:#202723;color:#bfc9c2}
+.studio-calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.studio-calendar-days>button{min-width:0;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px 1px;border:1px solid transparent;border-radius:10px;background:rgba(215,225,218,.035);color:#9aa69e}
+.studio-calendar-days>button small{font-size:8px;text-transform:uppercase}
+.studio-calendar-days>button b{font-size:13px;font-weight:650}
+.studio-calendar-days>button i{width:5px;height:5px;border-radius:50%;background:transparent}
+.studio-calendar-days>button i.has-busy{background:#b5b9b6}
+.studio-calendar-days>button i.has-free{background:#82998a}
+.studio-calendar-days>button.selected{border-color:rgba(218,226,220,.27);background:#343d37;color:#f0f3f0}
+.studio-calendar-summary{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 0 11px;border-bottom:1px solid rgba(207,216,211,.1)}
+.studio-calendar-summary>b{margin-right:auto;color:#e3e9e4;font-size:12px;text-transform:capitalize}
+.studio-calendar-summary>span{display:flex;align-items:center;gap:5px;color:#9aa69e;font-size:9px}
+.studio-calendar-summary i{width:6px;height:6px;border-radius:50%}
+.studio-calendar-summary .busy-dot{background:#aeb5b0}
+.studio-calendar-summary .free-dot{background:#82998a}
+.studio-calendar-agenda{display:grid;gap:7px;padding-top:11px}
+.studio-calendar-entry{display:grid;grid-template-columns:54px 27px minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0;padding:10px 9px;border:1px solid rgba(207,216,211,.12);border-radius:12px;background:rgba(215,225,218,.025)}
+.studio-calendar-entry.is-busy{border-left:3px solid #858d88;background:rgba(145,153,147,.07)}
+.studio-calendar-entry.is-free{border-left:3px solid #718a78;background:rgba(113,138,120,.07)}
+.studio-calendar-time{display:grid;gap:3px}
+.studio-calendar-time>b{color:#e5ebe6;font-size:11px;font-variant-numeric:tabular-nums}
+.studio-calendar-time>small{color:#87938b;font-size:9px;font-variant-numeric:tabular-nums}
+.studio-calendar-entry-mark{width:26px;height:26px;display:grid;place-items:center;border:1px solid rgba(207,216,211,.13);border-radius:8px;color:#aeb8b1}
+.studio-calendar-entry.is-free .studio-calendar-entry-mark{color:#a8c0ad}
+.studio-calendar-entry-copy{display:grid;gap:3px;min-width:0}
+.studio-calendar-entry-copy>b{overflow:hidden;color:#dfe6e0;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.studio-calendar-entry-copy>small{overflow:hidden;color:#8f9b93;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.studio-calendar-status{color:#aeb6b0;font-size:7px;font-weight:750;letter-spacing:.08em}
+.studio-calendar-empty{min-height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;margin-top:11px;padding:15px;border:1px dashed rgba(207,216,211,.14);border-radius:13px;color:#8e9b92;text-align:center;font-size:10px}
+.studio-calendar-empty b{color:#d1d9d3;font-size:11px}
+.studio-calendar-empty span{max-width:230px;line-height:1.45}
+.studio-calendar-error{color:#c7a6a6}
+.studio-calendar-note{margin:12px 0 0;color:#78857d;font-size:9px;line-height:1.5}
+@media(max-width:370px){.studio-section-nav button{font-size:8px}.studio-calendar-entry{grid-template-columns:49px 24px minmax(0,1fr);gap:6px;padding:9px 7px}.studio-calendar-status{display:none}.studio-calendar-days{gap:2px}.studio-calendar-days>button{min-height:54px}}
