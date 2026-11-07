@@ -99,6 +99,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       const {error:membershipError}=await supabase.from('studio_members').insert({studio_id:created.id,master_id:master.id,role:'owner'})
       if(membershipError)throw membershipError
       setSection('overview')
+      window.dispatchEvent(new Event('masterhub:studio-membership-changed'))
       setNotice('Кабинет студии создан. Теперь можно управлять командой и смотреть статистику.')
       await load()
     }catch(e){setError(e.message||'Не удалось создать студию.')}
@@ -129,7 +130,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
     const {error:joinError}=await supabase.rpc('join_studio_by_code',{p_code:joinCode.trim().toUpperCase()})
     setSaving(false)
     if(joinError){setError(joinError.message);return}
-    setJoinCode('');setNotice('Ты присоединился к студии.');await load()
+    setJoinCode('');window.dispatchEvent(new Event('masterhub:studio-membership-changed'));setNotice('Ты присоединился к студии.');await load()
   }
 
   const leave=async()=>{
@@ -137,7 +138,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
     if(!window.confirm('Выйти из команды этой студии?'))return
     const {error:leaveError}=await supabase.rpc('studio_remove_member',{p_studio_id:studio.id,p_master_id:master.id})
     if(leaveError)setError(leaveError.message)
-    else{setStudio(null);setMembers([]);setStats(null);setNotice('Ты вышел из команды.')}
+    else{setStudio(null);setMembers([]);setStats(null);window.dispatchEvent(new Event('masterhub:studio-membership-changed'));setNotice('Ты вышел из команды.')}
   }
 
   const copyInvite=async()=>{
