@@ -1785,3 +1785,41 @@ img{max-width:100%}
 .filter-head label{max-width:72%;}
 .filter-head select{max-width:100%;min-width:0}
 @media(max-width:380px){.studio-inline-label{max-width:145px}.filter-head label{max-width:68%}}
+
+
+/* Public studio profile for clients */
+.master-studio-link{width:100%;display:flex;align-items:center;gap:12px;margin:18px 0;padding:14px 15px;text-align:left;border:1px solid rgba(190,190,190,.2);border-radius:15px;background:rgba(255,255,255,.035);color:inherit}
+.master-studio-link-icon{width:40px;height:40px;display:grid;place-items:center;flex:0 0 auto;border:1px solid rgba(190,190,190,.2);border-radius:12px;color:#c7c7c7}
+.master-studio-link>span:nth-child(2){display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.master-studio-link small,.master-studio-link em{font-size:9px;font-style:normal;letter-spacing:.08em;color:#929292}
+.master-studio-link b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.master-studio-link em{font-size:11px;letter-spacing:0;color:#b6b6b6}
+.public-studio-page{padding-top:12px}
+.public-studio-hero{position:relative;overflow:hidden;padding:24px 20px 20px;border:1px solid rgba(190,190,190,.18);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018))}
+.public-studio-emblem{width:54px;height:54px;display:grid;place-items:center;margin-bottom:18px;border:1px solid rgba(190,190,190,.25);border-radius:16px;color:#d0d0d0;background:rgba(255,255,255,.045)}
+.public-studio-hero>.eyebrow{font-size:9px;letter-spacing:.16em;color:#9c9c9c}
+.public-studio-hero h1{margin:8px 0 7px;font-size:28px;line-height:1.1;letter-spacing:-.04em}
+.public-studio-hero>p{display:flex;align-items:center;gap:6px;margin:0;color:#a9a9a9;font-size:12px}
+.public-studio-categories{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}
+.public-studio-categories span,.public-studio-member-tags i{padding:5px 8px;border:1px solid rgba(190,190,190,.16);border-radius:999px;color:#c2c2c2;font-size:10px;font-style:normal;background:rgba(255,255,255,.035)}
+.public-studio-description{margin-top:17px;color:#d0d0d0;font-size:13px;line-height:1.55;white-space:pre-wrap}
+.public-studio-count{display:flex;align-items:center;gap:7px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(190,190,190,.13);color:#a9a9a9;font-size:12px}
+.public-studio-count b{color:#eee;font-size:15px}
+.public-studio-team{margin-top:25px}
+.public-studio-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.public-studio-section-head .eyebrow{font-size:9px;letter-spacing:.15em;color:#999}
+.public-studio-section-head h2{margin:4px 0 0;font-size:21px;letter-spacing:-.03em}
+.public-studio-section-head>span{color:#999;font-size:11px}
+.public-studio-member-list{display:flex;flex-direction:column;gap:9px}
+.public-studio-member{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:12px;border:1px solid rgba(190,190,190,.15);border-radius:15px;background:rgba(255,255,255,.025);color:inherit;text-align:left}
+.public-studio-member-avatar{width:48px;height:48px;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;border:1px solid rgba(190,190,190,.18);border-radius:13px;background:#222;color:#aaa}
+.public-studio-member-avatar img{width:100%;height:100%;object-fit:cover}
+.public-studio-member-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.public-studio-member-copy>b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.public-studio-member-copy>small{font-size:10px;color:#9d9d9d}
+.public-studio-member-tags{display:flex;gap:4px;overflow:hidden}
+.public-studio-member-tags i{padding:3px 6px;font-size:9px;white-space:nowrap}
+.public-studio-member-rating{display:flex;align-items:center;gap:3px;flex:0 0 auto;color:#d4d4d4;font-size:11px}
+.public-studio-member-rating small{color:#999;font-size:9px}
+.public-studio-member-rating>svg:last-child{margin-left:3px;color:#888}
+@media(max-width:380px){.public-studio-hero{padding:20px 15px}.public-studio-hero h1{font-size:24px}.public-studio-member{gap:8px;padding:10px}.public-studio-member-avatar{width:42px;height:42px}}
