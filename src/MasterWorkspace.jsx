@@ -23,7 +23,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [serviceTitle,setServiceTitle]=useState(''),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('60')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
   const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[masterToolsView,setMasterToolsView]=useState(null),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({_masterId:null,public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
-  const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('week')
+  const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('month'),[workType,setWorkType]=useState('portfolio'),[workStage,setWorkStage]=useState('fresh'),[flashStatus,setFlashStatus]=useState('available'),[workPrice,setWorkPrice]=useState(''),[pairMode,setPairMode]=useState(false),[activePairId,setActivePairId]=useState('')
   const [styleRows,setStyleRows]=useState([]),[selectedStyleIds,setSelectedStyleIds]=useState([]),[styleSaving,setStyleSaving]=useState(false)
   const categoryName = categoryNames[master?.category] || 'услуги'
   const portfolioTitle = ({tattoo:'татуировки',nails:'ногти и педикюр',brows:'брови и ресницы',piercing:'пирсинг',makeup:'макияж'})[master?.category] || 'работы'
@@ -114,7 +114,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       const {error:updateError}=await supabase.from('masters').update({cover_image_url:publicData.publicUrl}).eq('id',master.id)
       if(updateError)setError(updateError.message);else setMaster(old=>({...old,cover_image_url:publicData.publicUrl}))
     }else{
-      const {error:insertError}=await supabase.from('portfolio_items').insert({master_id:master.id,image_path:publicData.publicUrl,caption:'',sort_order:works.length})
+      const {error:insertError}=await supabase.from('portfolio_items').insert({master_id:master.id,image_path:publicData.publicUrl,caption:'',sort_order:works.length,item_type:workType,work_stage:workType==='portfolio'?workStage:'sketch',flash_status:workType==='flash'?flashStatus:'available',price:workType==='flash'&&workPrice.trim()?Number(workPrice):null,pair_id:workType==='portfolio'&&pairMode?(activePairId||crypto.randomUUID()):null})
       if(insertError)setError(insertError.message);else await load()
     }
     setCloudUploading(false)
