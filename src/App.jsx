@@ -199,9 +199,8 @@ function PublicStudioPage({ supabase, studioId, onBack, onOpenMaster }) {
       :error?<div className="empty-state"><b>Не удалось открыть студию</b><span>{error}</span></div>
       :!studio?<div className="empty-state"><Building2 size={28}/><b>Студия не найдена</b><span>Возможно, она больше не опубликована.</span></div>
       :<>
-        <section className="public-studio-hero">
-          <div className="public-studio-emblem"><Building2 size={27}/></div>
-          <span className="eyebrow">MASTER HUB · STUDIO</span>
+        <section className="public-studio-hero" style={studio.cover_image_url?{backgroundImage:`linear-gradient(180deg,rgba(8,8,8,.42),rgba(8,8,8,.94)),url(${studio.cover_image_url})`}:undefined}>
+          <div className="public-studio-brand-row"><div className="public-studio-emblem">{studio.logo_image_url?<img src={studio.logo_image_url} alt={`Логотип ${studio.name}`}/>:<Building2 size={27}/>}</div><span className="eyebrow">MASTER HUB · STUDIO</span></div>
           <h1>{studio.name}</h1>
           <p><MapPin size={14}/>{[studio.city,studio.address].filter(Boolean).join(' · ')}</p>
           <div className="public-studio-categories">{(studio.categories||[]).map(id=><span key={id}>{labels[id]||id}</span>)}</div>
