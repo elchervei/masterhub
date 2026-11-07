@@ -1,6 +1,6 @@
 import { Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
-import { Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
+import { Building2, Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
 import { masters, styles, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
@@ -84,11 +84,12 @@ function MasterCardSkeleton({ count = 3 }) {
   </article>)
 }
 
-function BottomNav({ active, setActive, isAdmin, isMaster }) {
+function BottomNav({ active, setActive, isAdmin, isMaster, hasStudio }) {
   const masterTabs = [
     { id: 'profile', label: 'Кабинет', icon: ContactRound },
     { id: 'master-inbox', label: 'Заявки', icon: Inbox },
     { id: 'master-bookings', label: 'Записи', icon: CalendarCheck2 },
+    ...(hasStudio ? [{ id: 'studio', label: 'Студия', icon: Building2 }] : []),
     { id: 'home', label: 'Клиент', icon: Home }
   ]
   const visibleTabs = isMaster ? masterTabs : isAdmin ? [...tabs, { id: 'admin', label: 'Заявки', icon: ClipboardList }] : tabs
@@ -306,6 +307,7 @@ export default function App() {
   const [authLoading,setAuthLoading]=useState(false)
   const [authError,setAuthError]=useState('')
   const [userRole,setUserRole]=useState('client')
+  const [hasStudio,setHasStudio]=useState(false)
   const [mastersList,setMastersList]=useState([])
   const [mastersLoading,setMastersLoading]=useState(true)
   const [viewMode,setViewMode]=useState('client')
@@ -344,7 +346,7 @@ export default function App() {
   useEffect(() => {
     let active = true
     async function loadRole() {
-      if (!supabase || !user) { setUserRole('client'); return }
+      if (!supabase || !user) { setUserRole('client'); setHasStudio(false); return }
       const [{ data: profile }, { data: ownMaster, error: masterError }] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
         supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
@@ -353,6 +355,10 @@ export default function App() {
       if (profile?.role === 'admin') setUserRole('admin')
       else if (ownMaster && !masterError) setUserRole('master')
       else setUserRole('client')
+      if (ownMaster && !masterError) {
+        const { data: membership } = await supabase.from('studio_members').select('studio_id').eq('master_id', ownMaster.id).maybeSingle()
+        if (active) setHasStudio(!!membership)
+      } else setHasStudio(false)
     }
     loadRole()
     return () => { active = false }
@@ -509,7 +515,7 @@ export default function App() {
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersLoading?<MasterCardSkeleton count={2}/>:mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!mastersLoading&&!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
-  else if(['profile','master-inbox','master-bookings'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')} onNavigate={setActive}/>
+  else if(['profile','master-inbox','master-bookings','studio'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')} onNavigate={setActive}/>
   else content=<ProfilePage supabase={supabase} isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
-  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner"><RenderErrorBoundary key={active}>{content}</RenderErrorBoundary>{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
+  return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner"><RenderErrorBoundary key={active}>{content}</RenderErrorBoundary>{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')} hasStudio={hasStudio}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
