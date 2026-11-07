@@ -1944,3 +1944,10 @@ img{max-width:100%}
 .studio-calendar-category-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 4px;padding:10px 12px;border:1px solid rgba(207,216,211,.12);border-radius:12px;background:rgba(215,225,218,.025)}
 .studio-calendar-category-filter label{color:#9aa39d;font-size:10px}
 .studio-calendar-category-filter select{max-width:62%;min-width:0;padding:8px 28px 8px 10px;border:1px solid rgba(207,216,211,.16);border-radius:9px;background:#171a1c;color:#e2e7e3;font:inherit;font-size:11px}
+
+.studio-member-profile{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.studio-member-profile:disabled{cursor:default;opacity:.62}
+.studio-member-profile:not(:disabled):active .studio-member-copy b{color:#fff}
+.studio-profile-open{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;color:#aab5ad;font-size:9px;white-space:nowrap}
+.studio-member-profile:not(:disabled) .studio-profile-open{color:#d5dfd8}
+@media(hover:hover){.studio-member-profile:not(:disabled):hover .studio-profile-open{color:#fff}.studio-member-profile:not(:disabled):hover .studio-member-copy b{text-decoration:underline;text-underline-offset:3px}}
