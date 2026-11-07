@@ -34,7 +34,7 @@ grant execute on function private.is_studio_member(uuid) to authenticated;
 grant select,insert,update,delete on public.studios to authenticated;
 grant select,insert,update,delete on public.studio_members to authenticated;
 drop policy if exists "Studio members can read studio" on public.studios;
-create policy "Studio members can read studio" on public.studios for select to authenticated using (private.is_studio_member(id));
+create policy "Studio members can read studio" on public.studios for select to authenticated using (owner_user_id=auth.uid() or private.is_studio_member(id));
 drop policy if exists "Users create own studio" on public.studios;
 create policy "Users create own studio" on public.studios for insert to authenticated with check (owner_user_id=auth.uid());
 drop policy if exists "Owners update studio" on public.studios;
