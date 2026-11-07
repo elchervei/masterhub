@@ -38,6 +38,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const [calendarError,setCalendarError]=useState('')
   const [calendarDate,setCalendarDate]=useState(dateKey(new Date()))
   const [calendarOffset,setCalendarOffset]=useState(0)
+  const [calendarCategory,setCalendarCategory]=useState('all')
   const isOwner=studio?.owner_user_id===user?.id
   const isModerator=membershipRole==='moderator'
   const canInvite=isOwner||isModerator
@@ -210,9 +211,12 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
   const calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset,1)
   const monthStart=new Date(calendarMonth);monthStart.setDate(1-((monthStart.getDay()+6)%7))
   const calendarDays=Array.from({length:42},(_,i)=>{const d=new Date(monthStart);d.setDate(d.getDate()+i);return d})
-  const dayEntries=calendarEntries.filter(item=>dateKey(new Date(item.starts_at))===calendarDate).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))
+  const calendarCategories=[...new Set(members.map(item=>item.master?.category).filter(Boolean))]
+  const categoryLabelForMaster=masterId=>categoryLabel(members.find(item=>item.master_id===masterId)?.master?.category)
+  const filteredCalendarEntries=calendarCategory==='all'?calendarEntries:calendarEntries.filter(item=>members.find(member=>member.master_id===item.master_id)?.master?.category===calendarCategory)
+  const dayEntries=filteredCalendarEntries.filter(item=>dateKey(new Date(item.starts_at))===calendarDate).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))
   const busyCount=dayEntries.filter(item=>item.entry_type==='busy').length
-  const getDayState=day=>calendarEntries.some(item=>dateKey(new Date(item.starts_at))===dateKey(day)?true:false)?'full':'empty'
+  const getDayState=day=>filteredCalendarEntries.some(item=>dateKey(new Date(item.starts_at))===dateKey(day))?'full':'empty'
 
   if(loading)return <section className="studio-workspace-card studio-loading"><RefreshCw size={17}/><p>Загружаем кабинет студии…</p></section>
   if(!master)return null
@@ -283,6 +287,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
 
     {section==='calendar'&&<div className="studio-calendar-section">
       <div className="studio-section-intro"><div><span className="eyebrow">SHARED SCHEDULE</span><h4>Общий график студии</h4></div><span>Все мастера</span></div>
+      <div className="studio-calendar-category-filter"><label htmlFor="studio-calendar-category">Направление</label><select id="studio-calendar-category" value={calendarCategory} onChange={e=>setCalendarCategory(e.target.value)}><option value="all">Все направления</option>{calendarCategories.map(id=><option key={id} value={id}>{categoryLabel(id)}</option>)}</select></div>
       <div className="studio-calendar-month-head">
         <button type="button" aria-label="Предыдущий месяц" disabled={calendarOffset===0} onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(dateKey(new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset-1,1)))}}><ChevronLeft size={17}/></button>
         <b>{calendarMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b>
@@ -299,7 +304,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       :dayEntries.length?<div className="studio-calendar-agenda">{dayEntries.map(item=><article className={'studio-calendar-entry '+(item.entry_type==='busy'?'is-busy':'is-free')} key={item.entry_type+'-'+item.entry_id}>
         <div className="studio-calendar-time"><b>{timeLabel(item.starts_at)}</b><small>{timeLabel(item.ends_at)}</small></div>
         <span className="studio-calendar-entry-mark">{item.entry_type==='busy'?<Clock3 size={15}/>:<Check size={15}/>}</span>
-        <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято мастером':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер'):'Окно доступно для записи'}</small></div>
+        <div className="studio-calendar-entry-copy"><b>{item.entry_type==='busy'?'Занято мастером':'Свободное окно'}</b><small>{item.entry_type==='busy'?(item.master_name||'Мастер')+' · '+categoryLabelForMaster(item.master_id):'Окно доступно для записи'}</small></div>
         {item.entry_type==='busy'&&<span className="studio-calendar-status">ЗАНЯТО</span>}
       </article>)}</div>
       :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату никто из мастеров пока не зарезервировал время в студии.</span></div>}
