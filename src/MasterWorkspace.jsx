@@ -114,7 +114,9 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
       const {error:updateError}=await supabase.from('masters').update({cover_image_url:publicData.publicUrl}).eq('id',master.id)
       if(updateError)setError(updateError.message);else setMaster(old=>({...old,cover_image_url:publicData.publicUrl}))
     }else{
-      const {error:insertError}=await supabase.from('portfolio_items').insert({master_id:master.id,image_path:publicData.publicUrl,caption:'',sort_order:works.length,item_type:workType,work_stage:workType==='portfolio'?workStage:'sketch',flash_status:workType==='flash'?flashStatus:'available',price:workType==='flash'&&workPrice.trim()?Number(workPrice):null,pair_id:workType==='portfolio'&&pairMode?(activePairId||crypto.randomUUID()):null})
+      const pairId=workType==='portfolio'&&pairMode?(activePairId||crypto.randomUUID()):null
+      if(pairId&&!activePairId)setActivePairId(pairId)
+      const {error:insertError}=await supabase.from('portfolio_items').insert({master_id:master.id,image_path:publicData.publicUrl,caption:'',sort_order:works.length,item_type:workType,work_stage:workType==='portfolio'?workStage:'sketch',flash_status:workType==='flash'?flashStatus:'available',price:workType==='flash'&&workPrice.trim()?Number(workPrice):null,pair_id:pairId})
       if(insertError)setError(insertError.message);else await load()
     }
     setCloudUploading(false)
