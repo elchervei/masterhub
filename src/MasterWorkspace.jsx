@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import StudioWorkspace from './StudioWorkspace'
+import { styleGroups } from './data'
 import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2 } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
@@ -23,6 +24,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
   const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[masterToolsView,setMasterToolsView]=useState(null),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({_masterId:null,public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('week')
+  const [styleRows,setStyleRows]=useState([]),[selectedStyleIds,setSelectedStyleIds]=useState([]),[styleSaving,setStyleSaving]=useState(false)
   const categoryName = categoryNames[master?.category] || 'услуги'
   const portfolioTitle = ({tattoo:'татуировки',nails:'ногти и педикюр',brows:'брови и ресницы',piercing:'пирсинг',makeup:'макияж'})[master?.category] || 'работы'
   const load=async()=>{
@@ -45,21 +47,34 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
         experience_years:String(current.experience_years??0),
         starting_price:String(current.starting_price??0)
       })
-      const [sv,pf,bk,sl,iq]=await Promise.all([
+      const [sv,pf,bk,sl,iq,allStyleResult,masterStyleResult]=await Promise.all([
         supabase.from('services').select('*').eq('master_id',current.id).order('created_at',{ascending:false}),
         supabase.from('portfolio_items').select('*').eq('master_id',current.id).order('sort_order'),
         supabase.from('bookings').select('*').eq('master_id',current.id).order('starts_at'),
         supabase.from('master_time_slots').select('*').eq('master_id',current.id).gte('slot_date',localDate(new Date())).order('slot_date').order('starts_at'),
-        supabase.from('master_inquiries').select('*').eq('master_id',current.id).order('created_at',{ascending:false})
+        supabase.from('master_inquiries').select('*').eq('master_id',current.id).order('created_at',{ascending:false}),
+        supabase.from('styles').select('id,name').order('name'),
+        supabase.from('master_styles').select('style_id').eq('master_id',current.id)
       ])
       const firstError=[sv,pf,bk,sl,iq].find(result=>result.error)?.error
       if(firstError)setError(firstError.message||'Не удалось загрузить часть данных кабинета.')
-      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const service=(sv.data||[]).find(item=>item.id===booking.service_id)||null;const raw=booking.reference_image_url;if(!raw)return {...booking,service};if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,service,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,service,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[])
+      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const service=(sv.data||[]).find(item=>item.id===booking.service_id)||null;const raw=booking.reference_image_url;if(!raw)return {...booking,service};if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,service,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,service,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[]);setStyleRows(allStyleResult.data||[]);setSelectedStyleIds((masterStyleResult.data||[]).map(row=>row.style_id))
     }catch(loadError){
       setError(loadError?.message||'Не удалось загрузить кабинет. Попробуй обновить экран.')
     }finally{setLoading(false)}
   }
   useEffect(()=>{let live=true;let channel=null;const start=async()=>{await load();if(!supabase||!user)return;const {data:current}=await supabase.from('masters').select('id').eq('user_id',user.id).maybeSingle();if(live&&current)channel=supabase.channel('master-bookings-'+current.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings',filter:'master_id=eq.'+current.id},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'master_inquiries',filter:'master_id=eq.'+current.id},()=>load()).subscribe()};start();const handler=()=>load();window.addEventListener('masterhub:master-created',handler);return()=>{live=false;window.removeEventListener('masterhub:master-created',handler);if(channel)supabase.removeChannel(channel)}},[user?.id])
+  const saveMasterStyles=async()=>{
+    if(!master||styleSaving)return
+    setStyleSaving(true);setError('')
+    const {error:deleteError}=await supabase.from('master_styles').delete().eq('master_id',master.id)
+    if(deleteError){setError(deleteError.message);setStyleSaving(false);return}
+    const rows=selectedStyleIds.map(style_id=>({master_id:master.id,style_id}))
+    if(rows.length){const {error:insertError}=await supabase.from('master_styles').insert(rows);if(insertError){setError(insertError.message);setStyleSaving(false);return}}
+    setStyleSaving(false);setNote('Стили мастера обновлены.')
+    await load()
+  }
+
   const saveMasterProfile=async e=>{
     e.preventDefault()
     if(!master||profileSaving)return
