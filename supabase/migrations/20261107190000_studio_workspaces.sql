@@ -45,8 +45,8 @@ drop policy if exists "Owners add own master as owner" on public.studio_members;
 create policy "Owners add own master as owner" on public.studio_members for insert to authenticated with check (role='owner' and exists(select 1 from public.studios s where s.id=studio_id and s.owner_user_id=auth.uid()) and exists(select 1 from public.masters m where m.id=master_id and m.user_id=auth.uid()));
 drop policy if exists "Members leave or owners remove members" on public.studio_members;
 create policy "Members leave or owners remove members" on public.studio_members for delete to authenticated using (exists(select 1 from public.masters m where m.id=master_id and m.user_id=auth.uid()) or exists(select 1 from public.studios s where s.id=studio_id and s.owner_user_id=auth.uid()));
-create or replace function public.join_studio_by_code(p_code text)
-returns void language plpgsql security definer set search_path=public
+create or replace function private.join_studio_by_code(p_code text)
+returns void language plpgsql security definer set search_path=public,private
 as $$
 declare v_studio_id uuid; v_master_id uuid;
 begin
@@ -59,6 +59,12 @@ begin
   insert into public.studio_members(studio_id,master_id,role) values(v_studio_id,v_master_id,'member');
 end;
 $$;
+revoke all on function private.join_studio_by_code(text) from public;
+revoke all on function private.join_studio_by_code(text) from anon;
+grant execute on function private.join_studio_by_code(text) to authenticated;
+create or replace function public.join_studio_by_code(p_code text)
+returns void language plpgsql security invoker set search_path=public,private
+as $$ begin perform private.join_studio_by_code(p_code); end; $$;
 revoke all on function public.join_studio_by_code(text) from public;
 revoke all on function public.join_studio_by_code(text) from anon;
 grant execute on function public.join_studio_by_code(text) to authenticated;
