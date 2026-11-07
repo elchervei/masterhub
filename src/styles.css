@@ -1913,3 +1913,29 @@ img{max-width:100%}
 .studio-calendar-error{color:#c7a6a6}
 .studio-calendar-note{margin:12px 0 0;color:#78857d;font-size:9px;line-height:1.5}
 @media(max-width:370px){.studio-section-nav button{font-size:8px}.studio-calendar-entry{grid-template-columns:49px 24px minmax(0,1fr);gap:6px;padding:9px 7px}.studio-calendar-status{display:none}.studio-calendar-grid{gap:3px}.studio-calendar-day{height:39px;border-radius:8px}.studio-calendar-legend{gap:8px}}
+
+
+/* Flash catalog and staged tattoo portfolio */
+.portfolio-type-switch,.flash-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.portfolio-type-switch button,.flash-filter-row button{border:1px solid var(--line,rgba(255,255,255,.12));background:#171717;color:#aaa;border-radius:999px;padding:10px 14px;font:inherit;font-size:13px}
+.portfolio-type-switch button.selected,.flash-filter-row button.selected{background:#dedede;color:#111;border-color:#dedede}
+.portfolio-select-label{display:flex;flex-direction:column;gap:7px;margin:12px 0;color:#aaa;font-size:12px}
+.portfolio-select-label select,.portfolio-select-label input{width:100%;min-height:42px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#171717;color:#eee;padding:9px 12px;font:inherit}
+.portfolio-pair-toggle{display:flex;align-items:center;gap:9px;margin:12px 0;color:#ddd;font-size:13px}
+.portfolio-pair-toggle input{accent-color:#ddd;width:17px;height:17px}
+.workspace-work-item{position:relative;min-width:0;display:flex;flex-direction:column;gap:7px}
+.workspace-work-item>img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+.workspace-work-item>button:first-of-type{position:absolute;right:7px;top:7px}
+.workspace-work-meta,.portfolio-stage-label{display:inline-flex;align-self:flex-start;border-radius:5px;background:#292929;color:#ddd;padding:4px 7px;font-size:9px;letter-spacing:.07em}
+.flash-status-toggle{border:1px solid #555;background:#202020;color:#ddd;border-radius:7px;padding:7px;font-size:11px}
+.public-flash-section,.public-portfolio-section{margin:18px 0 24px}
+.flash-work-card{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:6px}
+.flash-work-card>img{width:100%;aspect-ratio:1;object-fit:cover}
+.flash-work-card>b{font-size:13px;color:#eee;padding:0 8px 8px}
+.flash-work-status{position:absolute;top:8px;left:8px;background:#d8e5d8;color:#172017;border-radius:5px;padding:5px 7px;font-size:10px;font-weight:700}
+.flash-work-status.claimed{background:#3b3b3b;color:#ddd}
+.portfolio-story{margin:12px 0 20px}
+.portfolio-story-title{display:block;margin:0 0 9px;color:#ddd;font-size:12px}
+.portfolio-story .work-grid{margin-top:0}
+.portfolio-stage-label{margin:0 7px 7px}
+@media(max-width:420px){.portfolio-type-switch button,.flash-filter-row button{padding:9px 11px;font-size:12px}.workspace-works{gap:9px}}
