@@ -187,11 +187,12 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
     return free===0?'full':free===daySlots.length?'free':'partial'
   }
   return <>
-    <header className="topbar"><div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div><div className="topbar-title"><strong>Кабинет мастера</strong><small>УПРАВЛЕНИЕ ПРОФИЛЕМ</small></div><button type="button" className="workspace-home-button" onClick={onBackToMenu}><House size={14}/> В клиентский режим</button></header>
+    <header className="topbar"><div className="brand-mark"><span className="brand-symbol">M</span><span>MASTER <i>HUB</i></span></div><div className="topbar-title"><strong>{activeTab==='studio'?'Студия':'Кабинет мастера'}</strong><small>{activeTab==='studio'?'КОМАНДА И УПРАВЛЕНИЕ':'УПРАВЛЕНИЕ ПРОФИЛЕМ'}</small></div><button type="button" className="workspace-home-button" onClick={onBackToMenu}><House size={14}/> В клиентский режим</button></header>
     <main className="page-content master-workspace">
       {isAdmin&&<section className="role-preview-switch"><span className="eyebrow">РЕЖИМ ПРОСМОТРА · ТОЛЬКО ВЛАДЕЛЕЦ</span><div><button className={viewMode==="client"?"selected":""} onClick={()=>setViewMode("client")}>Я клиент</button><button className={viewMode==="master"?"selected":""} onClick={()=>setViewMode("master")}>Я мастер</button></div><small>Реальная роль администратора не меняется.</small></section>}
       {loading?<div className="empty-state">Загружаем кабинет…</div>:!master?<div className="workspace-empty"><UserRound size={30}/><h2>Профиль мастера ещё не создан</h2><p>Создай анкету, чтобы управлять фотографиями, свободными интервалами и записями.</p><button className="primary-button" onClick={onOpenRegistration}>Создать анкету мастера</button></div>:<>
 
+        {activeTab==='studio'&&<section className="studio-tab-page"><StudioWorkspace supabase={supabase} user={user} master={master}/></section>}
         {activeTab==='profile'&&<>
           <section className="master-dashboard">
             <div className="master-dashboard-heading">
@@ -214,7 +215,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
               <button type="button" onClick={()=>onNavigate?.('master-inbox')}><Inbox size={17}/><span><b>Центр заявок</b><small>{incomingBookings.length ? incomingBookings.length + ' новых обращения' : 'Новых обращений нет'}</small></span><span className="master-action-arrow">↗</span></button>
             </div>
           </section>
-          <StudioWorkspace supabase={supabase} user={user} master={master}/>
+
           {masterToolsView&&<div className="master-profile-tools">
             <div className="master-tools-heading"><div><span className="eyebrow">{masterToolsView==='profile'?'ПРОФИЛЬ МАСТЕРА':'РАСПИСАНИЕ'}</span><h3>{masterToolsView==='profile'?'Редактирование профиля':'Управление расписанием'}</h3></div><button type="button" onClick={()=>setMasterToolsView(null)}>Закрыть</button></div>
             {masterToolsView==='profile'&&<>
