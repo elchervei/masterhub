@@ -1823,3 +1823,23 @@ img{max-width:100%}
 .public-studio-member-rating small{color:#999;font-size:9px}
 .public-studio-member-rating>svg:last-child{margin-left:3px;color:#888}
 @media(max-width:380px){.public-studio-hero{padding:20px 15px}.public-studio-hero h1{font-size:24px}.public-studio-member{gap:8px;padding:10px}.public-studio-member-avatar{width:42px;height:42px}}
+
+/* Searchable multi-select tattoo style filter */
+.tattoo-style-filter{margin:12px 0 16px;border:1px solid rgba(190,190,190,.17);border-radius:14px;background:rgba(255,255,255,.025);overflow:hidden}
+.tattoo-style-filter-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px 14px;border:0;background:transparent;color:inherit;text-align:left}
+.tattoo-style-filter-toggle>span:first-child{display:flex;flex-direction:column;gap:3px}
+.tattoo-style-filter-toggle b{font-size:12px}
+.tattoo-style-filter-toggle small{font-size:10px;color:#999}
+.tattoo-style-filter-action{display:flex;align-items:center;gap:4px;color:#bbb;font-size:11px}
+.tattoo-style-filter-action svg{transform:rotate(90deg)}
+.tattoo-style-filter-body{padding:0 12px 13px;border-top:1px solid rgba(190,190,190,.1)}
+.tattoo-style-search{display:flex;align-items:center;gap:8px;margin:11px 0;padding:9px 10px;border:1px solid rgba(190,190,190,.16);border-radius:10px;color:#999}
+.tattoo-style-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#eee;font:inherit;font-size:12px}
+.tattoo-style-search button,.tattoo-style-clear{border:0;background:transparent;color:#aaa;font-size:10px}
+.tattoo-style-clear{display:block;margin:0 0 8px auto;text-decoration:underline}
+.tattoo-style-group{margin-top:11px}
+.tattoo-style-group>b{display:block;margin-bottom:7px;color:#a9a9a9;font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.tattoo-style-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tattoo-style-chips button{padding:7px 9px;border:1px solid rgba(190,190,190,.16);border-radius:999px;background:rgba(255,255,255,.025);color:#bbb;font-size:10px}
+.tattoo-style-chips button.selected{border-color:rgba(230,230,230,.6);background:rgba(255,255,255,.13);color:#fff}
+.tattoo-style-no-results{display:block;padding:12px 0;color:#999;font-size:11px}
