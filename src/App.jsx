@@ -1,7 +1,7 @@
 import { Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { Building2, Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
-import { masters, styles, workImage } from './data'
+import { masters, styles, styleGroups, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
 
@@ -125,20 +125,30 @@ function HomePage({ introVisible, onSelectCategory }) {
 
 function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack, loading }) {
   const [query, setQuery] = useState('')
-  const [style, setStyle] = useState('Все')
+  const [selectedStyles, setSelectedStyles] = useState([])
+  const [styleSearch, setStyleSearch] = useState('')
+  const [stylesOpen, setStylesOpen] = useState(false)
   const [sort, setSort] = useState('month')
-  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + (m.studioName||'') + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || style === 'Все' || m.styles.includes(style))).sort((a,b)=>{
+  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + (m.studioName||'') + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || selectedStyles.length === 0 || selectedStyles.some(style => m.styles.includes(style)))).sort((a,b)=>{
     if(sort==='price') return a.price-b.price
     if(sort==='rating') return b.rating-a.rating || b.reviews-a.reviews
     if(sort==='reviews') return b.reviews-a.reviews || b.rating-a.rating
     if(sort==='week') return b.sessionsWeek-a.sessionsWeek || b.rating-a.rating
     return b.sessionsMonth-a.sessionsMonth || b.rating-a.rating
-  }), [mastersList, category, query, style, sort])
+  }), [mastersList, category, query, selectedStyles, sort])
   const categoryName = categoryLabels[category] || 'Услуги'
   return <><Header title={`Мастера · ${categoryName}`} subtitle="КАЛИНИНГРАД" back={onBack}/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="month">Популярные · 30 дней</option><option value="week">Популярные · 7 дней</option><option value="rating">Выше средняя оценка</option><option value="reviews">Больше отзывов</option><option value="price">Сначала дешевле</option></select></label></div>
-      {category === 'tattoo' && <div className="tattoo-style-select"><label htmlFor="tattoo-style">Стиль татуировки</label><select id="tattoo-style" value={style} onChange={e=>setStyle(e.target.value)}>{styles.map(s=><option key={s} value={s}>{s === 'Все' ? 'Все стили' : s}</option>)}</select></div>}
+      {category === 'tattoo' && <section className="tattoo-style-filter">
+        <button type="button" className="tattoo-style-filter-toggle" onClick={()=>setStylesOpen(v=>!v)}><span><b>Стиль татуировки</b><small>{selectedStyles.length?selectedStyles.length+' выбрано':'Все направления'}</small></span><span className="tattoo-style-filter-action">{stylesOpen?'Свернуть':'Выбрать'} <ChevronRight size={16}/></span></button>
+        {stylesOpen&&<div className="tattoo-style-filter-body">
+          <div className="tattoo-style-search"><Search size={15}/><input value={styleSearch} onChange={e=>setStyleSearch(e.target.value)} placeholder="Найти стиль…"/>{styleSearch&&<button type="button" onClick={()=>setStyleSearch('')}><X size={14}/></button>}</div>
+          {selectedStyles.length>0&&<button type="button" className="tattoo-style-clear" onClick={()=>setSelectedStyles([])}>Сбросить выбранные</button>}
+          {styleGroups.map(group=>{const visible=group.styles.filter(name=>name.toLowerCase().includes(styleSearch.toLowerCase()));return visible.length>0?<div className="tattoo-style-group" key={group.title}><b>{group.title}</b><div className="tattoo-style-chips">{visible.map(name=><button type="button" key={name} className={selectedStyles.includes(name)?'selected':''} onClick={()=>setSelectedStyles(old=>old.includes(name)?old.filter(item=>item!==name):[...old,name])}>{name}</button>)}</div></div>:null})}
+          {!styleGroups.some(group=>group.styles.some(name=>name.toLowerCase().includes(styleSearch.toLowerCase())))&&<small className="tattoo-style-no-results">Ничего не найдено.</small>}
+        </div>}
+      </section>}
       <div className="master-list catalog-list">{loading ? <MasterCardSkeleton count={3}/> : <>{filtered.map(m=><MasterCard key={m.id} master={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>openMaster(m)}/>) }{!filtered.length&&<div className="empty-state"><Search size={30}/><b>Пока нет мастеров</b><span>В этой категории ещё нет опубликованных анкет. Загляни позже.</span></div>}</>}</div>
     </main></>
 }
