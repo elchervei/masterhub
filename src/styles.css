@@ -2011,3 +2011,58 @@ img{max-width:100%}
 .analytics-bar-column>small{color:#82768d;font-size:7px;white-space:nowrap}
 .analytics-privacy-note{margin:0;padding:0 3px;color:#82768d;font-size:9px;line-height:1.55}
 @media(min-width:520px){.analytics-metrics-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Two-tap mobile time selection for the master calendar */
+.master-workspace .schedule-time-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:2px 0 4px;
+}
+.master-workspace .schedule-time-field{
+  position:relative;
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:7px;
+  color:#b8a9c8;
+  font-size:10px;
+}
+.master-workspace .schedule-time-button{
+  display:flex;
+  min-width:0;
+  min-height:58px;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  padding:10px 11px;
+  border:1px solid rgba(184,145,220,.28);
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(120,82,153,.2),rgba(34,27,43,.95));
+  color:#eee5f7;
+  text-align:left;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.master-workspace .schedule-time-button:active{transform:scale(.985);background:rgba(130,91,163,.3)}
+.master-workspace .schedule-time-button>svg{flex:0 0 auto;color:#c49be5}
+.master-workspace .schedule-time-button strong{font-size:20px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.master-workspace .schedule-time-button small{margin-left:auto;color:#a99ab7;font-size:9px;white-space:nowrap}
+.master-workspace .schedule-time-native{
+  position:absolute!important;
+  left:0!important;
+  bottom:0!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:1px!important;
+  padding:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+@media(max-width:360px){
+  .master-workspace .schedule-time-fields{gap:7px}
+  .master-workspace .schedule-time-button{gap:6px;padding:9px 8px}
+  .master-workspace .schedule-time-button strong{font-size:18px}
+  .master-workspace .schedule-time-button small{font-size:8px}
+}
