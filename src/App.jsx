@@ -409,43 +409,58 @@ export default function App() {
     let active = true
     let attempted = false
     let retryTimer = null
-    window.Telegram?.WebApp?.ready?.()
-    window.Telegram?.WebApp?.expand?.()
-    // Do not hydrate the UI with a previously cached account. Telegram
-    // WebViews can share this origin's storage across Telegram accounts.
+    let timeoutTimer = null
+    const telegram = window.Telegram?.WebApp
+    telegram?.ready?.()
+    telegram?.expand?.()
+
+    // Never show a cached account before it has been matched to this Telegram user.
     setUser(null)
     setAuthLoading(true)
-    const connectTelegram = async () => {
-      try {
-        await supabase.auth.signOut({ scope: 'local' })
-      } catch (error) {
-        console.warn('MASTER HUB: could not clear previous local session:', error)
-      }
-      if (!active) return
-      const tryTelegramAuth = async () => {
-        const initData = window.Telegram?.WebApp?.initData
-        if (!active || attempted || !initData) return
-        attempted = true
-        if (retryTimer) window.clearInterval(retryTimer)
-        await loginWithTelegram(initData)
-      }
-      await tryTelegramAuth()
-      if (!attempted && active) {
-        retryTimer = window.setInterval(tryTelegramAuth, 300)
-        window.setTimeout(() => { if (!attempted && active) { if (retryTimer) window.clearInterval(retryTimer); setAuthLoading(false); setAuthError('Telegram не передал данные для входа. Полностью закрой Mini App и открой его снова из нужного аккаунта через бота.') } }, 20000)
-      }
+
+    const tryTelegramAuth = () => {
+      const initData = window.Telegram?.WebApp?.initData
+      if (!active || attempted || !initData) return false
+      attempted = true
+      if (retryTimer) window.clearInterval(retryTimer)
+      if (timeoutTimer) window.clearTimeout(timeoutTimer)
+      // Start immediately; don't wait for a local sign-out network/storage operation.
+      void loginWithTelegram(initData)
+      return true
     }
-    connectTelegram()
+
+    // Telegram normally exposes initData synchronously when the Mini App opens.
+    if (!tryTelegramAuth()) {
+      retryTimer = window.setInterval(tryTelegramAuth, 100)
+      timeoutTimer = window.setTimeout(() => {
+        if (!attempted && active) {
+          if (retryTimer) window.clearInterval(retryTimer)
+          setAuthLoading(false)
+          setAuthError('Telegram не передал данные для входа. Полностью закрой Mini App и открой его снова из нужного аккаунта через бота.')
+        }
+      }, 20000)
+    }
+
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      // Ignore INITIAL_SESSION: it may be the stale account from shared storage.
-      if (event === 'SIGNED_OUT') setUser(null)
-      else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
-        setUser(session?.user || null)
+      // Ignore INITIAL_SESSION and any refresh/sign-in from another Telegram account
+      // that may still be stored in the shared Telegram WebView.
+      if (event === 'SIGNED_OUT') {
+        setUser(null)
+        return
+      }
+      if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
+        const expectedTelegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id
+        const sessionTelegramId = session?.user?.user_metadata?.telegram_id
+        if (expectedTelegramId && sessionTelegramId && String(expectedTelegramId) === String(sessionTelegramId)) {
+          setUser(session.user)
+        }
       }
     })
+
     return () => {
       active = false
       if (retryTimer) window.clearInterval(retryTimer)
+      if (timeoutTimer) window.clearTimeout(timeoutTimer)
       listener.subscription.unsubscribe()
     }
   }, [])
