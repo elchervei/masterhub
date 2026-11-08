@@ -1,6 +1,6 @@
 import { Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
-import { Users, Building2, Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, ChartNoAxesCombined, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
+import { Users, Building2, Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, BarChart3, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
 import { masters, styleGroups, workImage } from './data'
 import AdminPanel from './AdminPanel'
 import MasterWorkspace from './MasterWorkspace'
@@ -90,7 +90,7 @@ function BottomNav({ active, setActive, isAdmin, isMaster, hasStudio }) {
     { id: 'profile', label: 'Кабинет', icon: ContactRound },
     { id: 'master-inbox', label: 'Заявки', icon: Inbox },
     { id: 'master-bookings', label: 'Записи', icon: CalendarCheck2 },
-    { id: 'master-stats', label: 'Статистика', icon: ChartNoAxesCombined },
+    { id: 'master-stats', label: 'Статистика', icon: BarChart3 },
     ...(hasStudio ? [{ id: 'studio', label: 'Студия', icon: Building2 }] : []),
     { id: 'home', label: 'Клиент', icon: Home }
   ]
