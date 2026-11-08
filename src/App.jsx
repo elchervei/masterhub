@@ -408,29 +408,46 @@ export default function App() {
     if (!supabase) return
     let active = true
     let attempted = false
+    let retryTimer = null
     window.Telegram?.WebApp?.ready?.()
     window.Telegram?.WebApp?.expand?.()
+    // Do not hydrate the UI with a previously cached account. Telegram
+    // WebViews can share this origin's storage across Telegram accounts.
+    setUser(null)
+    setAuthLoading(true)
     const connectTelegram = async () => {
-      const { data } = await supabase.auth.getSession()
+      try {
+        await supabase.auth.signOut({ scope: 'local' })
+      } catch (error) {
+        console.warn('MASTER HUB: could not clear previous local session:', error)
+      }
       if (!active) return
-      const existingUser = data.session?.user || null
-      setUser(existingUser)
-      // Telegram WebView can be opened by a different Telegram account while
-      // Supabase still has the previous account's persisted session. Always
-      // exchange the current WebApp initData so the active Telegram ID wins.
-      const tryTelegramAuth = () => {
+      const tryTelegramAuth = async () => {
         const initData = window.Telegram?.WebApp?.initData
         if (!active || attempted || !initData) return
         attempted = true
-        loginWithTelegram()
+        if (retryTimer) window.clearInterval(retryTimer)
+        await loginWithTelegram(initData)
       }
-      tryTelegramAuth()
-      const retryTimer = window.setInterval(tryTelegramAuth, 300)
-      window.setTimeout(() => window.clearInterval(retryTimer), 20000)
+      await tryTelegramAuth()
+      if (!attempted && active) {
+        retryTimer = window.setInterval(tryTelegramAuth, 300)
+        window.setTimeout(() => { if (retryTimer) window.clearInterval(retryTimer) }, 20000)
+      }
     }
     connectTelegram()
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user || null))
-    return () => { active = false; listener.subscription.unsubscribe() }
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignore INITIAL_SESSION: it may be the stale account from shared storage.
+      if (event === 'SIGNED_OUT') setUser(null)
+      else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
+        setUser(session?.user || null)
+      }
+    })
+    return () => {
+      active = false
+      if (retryTimer) window.clearInterval(retryTimer)
+      listener.subscription.unsubscribe()
+    }
   }, [])
   useEffect(() => {
     let active = true
@@ -463,9 +480,10 @@ export default function App() {
     window.addEventListener('masterhub:studio-membership-changed', refreshStudioMembership)
     return () => window.removeEventListener('masterhub:studio-membership-changed', refreshStudioMembership)
   }, [supabase, user])
-  const loginWithTelegram = async () => {
+  const loginWithTelegram = async (providedInitData = null) => {
     setAuthError('')
-    const initData = window.Telegram?.WebApp?.initData
+    const initData = providedInitData || window.Telegram?.WebApp?.initData
+    const expectedTelegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id
     if (!initData) { setAuthError('Telegram не передал initData. Проверь, что приложение открыто кнопкой Web App внутри бота, а не обычной ссылкой.'); return null }
     if (!supabase) { setAuthError('Нет подключения к Supabase.'); return null }
     setAuthLoading(true)
@@ -473,6 +491,13 @@ export default function App() {
       const { data, error } = await supabase.functions.invoke('telegram-auth', { body: { initData } })
       if (error) throw error
       if (!data?.session?.access_token || !data?.session?.refresh_token) throw new Error(data?.error || 'Не удалось получить сессию.')
+      const returnedTelegramId = data.session.user?.user_metadata?.telegram_id
+      if (expectedTelegramId && returnedTelegramId && String(returnedTelegramId) !== String(expectedTelegramId)) {
+        throw new Error('Telegram вернул другой аккаунт. Закрой Mini App полностью и открой его заново из нужного аккаунта.')
+      }
+      if (expectedTelegramId && !returnedTelegramId) {
+        throw new Error('Не удалось подтвердить владельца Telegram-сессии. Повтори вход из Telegram.')
+      }
       const { data: sessionData, error: sessionError } = await supabase.auth.setSession(data.session)
       if (sessionError) throw sessionError
       const signedUser = sessionData?.user || data.session.user || null
