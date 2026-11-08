@@ -46,7 +46,7 @@ async function verifyTelegramInitData(initData: string, botToken: string) {
   const pairs = Array.from(params.entries())
     .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
     .map(([key, value]) => key + "=" + value);
-  const secretKey = await hmac(new TextEncoder().encode(botToken), "WebAppData");
+  const secretKey = await hmac(new TextEncoder().encode("WebAppData"), botToken);
   const calculatedHash = hex(await hmac(secretKey, pairs.join("\n")));
   if (!safeEqual(calculatedHash, receivedHash.toLowerCase())) {
     throw new Error("Подпись Telegram не прошла проверку.");
