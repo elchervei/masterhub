@@ -16,8 +16,8 @@ const categories = [
 const categoryLabel = id => categories.find(item=>item.id===id)?.label || id || 'Мастер'
 const plural = (n,one,few,many) => n%10===1&&n%100!==11?one:n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?few:many
 const count = n => new Intl.NumberFormat('ru-RU').format(Number(n)||0)
-const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-const timeLabel = value => new Date(value).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})
+const dateKey = d => {const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Kaliningrad',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(d)).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`}
+const timeLabel = value => new Date(value).toLocaleTimeString('ru-RU',{timeZone:'Europe/Kaliningrad',hour:'2-digit',minute:'2-digit'})
 
 export default function StudioWorkspace({supabase,user,master,compact=false,onNavigate,onOpenMasterProfile}) {
   const [studio,setStudio]=useState(null)
@@ -290,7 +290,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
       <div className="studio-calendar-category-filter"><label htmlFor="studio-calendar-category">Направление</label><select id="studio-calendar-category" value={calendarCategory} onChange={e=>setCalendarCategory(e.target.value)}><option value="all">Все направления</option>{calendarCategories.map(id=><option key={id} value={id}>{categoryLabel(id)}</option>)}</select></div>
       <div className="studio-calendar-month-head">
         <button type="button" aria-label="Предыдущий месяц" disabled={calendarOffset===0} onClick={()=>{setCalendarOffset(v=>Math.max(0,v-1));setCalendarDate(dateKey(new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset-1,1)))}}><ChevronLeft size={17}/></button>
-        <b>{calendarMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</b>
+        <b>{calendarMonth.toLocaleDateString('ru-RU',{timeZone:'Europe/Kaliningrad',month:'long',year:'numeric'})}</b>
         <button type="button" aria-label="Следующий месяц" disabled={calendarOffset>=1} onClick={()=>{setCalendarOffset(v=>Math.min(1,v+1));setCalendarDate(dateKey(new Date(new Date().getFullYear(),new Date().getMonth()+calendarOffset+1,1)))}}><ChevronRight size={17}/></button>
       </div>
       <div className="studio-calendar-grid">
@@ -298,7 +298,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
         {calendarDays.map(day=>{const key=dateKey(day);const state=getDayState(day);const outside=day.getMonth()!==calendarMonth.getMonth();return <button type="button" key={key} disabled={outside} className={['studio-calendar-day',state,calendarDate===key?'selected':'',outside?'outside':''].filter(Boolean).join(' ')} onClick={()=>setCalendarDate(key)}><b>{day.getDate()}</b>{state!=='empty'&&<i/>}</button>})}
       </div>
       <div className="studio-calendar-legend"><span><i className="legend-full"/>Время зарезервировано за мастером</span></div>
-      <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} интервалов зарезервировано</span></div>
+      <div className="studio-calendar-summary"><b>{new Date(calendarDate+'T12:00:00').toLocaleDateString('ru-RU',{timeZone:'Europe/Kaliningrad',day:'numeric',month:'long'})}</b><span><i className="busy-dot"/> {busyCount} интервалов зарезервировано</span></div>
       {calendarLoading?<div className="studio-calendar-empty">Обновляем расписание…</div>
       :calendarError?<div className="studio-calendar-empty studio-calendar-error">{calendarError}</div>
       :dayEntries.length?<div className="studio-calendar-agenda">{dayEntries.map(item=><article className={'studio-calendar-entry '+(item.entry_type==='busy'?'is-busy':'is-free')} key={item.entry_type+'-'+item.entry_id}>
