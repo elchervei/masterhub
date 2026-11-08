@@ -20,6 +20,7 @@ const monthLabel = d => d.toLocaleDateString('ru-RU',{month:'long',year:'numeric
 export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, setViewMode, activeTab='profile', onOpenRegistration, onBackToMenu, onNavigate, onOpenMasterProfile }) {
   const [master,setMaster]=useState(null),[services,setServices]=useState([]),[works,setWorks]=useState([]),[bookings,setBookings]=useState([]),[slots,setSlots]=useState([]),[selectedBooking,setSelectedBooking]=useState(null),[referenceOpen,setReferenceOpen]=useState(false),[quotePrice,setQuotePrice]=useState(''),[quoteMessage,setQuoteMessage]=useState(''),[quoteSaving,setQuoteSaving]=useState(false),[appointmentView,setAppointmentView]=useState('active'),[archiveSaving,setArchiveSaving]=useState(false),[calendarCleaning,setCalendarCleaning]=useState(false)
   const [inquiries,setInquiries]=useState([]),[selectedInquiry,setSelectedInquiry]=useState(null),[inquiryImage,setInquiryImage]=useState('')
+  const [analyticsEvents,setAnalyticsEvents]=useState([]),[statsPeriod,setStatsPeriod]=useState('30')
   const [telegramNotice,setTelegramNotice]=useState('')
   const [serviceTitle,setServiceTitle]=useState(''),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('60')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
@@ -48,18 +49,19 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
         experience_years:String(current.experience_years??0),
         starting_price:String(current.starting_price??0)
       })
-      const [sv,pf,bk,sl,iq,allStyleResult,masterStyleResult]=await Promise.all([
+      const [sv,pf,bk,sl,iq,allStyleResult,masterStyleResult,analyticsResult]=await Promise.all([
         supabase.from('services').select('*').eq('master_id',current.id).order('created_at',{ascending:false}),
         supabase.from('portfolio_items').select('*').eq('master_id',current.id).order('sort_order'),
         supabase.from('bookings').select('*').eq('master_id',current.id).order('starts_at'),
         supabase.from('master_time_slots').select('*').eq('master_id',current.id).gte('slot_date',localDate(new Date())).order('slot_date').order('starts_at'),
         supabase.from('master_inquiries').select('*').eq('master_id',current.id).order('created_at',{ascending:false}),
         supabase.from('styles').select('id,name').order('name'),
-        supabase.from('master_styles').select('style_id').eq('master_id',current.id)
+        supabase.from('master_styles').select('style_id').eq('master_id',current.id),
+        supabase.from('master_profile_events').select('event_type,visitor_id,created_at').eq('master_id',current.id).order('created_at',{ascending:false})
       ])
-      const firstError=[sv,pf,bk,sl,iq].find(result=>result.error)?.error
+      const firstError=[sv,pf,bk,sl,iq,analyticsResult].find(result=>result.error)?.error
       if(firstError)setError(firstError.message||'Не удалось загрузить часть данных кабинета.')
-      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const service=(sv.data||[]).find(item=>item.id===booking.service_id)||null;const raw=booking.reference_image_url;if(!raw)return {...booking,service};if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,service,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,service,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[]);setStyleRows(allStyleResult.data||[]);setSelectedStyleIds((masterStyleResult.data||[]).map(row=>row.style_id))
+      const bookingRows=await Promise.all((bk.data||[]).map(async booking=>{const service=(sv.data||[]).find(item=>item.id===booking.service_id)||null;const raw=booking.reference_image_url;if(!raw)return {...booking,service};if(raw.startsWith('https://')||raw.startsWith('http://'))return {...booking,service,referenceImageSignedUrl:raw};const {data:signed}=await supabase.storage.from('masterhub-references').createSignedUrl(raw,3600);return {...booking,service,referenceImageSignedUrl:signed?.signedUrl||''}}));setServices(sv.data||[]);setWorks(pf.data||[]);setBookings(bookingRows);setSlots(sl.data||[]);setInquiries(iq.data||[]);setAnalyticsEvents(analyticsResult.data||[]);setStyleRows(allStyleResult.data||[]);setSelectedStyleIds((masterStyleResult.data||[]).map(row=>row.style_id))
     }catch(loadError){
       setError(loadError?.message||'Не удалось загрузить кабинет. Попробуй обновить экран.')
     }finally{setLoading(false)}
@@ -215,6 +217,18 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const visibleAppointmentBookings=appointmentView==='archive'?archivedBookings:appointmentBookings
   const upcomingAppointment=appointmentBookings.find(b=>new Date(b.starts_at).getTime()>=Date.now()&&['confirmed','price_proposed'].includes(b.status))
   const freeSlots=slots.filter(s=>s.is_active).length
+  const statsStart=statsPeriod==='all'?null:Date.now()-Number(statsPeriod)*24*60*60*1000
+  const periodEvents=analyticsEvents.filter(event=>!statsStart||new Date(event.created_at).getTime()>=statsStart)
+  const profileViews=periodEvents.filter(event=>event.event_type==='profile_view')
+  const statsViews=profileViews.length
+  const statsUnique=new Set(profileViews.map(event=>event.visitor_id)).size
+  const statsClicks=periodEvents.filter(event=>event.event_type==='booking_click').length
+  const periodBookings=bookings.filter(booking=>!statsStart||new Date(booking.created_at).getTime()>=statsStart)
+  const statsRequests=periodBookings.filter(booking=>!['declined','cancelled'].includes(booking.status)).length
+  const statsConfirmed=periodBookings.filter(booking=>['confirmed','completed'].includes(booking.status)).length
+  const statsConversion=statsViews?Math.round(statsRequests/statsViews*100):0
+  const statsChartDays=Array.from({length:statsPeriod==='7'?7:30},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(statsPeriod==='7'?6:29)+i);const key=localDate(d);return {key,label:d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'}),count:profileViews.filter(event=>localDate(event.created_at)===key).length}})
+  const statsMax=Math.max(1,...statsChartDays.map(day=>day.count))
   const monthDays=useMemo(()=>{const d=new Date(selectedDate+'T12:00:00'),first=new Date(d.getFullYear(),d.getMonth(),1),offset=first.getDay();return Array.from({length:42},(_,i)=>new Date(first.getFullYear(),first.getMonth(),i-offset+1))},[selectedDate])
   const dayStatus=date=>{
     const key=localDate(date),daySlots=slots.filter(s=>s.slot_date===key)
@@ -292,6 +306,29 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
 </section></>}
 
           </div>}
+        </>}
+        {activeTab==='master-stats'&&<>
+          <section className="master-analytics-page">
+            <div className="master-analytics-heading"><span className="eyebrow">АНАЛИТИКА ПРОФИЛЯ</span><h2>Статистика</h2><p>Как клиенты находят тебя и доходят до записи.</p></div>
+            <div className="analytics-period-switch">
+              <button type="button" className={statsPeriod==='7'?'selected':''} onClick={()=>setStatsPeriod('7')}>7 дней</button>
+              <button type="button" className={statsPeriod==='30'?'selected':''} onClick={()=>setStatsPeriod('30')}>30 дней</button>
+              <button type="button" className={statsPeriod==='all'?'selected':''} onClick={()=>setStatsPeriod('all')}>Всё время</button>
+            </div>
+            <div className="analytics-metrics-grid">
+              <article className="analytics-metric-card"><span>Просмотры профиля</span><b>{statsViews.toLocaleString('ru-RU')}</b><small>Повторные посещения учитываются не чаще раза в 30 минут</small></article>
+              <article className="analytics-metric-card"><span>Уникальные посетители</span><b>{statsUnique.toLocaleString('ru-RU')}</b><small>По анонимному ID браузера или устройства</small></article>
+              <article className="analytics-metric-card"><span>Нажатия «Записаться»</span><b>{statsClicks.toLocaleString('ru-RU')}</b><small>Переходы к форме записи</small></article>
+              <article className="analytics-metric-card"><span>Заявки на запись</span><b>{statsRequests.toLocaleString('ru-RU')}</b><small>Реальные заявки, созданные клиентами</small></article>
+              <article className="analytics-metric-card"><span>Подтверждённые записи</span><b>{statsConfirmed.toLocaleString('ru-RU')}</b><small>Подтверждённые и завершённые</small></article>
+              <article className="analytics-metric-card analytics-conversion"><span>Конверсия в заявку</span><b>{statsConversion}%</b><small>От просмотров профиля к отправленным заявкам</small></article>
+            </div>
+            <section className="analytics-chart-card">
+              <div className="analytics-chart-heading"><div><b>Просмотры по дням</b><small>{statsPeriod==='7'?'Последние 7 дней':statsPeriod==='30'?'Последние 30 дней':'Последние 30 дней · общий итог выше'}</small></div><strong>{statsViews.toLocaleString('ru-RU')}</strong></div>
+              <div className="analytics-bars">{statsChartDays.map(day=><div className="analytics-bar-column" key={day.key}><div className="analytics-bar-track"><i style={{height:(day.count/statsMax*100)+'%'}}/></div><small>{day.label}</small></div>)}</div>
+            </section>
+            <p className="analytics-privacy-note">Статистика не показывает имена посетителей. Твои собственные просмотры не учитываются. Данные начинают собираться после включения этой функции.</p>
+          </section>
         </>}
         {activeTab==='master-inbox'&&<>
         <section className="workspace-section booking-inbox-section master-tab-intro"><span className="eyebrow">ВХОДЯЩИЕ</span><h2>Заявки</h2><p>Новые обращения клиентов. После отправки цены заявка переместится в записи.</p><div className="master-summary-row"><span>Новые</span><b>{incomingBookings.length}</b></div>
