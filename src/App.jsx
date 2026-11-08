@@ -117,7 +117,7 @@ function HomePage({ introVisible, onSelectCategory, city, onCityChange }) {
     <section className="home-intro home-intro-only"><h1>Выбери своего мастера</h1></section>
   </main>
   return <main className="page-content home-page category-home">
-    <div className="category-heading"><span className="eyebrow">MASTER HUB · РОССИЯ</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div><label className="city-picker"><span><MapPin size={17}/> Город</span><select value={city} onChange={e=>onCityChange(e.target.value)}>{russianCities.map(name=><option key={name} value={name}>{name}</option>)}</select></label>
+    <div className="category-heading"><div className="category-heading-top"><span className="eyebrow">MASTER HUB · РОССИЯ</span><label className="city-picker"><MapPin size={14}/><select aria-label="Выбрать город" value={city} onChange={e=>onCityChange(e.target.value)}>{russianCities.map(name=><option key={name} value={name}>{name}</option>)}</select></label></div><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
     <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
       <span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><span className="category-art"><CategoryIcon type={item.id}/></span><ChevronRight size={19}/>
     </button>)}</div>
