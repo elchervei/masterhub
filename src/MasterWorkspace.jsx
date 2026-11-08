@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import StudioWorkspace from './StudioWorkspace'
 import { styleGroups } from './data'
-import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2 } from 'lucide-react'
+import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2, ChartNoAxesCombined } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const telegramUsername = value => {
