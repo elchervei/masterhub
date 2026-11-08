@@ -1961,3 +1961,11 @@ img{max-width:100%}
 .workspace-form-grid select,.workspace-form-grid input{min-width:0}
 .workspace-form-grid select{width:100%;min-height:42px;padding:9px 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#171717;color:#eee;font:inherit;font-size:12px}
 @media(max-width:360px){.city-picker{padding:10px}.city-picker select{width:65%;font-size:11px}}
+
+/* Compact city selector in the home heading */
+.category-heading-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.category-heading-top .city-picker{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px;flex:0 0 auto;width:auto;max-width:58%;margin:0;padding:5px 8px;border:1px solid rgba(190,190,190,.16);border-radius:999px;background:rgba(255,255,255,.035);color:#aeb8b3}
+.category-heading-top .city-picker select{width:auto;max-width:100%;min-width:0;padding:2px 15px 2px 0;border:0;outline:0;background:transparent;color:#e2e7e4;font:inherit;font-size:10px;text-align:right}
+.category-heading-top .city-picker select option{background:#171717;color:#eee}
+.category-heading-top .eyebrow{min-width:0;font-size:9px;white-space:nowrap}
+@media(max-width:360px){.category-heading-top .city-picker{max-width:62%;padding:5px 7px}.category-heading-top .city-picker select{font-size:9px}}
