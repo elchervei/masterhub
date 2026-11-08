@@ -1975,3 +1975,9 @@ img{max-width:100%}
 .calendar-cleanup-actions button.danger{border-color:rgba(230,100,120,.28);background:rgba(170,55,75,.12);color:#ff9da9}
 .calendar-cleanup-actions button:disabled{opacity:.55}
 @media(max-width:420px){.calendar-cleanup-actions{display:grid;grid-template-columns:1fr}.calendar-cleanup-actions button{width:100%}}
+
+.month-selected-date-panel{margin-top:14px;padding:14px;border:1px solid rgba(190,170,220,.16);border-radius:16px;background:rgba(120,90,160,.07)}
+.month-selected-date-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;text-transform:capitalize}
+.month-selected-date-heading b{font-size:14px;color:var(--text,#f4efff)}
+.month-selected-date-heading span{font-size:11px;color:var(--muted,#aaa0b8)}
+.month-selected-date-panel .slot-list{margin-top:0}
