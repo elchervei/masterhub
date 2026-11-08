@@ -38,7 +38,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
         .eq('user_id',user.id).maybeSingle()
       if(masterError)throw masterError
       setMaster(current||null)
-      if(!current){setServices([]);setWorks([]);setBookings([]);setSlots([]);setInquiries([]);return}
+      if(!current){setServices([]);setWorks([]);setBookings([]);setSlots([]);setInquiries([]);setAnalyticsEvents([]);return}
       setProfileDraft(old=>old._masterId===current.id?old:{
         _masterId:current.id,
         public_name:current.public_name||'',
@@ -224,7 +224,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const statsUnique=new Set(profileViews.map(event=>event.visitor_id)).size
   const statsClicks=periodEvents.filter(event=>event.event_type==='booking_click').length
   const periodBookings=bookings.filter(booking=>!statsStart||new Date(booking.created_at).getTime()>=statsStart)
-  const statsRequests=periodBookings.filter(booking=>!['declined','cancelled'].includes(booking.status)).length
+  const statsRequests=periodBookings.length
   const statsConfirmed=periodBookings.filter(booking=>['confirmed','completed'].includes(booking.status)).length
   const statsConversion=statsViews?Math.round(statsRequests/statsViews*100):0
   const statsChartDays=Array.from({length:statsPeriod==='7'?7:30},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(statsPeriod==='7'?6:29)+i);const key=localDate(d);return {key,label:d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'}),count:profileViews.filter(event=>localDate(event.created_at)===key).length}})
@@ -260,6 +260,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
             </div>
             <div className="master-dashboard-actions">
               {master.status==='approved'&&<button type="button" onClick={copyPublicProfile}><Share2 size={17}/><span><b>Публичная ссылка</b><small>{copiedLink?'Ссылка скопирована': 'Поделиться профилем мастера'}</small></span><span className="master-action-arrow"><Copy size={15}/></span></button>}
+              <button type="button" onClick={()=>onNavigate?.('master-stats')}><ChartNoAxesCombined size={17}/><span><b>Статистика профиля</b><small>Просмотры, посетители и заявки</small></span><span className="master-action-arrow">↗</span></button>
               <button type="button" onClick={()=>setMasterToolsView('profile')}><Images size={17}/><span><b>Профиль и портфолио</b><small>Обложка, работы и стоимость</small></span><span className="master-action-arrow">↗</span></button>
               {master.status==='approved'&&<button type="button" onClick={()=>setMasterToolsView('schedule')}><CalendarRange size={17}/><span><b>Управление расписанием</b><small>Добавить свободные интервалы</small></span><span className="master-action-arrow">↗</span></button>}
               <button type="button" onClick={()=>onNavigate?.('master-inbox')}><Inbox size={17}/><span><b>Центр заявок</b><small>{incomingBookings.length ? incomingBookings.length + ' новых обращения' : 'Новых обращений нет'}</small></span><span className="master-action-arrow">↗</span></button>
