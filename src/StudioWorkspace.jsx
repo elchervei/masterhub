@@ -308,7 +308,7 @@ export default function StudioWorkspace({supabase,user,master,compact=false,onNa
         {item.entry_type==='busy'&&<span className="studio-calendar-status">ЗАНЯТО</span>}
       </article>)}</div>
       :<div className="studio-calendar-empty"><CalendarDays size={22}/><b>Пока свободно</b><span>На эту дату никто из мастеров пока не зарезервировал время в студии.</span></div>}
-      <p className="studio-calendar-note">Каждый интервал, который мастер добавил в своё расписание, сразу резервирует это время в студии — даже если клиент ещё не записался. Клиентские данные здесь не показываются.</p>
+      <p className="studio-calendar-note">Календарь показывает интервалы всех мастеров студии. Расписания независимы: мастера могут работать одновременно, даже если время пересекается. Клиентские данные здесь не показываются.</p>
     </div>}
 
     {section==='team'&&<div className="studio-team-section">
