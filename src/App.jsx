@@ -352,9 +352,9 @@ function ProfilePage({ supabase, isMaster, isAdmin, viewMode, setViewMode, conne
     </div>
     {user
       ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button>
-      : <button className="primary-button full-button" onClick={() => onLogin()} disabled={authLoading}>
-          {authLoading ? 'Подключаем Telegram…' : 'Подключить Telegram'}
-        </button>}
+      : <div className="primary-button full-button" aria-live="polite">
+          {authLoading ? 'Автоматически подключаем Telegram…' : 'Ожидаем данные Telegram…'}
+        </div>}
     {authError && <p className="muted-note auth-error" role="alert">{authError}</p>}
     <p className="muted-note">Связь с сервером: <b>{connectionStatus}</b></p>
   </main></>
