@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import StudioWorkspace from './StudioWorkspace'
 import { styleGroups } from './data'
-import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2, ChartNoAxesCombined } from 'lucide-react'
+import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2, BarChart3 } from 'lucide-react'
 
 const money = n => new Intl.NumberFormat('ru-RU').format(n || 0) + ' ₽'
 const telegramUsername = value => {
@@ -260,7 +260,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
             </div>
             <div className="master-dashboard-actions">
               {master.status==='approved'&&<button type="button" onClick={copyPublicProfile}><Share2 size={17}/><span><b>Публичная ссылка</b><small>{copiedLink?'Ссылка скопирована': 'Поделиться профилем мастера'}</small></span><span className="master-action-arrow"><Copy size={15}/></span></button>}
-              <button type="button" onClick={()=>onNavigate?.('master-stats')}><ChartNoAxesCombined size={17}/><span><b>Статистика профиля</b><small>Просмотры, посетители и заявки</small></span><span className="master-action-arrow">↗</span></button>
+              <button type="button" onClick={()=>onNavigate?.('master-stats')}><BarChart3 size={17}/><span><b>Статистика профиля</b><small>Просмотры, посетители и заявки</small></span><span className="master-action-arrow">↗</span></button>
               <button type="button" onClick={()=>setMasterToolsView('profile')}><Images size={17}/><span><b>Профиль и портфолио</b><small>Обложка, работы и стоимость</small></span><span className="master-action-arrow">↗</span></button>
               {master.status==='approved'&&<button type="button" onClick={()=>setMasterToolsView('schedule')}><CalendarRange size={17}/><span><b>Управление расписанием</b><small>Добавить свободные интервалы</small></span><span className="master-action-arrow">↗</span></button>}
               <button type="button" onClick={()=>onNavigate?.('master-inbox')}><Inbox size={17}/><span><b>Центр заявок</b><small>{incomingBookings.length ? incomingBookings.length + ' новых обращения' : 'Новых обращений нет'}</small></span><span className="master-action-arrow">↗</span></button>
