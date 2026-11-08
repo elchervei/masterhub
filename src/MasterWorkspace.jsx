@@ -11,6 +11,7 @@ const telegramUsername = value => {
   const username=(prefix?raw.slice(prefix.length):raw).replace(/^@/,'').split(/[/?#]/)[0]
   return /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/.test(username)?username:''
 }
+const russianCities = ['Калининград','Москва','Санкт-Петербург','Новосибирск','Екатеринбург','Казань','Нижний Новгород','Красноярск','Челябинск','Самара','Уфа','Ростов-на-Дону','Краснодар','Омск','Воронеж','Пермь','Волгоград','Саратов','Тюмень','Тольятти','Ижевск','Барнаул','Иркутск','Хабаровск','Владивосток','Ярославль','Махачкала','Томск','Оренбург','Кемерово','Новокузнецк','Рязань','Астрахань','Пенза','Липецк','Киров','Чебоксары','Калуга','Тула','Сочи','Ставрополь','Белгород','Курск','Сургут','Ульяновск','Брянск','Вологда','Череповец','Другой город']
 const categoryNames = { tattoo: 'татуировки', nails: 'ногти и педикюр', brows: 'брови и ресницы', piercing: 'пирсинг', makeup: 'макияж' }
 const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']
 const localDate = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` }
@@ -245,7 +246,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
               <div className="workspace-form-heading"><span className="workspace-section-icon"><UserRound size={17}/></span><div><h3>Основная информация</h3><p>То, что увидят клиенты в твоей анкете</p></div></div>
               <label>Имя или псевдоним<input required maxLength={50} value={profileDraft.public_name} onChange={e=>setProfileDraft(old=>({...old,public_name:e.target.value}))}/></label>
               <label>О себе<textarea maxLength={500} rows={3} value={profileDraft.bio} onChange={e=>setProfileDraft(old=>({...old,bio:e.target.value}))} placeholder="Опыт и особенности твоих услуг"/></label>
-              <div className="workspace-form-grid"><label>Студия<input maxLength={80} value={profileDraft.studio_name} onChange={e=>setProfileDraft(old=>({...old,studio_name:e.target.value}))} placeholder="Название студии"/></label><label>Город<input maxLength={60} value={profileDraft.city} onChange={e=>setProfileDraft(old=>({...old,city:e.target.value}))}/></label></div>
+              <div className="workspace-form-grid"><label>Студия<input maxLength={80} value={profileDraft.studio_name} onChange={e=>setProfileDraft(old=>({...old,studio_name:e.target.value}))} placeholder="Название студии"/></label><label>Город<select value={profileDraft.city} onChange={e=>setProfileDraft(old=>({...old,city:e.target.value}))}>{russianCities.map(name=><option key={name} value={name}>{name}</option>)}</select></label></div>
               <label>Telegram для связи<input maxLength={32} autoCapitalize="none" autoCorrect="off" value={profileDraft.contact_telegram} onChange={e=>setProfileDraft(old=>({...old,contact_telegram:e.target.value}))} placeholder="@username"/></label>
               <label>Опыт, лет<input type="number" min="0" max="80" step="1" value={profileDraft.experience_years} onChange={e=>setProfileDraft(old=>({...old,experience_years:e.target.value}))}/></label>
               <button className="primary-button full-button" disabled={profileSaving}>{profileSaving?'Сохраняем…':'Сохранить информацию'}</button>
