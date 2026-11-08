@@ -153,11 +153,10 @@ async function resolveTelegramAccount(
       }
     }
 
-    const { error: cleanupError } = await admin.auth.admin.deleteUser(created.user.id);
-    if (cleanupError) console.error("Orphan Auth user cleanup failed:", cleanupError.message);
-
     if (racedAccount) return racedAccount;
 
+    // If the profile write failed for a non-race reason, the newly created Auth
+    // user is left unlinked and cannot be reached through Telegram identity lookup.
     console.error("Telegram profile linking failed:", profileError.message);
     throw new Error("Не удалось привязать Telegram к аккаунту. Попробуй ещё раз.");
   }
