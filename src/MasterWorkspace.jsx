@@ -24,7 +24,6 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [telegramNotice,setTelegramNotice]=useState('')
   const [serviceTitle,setServiceTitle]=useState(''),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('60')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
-  const [editingTime,setEditingTime]=useState(null),[timeDraft,setTimeDraft]=useState('11:00')
   const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[masterToolsView,setMasterToolsView]=useState(null),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({_masterId:null,public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('month'),[workType,setWorkType]=useState('portfolio'),[workStage,setWorkStage]=useState('fresh'),[flashStatus,setFlashStatus]=useState('available'),[workPrice,setWorkPrice]=useState(''),[pairMode,setPairMode]=useState(false),[activePairId,setActivePairId]=useState('')
   const [styleRows,setStyleRows]=useState([]),[selectedStyleIds,setSelectedStyleIds]=useState([]),[styleSaving,setStyleSaving]=useState(false)
@@ -304,23 +303,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
 </>:<><div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично</span><span><i className="full"/> Занято</span></div><div className="master-calendar-grid">{monthDays.map((d,i)=>{const key=localDate(d),sameMonth=d.getMonth()===new Date(selectedDate+'T12:00:00').getMonth();return <button type="button" key={i} className={'calendar-day '+(sameMonth?'':'outside')+' '+(selectedDate===key?'chosen':'')+' '+dayStatus(d)} onClick={()=>setSelectedDate(key)}><span>{d.getDate()}</span>{dayStatus(d)&&<i/>}</button>})}</div><label className="date-input-label">Выбранная дата<input type="date" min={localDate(new Date())} value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/></label><div className="slot-list">{selectedSlots.map(s=>{const booking=bookings.find(b=>b.slot_id===s.id&&['pending','price_proposed','confirmed'].includes(b.status));return <div key={s.id} className={!s.is_active?'slot-booked':''}><button type="button" className="slot-open-booking" disabled={!booking} onClick={()=>setSelectedBooking(booking)}><Clock size={14}/>{new Date(s.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(s.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} {!s.is_active?'· занято':'· свободно'}{booking&&<small> · открыть запись</small>}</button>{s.is_active&&<button type="button" onClick={()=>removeSlot(s)}><Trash2 size={14}/></button>}</div>})}</div>{!selectedSlots.length&&<p className="muted-note">На эту дату интервалы ещё не добавлены.</p>}</>}
 <label className="date-input-label">Выбранная дата<input type="date" min={localDate(new Date())} value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/></label>
 <form className="schedule-form smart-calendar-add" onSubmit={addSlot}>
-  <div className="schedule-time-range">
-    <button type="button" className="schedule-time-value" onClick={()=>{setEditingTime('start');setTimeDraft(startTime)}}><small>С</small><b>{startTime}</b></button>
-    <span className="schedule-time-arrow">→</span>
-    <button type="button" className="schedule-time-value" onClick={()=>{setEditingTime('end');setTimeDraft(endTime)}}><small>ДО</small><b>{endTime}</b></button>
-  </div>
-  <button className="primary-button full-button"><Plus size={16}/> Добавить интервал</button>
-</form>
-{editingTime&&<div className="schedule-time-overlay" onClick={()=>setEditingTime(null)}><div className="schedule-time-dialog" role="dialog" aria-modal="true" aria-label="Выбор времени" onClick={e=>e.stopPropagation()}>
-  <div className="schedule-time-dialog-head"><b>{editingTime==='start'?'Время начала':'Время окончания'}</b><button type="button" onClick={()=>setEditingTime(null)} aria-label="Закрыть"><X size={18}/></button></div>
-  <div className="schedule-time-selects">
-    <label><small>Часы</small><select value={timeDraft.split(':')[0]} onChange={e=>setTimeDraft(e.target.value+':'+timeDraft.split(':')[1])}>{Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-    <span>:</span>
-    <label><small>Минуты</small><select value={timeDraft.split(':')[1]} onChange={e=>setTimeDraft(timeDraft.split(':')[0]+':'+e.target.value)}>{['00','05','10','15','20','25','30','35','40','45','50','55'].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-  </div>
-  <button type="button" className="primary-button full-button" onClick={()=>{if(editingTime==='start')setStartTime(timeDraft);else setEndTime(timeDraft);setEditingTime(null)}}>Готово</button>
-</div></div>}
-<p className="muted-note">Календарь использует те же интервалы и записи, что и старая версия. Переключатель меняет только отображение.</p>
+  <div className="schedu<form className="schedule-form smart-calendar-add" onSubmit={addSlot}><div><label>С <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/></label><label>До <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></label></div><button className="primary-button full-button"><Plus size={16}/> Добавить интервал</button></form>Переключатель меняет только отображение.</p>
 </section></>}
 
           </div>}
