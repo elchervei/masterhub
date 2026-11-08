@@ -1,62 +1,63 @@
 # MASTER HUB
 
-Telegram Mini App для поиска тату-мастеров и онлайн-записи. Первый город запуска — Калининград.
+MASTER HUB — Telegram Mini App для поиска локальных мастеров и онлайн-записи. Первый город запуска — Калининград.
 
-## Текущий этап
+## Что уже работает
 
-Сейчас в репозитории находится frontend-прототип на React + Vite:
-- главная страница и популярные направления;
-- каталог с поиском, фильтрами и сортировкой;
-- карточки и страницы мастеров с портфолио;
-- избранное;
-- демонстрационный сценарий онлайн-записи;
-- клиентский профиль и переключатель демонстрационного кабинета мастера;
-- адаптация под Telegram WebApp и мобильные экраны.
+- Telegram WebApp authentication через проверку `initData` на Supabase Edge Function.
+- Каталог одобренных мастеров, профили, портфолио, Flash-каталог, услуги и стили.
+- Избранное и клиентская онлайн-запись на свободные интервалы.
+- Кабинет мастера: профиль, портфолио, услуги, календарь, заявки, записи и статистика.
+- Согласование стоимости: мастер предлагает цену, клиент подтверждает или отклоняет.
+- Студии: создание, приглашения, роли владельца/модератора/участника, общая статистика и календарь.
+- Админ-панель для модерации анкет и просмотра записей.
+- Telegram-уведомления о новых заявках и напоминания о сеансах.
 
-Данные пока демонстрационные. Авторизация Telegram, база данных, реальная проверка доступности слотов, уведомления и модерация будут подключены на следующем этапе через Supabase.
+## Стек
 
-## Запуск локально
+- React 18 + Vite 6
+- Supabase Auth, Postgres, Storage, Realtime и Edge Functions
+- Telegram Mini Apps
+- Vercel
+
+## Локальный запуск
 
 Требуется Node.js 20 или новее.
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Для production-сборки:
+Production-сборка:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Стек
+## Переменные окружения фронтенда
 
-- React
-- Vite
-- CSS
-- Telegram WebApp SDK (через объект `window.Telegram.WebApp`, если приложение открыто внутри Telegram)
-- Supabase — планируемый backend
-- Vercel — планируемый hosting
+- `VITE_SUPABASE_URL` — URL Supabase проекта.
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — publishable key Supabase (подойдёт и legacy anon key).
 
-## Переменные окружения
+В браузер можно передавать только publishable/anon key. **Никогда не добавляй `service_role`, Telegram bot token или другие серверные секреты в переменные с префиксом `VITE_`.** Секреты Edge Functions хранятся в Supabase на серверной стороне.
 
-На текущем frontend-этапе переменные окружения не требуются. Не добавляйте секретные ключи в клиентский код. Для будущей интеграции Supabase используйте публичный anon/publishable key на клиенте и храните service role key только на серверной стороне.
+## Supabase Edge Functions
 
-## Важно
+В репозитории находятся:
 
-Демо-слоты и заявки не являются реальными бронированиями. До подключения backend интерфейс только показывает пользовательский сценарий.
+- `telegram-auth` — проверяет подпись и срок действия Telegram `initData`, затем выдаёт Supabase session.
+- `masterhub-notifications` — отправляет уведомления о заявках и напоминания.
+- `notify-new-master` — уведомляет администраторов о новой анкете мастера.
 
+## База данных и миграции
 
-## Supabase setup
+SQL-миграции находятся в `supabase/migrations`. В действующем Supabase-проекте применена более полная история миграций, чем сейчас сохранена в GitHub: часть старых миграций ещё нужно восстановить в репозитории.
 
-1. Create a Supabase project.
-2. Open **SQL Editor** in the Supabase dashboard.
-3. Open `supabase/migrations/0001_initial_schema.sql` in this repository, copy the complete contents, paste into SQL Editor, and run it.
-4. In **Project Settings → API**, copy the Project URL and the publishable key (or legacy anon key).
-5. Create a local `.env` file from `.env.example` and fill in:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+**Не используй только `0001_initial_schema.sql` для развёртывания новой рабочей базы:** он не создаёт всю текущую функциональность. Перед созданием нового окружения нужно восстановить недостающие миграции и применить их по порядку.
 
-Never put the `service_role` key in frontend code or Vercel environment variables prefixed with `VITE_`. The migration enables Row Level Security and creates the initial schema. Telegram authentication, admin bootstrap, and the live frontend data adapter are the next integration step; the existing screens still use demo data until that work is completed.
+## Деплой
+
+Push в ветку `main` запускает production build и deployment в Vercel. После изменений проверяй статус последнего production deployment.
