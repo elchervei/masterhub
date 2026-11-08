@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import StudioWorkspace from './StudioWorkspace'
 import { styleGroups } from './data'
 import { UserRound, Images, Plus, Trash2, CalendarRange, CalendarCheck2, Inbox, Check, X, CloudUpload, Clock, Send, House, Eye, Copy, Share2, Archive, RotateCcw, Sparkles, Clock3, CalendarDays, CheckCircle2, BarChart3 } from 'lucide-react'
@@ -24,6 +24,7 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
   const [telegramNotice,setTelegramNotice]=useState('')
   const [serviceTitle,setServiceTitle]=useState(''),[servicePrice,setServicePrice]=useState(''),[serviceDuration,setServiceDuration]=useState('60')
   const [selectedDate,setSelectedDate]=useState(localDate(new Date())),[startTime,setStartTime]=useState('11:00'),[endTime,setEndTime]=useState('13:00')
+  const startTimeInputRef=useRef(null),endTimeInputRef=useRef(null)
   const [note,setNote]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[uploading,setCloudUploading]=useState(false),[masterToolsView,setMasterToolsView]=useState(null),[copiedLink,setCopiedLink]=useState(false),[profileDraft,setProfileDraft]=useState({_masterId:null,public_name:'',bio:'',studio_name:'',city:'Калининград',contact_telegram:'',experience_years:'0',starting_price:'0'}),[profileSaving,setProfileSaving]=useState(false)
   const [smartCalendar,setSmartCalendar]=useState(true),[calendarView,setCalendarView]=useState('month'),[workType,setWorkType]=useState('portfolio'),[workStage,setWorkStage]=useState('fresh'),[flashStatus,setFlashStatus]=useState('available'),[workPrice,setWorkPrice]=useState(''),[pairMode,setPairMode]=useState(false),[activePairId,setActivePairId]=useState('')
   const [styleRows,setStyleRows]=useState([]),[selectedStyleIds,setSelectedStyleIds]=useState([]),[styleSaving,setStyleSaving]=useState(false)
@@ -303,7 +304,24 @@ export default function MasterWorkspace({ supabase, user, isAdmin, viewMode, set
 </>:<><div className="calendar-legend"><span><i className="free"/> Свободно</span><span><i className="partial"/> Частично</span><span><i className="full"/> Занято</span></div><div className="master-calendar-grid">{monthDays.map((d,i)=>{const key=localDate(d),sameMonth=d.getMonth()===new Date(selectedDate+'T12:00:00').getMonth();return <button type="button" key={i} className={'calendar-day '+(sameMonth?'':'outside')+' '+(selectedDate===key?'chosen':'')+' '+dayStatus(d)} onClick={()=>setSelectedDate(key)}><span>{d.getDate()}</span>{dayStatus(d)&&<i/>}</button>})}</div><label className="date-input-label">Выбранная дата<input type="date" min={localDate(new Date())} value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/></label><div className="slot-list">{selectedSlots.map(s=>{const booking=bookings.find(b=>b.slot_id===s.id&&['pending','price_proposed','confirmed'].includes(b.status));return <div key={s.id} className={!s.is_active?'slot-booked':''}><button type="button" className="slot-open-booking" disabled={!booking} onClick={()=>setSelectedBooking(booking)}><Clock size={14}/>{new Date(s.starts_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} — {new Date(s.ends_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} {!s.is_active?'· занято':'· свободно'}{booking&&<small> · открыть запись</small>}</button>{s.is_active&&<button type="button" onClick={()=>removeSlot(s)}><Trash2 size={14}/></button>}</div>})}</div>{!selectedSlots.length&&<p className="muted-note">На эту дату интервалы ещё не добавлены.</p>}</>}
 <label className="date-input-label">Выбранная дата<input type="date" min={localDate(new Date())} value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/></label>
 <form className="schedule-form smart-calendar-add" onSubmit={addSlot}>
-  <div className="schedu<form className="schedule-form smart-calendar-add" onSubmit={addSlot}><div><label>С <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/></label><label>До <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></label></div><button className="primary-button full-button"><Plus size={16}/> Добавить интервал</button></form>Переключатель меняет только отображение.</p>
+  <div className="schedule-time-fields">
+    <div className="schedule-time-field">
+      <span>Начало</span>
+      <button type="button" className="schedule-time-button" onClick={()=>{const input=startTimeInputRef.current;if(!input)return;if(input.showPicker)input.showPicker();else input.click()}}>
+        <Clock size={16}/><strong>{startTime}</strong><small>Изменить</small>
+      </button>
+      <input ref={startTimeInputRef} className="schedule-time-native" type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} aria-label="Время начала"/>
+    </div>
+    <div className="schedule-time-field">
+      <span>Окончание</span>
+      <button type="button" className="schedule-time-button" onClick={()=>{const input=endTimeInputRef.current;if(!input)return;if(input.showPicker)input.showPicker();else input.click()}}>
+        <Clock size={16}/><strong>{endTime}</strong><small>Изменить</small>
+      </button>
+      <input ref={endTimeInputRef} className="schedule-time-native" type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} aria-label="Время окончания"/>
+    </div>
+  </div>
+  <button className="primary-button full-button"><Plus size={16}/> Добавить интервал</button>
+</form>
 </section></>}
 
           </div>}
