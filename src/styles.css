@@ -1951,3 +1951,13 @@ img{max-width:100%}
 .studio-profile-open{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;color:#aab5ad;font-size:9px;white-space:nowrap}
 .studio-member-profile:not(:disabled) .studio-profile-open{color:#d5dfd8}
 @media(hover:hover){.studio-member-profile:not(:disabled):hover .studio-profile-open{color:#fff}.studio-member-profile:not(:disabled):hover .studio-member-copy b{text-decoration:underline;text-underline-offset:3px}}
+
+
+/* City selection on the client home and master profile */
+.city-picker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 20px;padding:12px 14px;border:1px solid rgba(190,190,190,.18);border-radius:14px;background:rgba(255,255,255,.035)}
+.city-picker>span{display:flex;align-items:center;gap:8px;color:#aaa;font-size:12px;white-space:nowrap}
+.city-picker>span svg{color:#c4c4c4}
+.city-picker select{width:min(62%,230px);min-width:0;padding:10px 30px 10px 11px;border:1px solid rgba(190,190,190,.18);border-radius:10px;background:#171717;color:#eee;font:inherit;font-size:12px}
+.workspace-form-grid select,.workspace-form-grid input{min-width:0}
+.workspace-form-grid select{width:100%;min-height:42px;padding:9px 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#171717;color:#eee;font:inherit;font-size:12px}
+@media(max-width:360px){.city-picker{padding:10px}.city-picker select{width:65%;font-size:11px}}
