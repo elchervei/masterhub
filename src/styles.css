@@ -2011,3 +2011,22 @@ img{max-width:100%}
 .analytics-bar-column>small{color:#82768d;font-size:7px;white-space:nowrap}
 .analytics-privacy-note{margin:0;padding:0 3px;color:#82768d;font-size:9px;line-height:1.55}
 @media(min-width:520px){.analytics-metrics-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Compact mobile time range picker */
+.schedule-time-range{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);align-items:center;gap:9px;width:100%;margin:0 0 12px}
+.schedule-time-value{min-width:0;display:flex;align-items:center;justify-content:center;gap:9px;padding:13px 10px;border:1px solid rgba(190,170,220,.2);border-radius:13px;background:rgba(120,90,160,.09);color:var(--text,#f4efff);font:inherit}
+.schedule-time-value small{color:#a99db4;font-size:10px;font-weight:700;letter-spacing:.08em}
+.schedule-time-value b{font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.schedule-time-arrow{text-align:center;color:#9b8ca9;font-size:17px}
+.schedule-time-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(5,4,9,.72);backdrop-filter:blur(5px)}
+.schedule-time-dialog{width:min(100%,340px);padding:17px;border:1px solid rgba(190,170,220,.22);border-radius:19px;background:#1b1722;box-shadow:0 20px 70px rgba(0,0,0,.45);color:#f4efff}
+.schedule-time-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.schedule-time-dialog-head b{font-size:15px}
+.schedule-time-dialog-head button{width:32px;height:32px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:rgba(255,255,255,.04);color:#cfc4d8}
+.schedule-time-selects{display:grid;grid-template-columns:1fr 14px 1fr;align-items:end;gap:9px;margin-bottom:20px}
+.schedule-time-selects label{display:grid;gap:7px;min-width:0}
+.schedule-time-selects label small{color:#a99db4;font-size:10px}
+.schedule-time-selects select{width:100%;height:58px;padding:8px;border:1px solid rgba(190,170,220,.2);border-radius:12px;background:#292232;color:#fff;font:inherit;font-size:24px;font-weight:700;text-align:center;color-scheme:dark}
+.schedule-time-selects>span{padding-bottom:15px;text-align:center;color:#c9b8d7;font-size:24px}
+@media(max-width:360px){.schedule-time-range{gap:5px}.schedule-time-value{gap:6px;padding:12px 6px}.schedule-time-value b{font-size:20px}}
