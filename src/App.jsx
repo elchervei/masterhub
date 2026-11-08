@@ -496,9 +496,13 @@ export default function App() {
     const { data: existing, error: lookupError } = await supabase.from('masters').select('id').eq('user_id', user.id).limit(1).maybeSingle()
     if (lookupError) { setRegistrationStatus(lookupError.message); return }
     const result = existing
-      ? await supabase.from('masters').update(payload).eq('id', existing.id)
-      : await supabase.from('masters').insert(payload)
+      ? await supabase.from('masters').update(payload).eq('id', existing.id).select('id').single()
+      : await supabase.from('masters').insert(payload).select('id').single()
     if (result.error) { setRegistrationStatus(result.error.message || 'Не удалось отправить анкету.'); return }
+    if (!existing && result.data?.id) {
+      const { error: notificationError } = await supabase.functions.invoke('notify-new-master', { body: { master_id: result.data.id } })
+      if (notificationError) console.error('Admin notification delivery failed:', notificationError)
+    }
     if (userRole !== 'admin') setUserRole('master')
     setRegistrationOpen(false)
     window.dispatchEvent(new Event('masterhub:master-created'))
