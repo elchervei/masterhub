@@ -382,7 +382,7 @@ function MasterRegistration({ onClose, onSubmit }) {
 
 export default function App() {
   const [active,setActive]=useState('home')
-  const [introVisible,setIntroVisible]=useState(true)
+  const [introVisible,setIntroVisible]=useState(false)
   const [selectedCategory,setSelectedCategory]=useState('tattoo')
   const [selectedCity,setSelectedCity]=useState('Калининград')
   const [selected,setSelected]=useState(null)
@@ -402,7 +402,6 @@ export default function App() {
   const [viewMode,setViewMode]=useState('client')
   const [bookingSaving,setBookingSaving]=useState(false)
   const [connectionStatus,setConnectionStatus]=useState(supabase ? 'подключаемся…' : 'не настроено')
-  useEffect(() => { const timer = window.setTimeout(() => setIntroVisible(false), 1500); return () => window.clearTimeout(timer) }, [])
   useEffect(()=>{const handler=()=>setActive(userRole==='master'||(userRole==='admin'&&viewMode==='master')?'profile':'bookings');window.addEventListener('masterhub:open-notifications',handler);return()=>window.removeEventListener('masterhub:open-notifications',handler)},[userRole,viewMode])
   useEffect(() => {
     if (!supabase) return
