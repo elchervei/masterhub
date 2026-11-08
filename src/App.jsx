@@ -352,7 +352,7 @@ function ProfilePage({ supabase, isMaster, isAdmin, viewMode, setViewMode, conne
     </div>
     {user
       ? <button className="primary-button full-button" onClick={onSignOut}><LogOut size={17}/> Выйти из аккаунта</button>
-      : <button className="primary-button full-button" onClick={onLogin} disabled={authLoading}>
+      : <button className="primary-button full-button" onClick={() => onLogin()} disabled={authLoading}>
           {authLoading ? 'Подключаем Telegram…' : 'Подключить Telegram'}
         </button>}
     {authError && <p className="muted-note auth-error" role="alert">{authError}</p>}
@@ -432,7 +432,7 @@ export default function App() {
       await tryTelegramAuth()
       if (!attempted && active) {
         retryTimer = window.setInterval(tryTelegramAuth, 300)
-        window.setTimeout(() => { if (retryTimer) window.clearInterval(retryTimer) }, 20000)
+        window.setTimeout(() => { if (!attempted && active) { if (retryTimer) window.clearInterval(retryTimer); setAuthLoading(false); setAuthError('Telegram не передал данные для входа. Полностью закрой Mini App и открой его снова из нужного аккаунта через бота.') } }, 20000)
       }
     }
     connectTelegram()
@@ -482,7 +482,7 @@ export default function App() {
   }, [supabase, user])
   const loginWithTelegram = async (providedInitData = null) => {
     setAuthError('')
-    const initData = providedInitData || window.Telegram?.WebApp?.initData
+    const initData = typeof providedInitData === 'string' ? providedInitData : window.Telegram?.WebApp?.initData
     const expectedTelegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id
     if (!initData) { setAuthError('Telegram не передал initData. Проверь, что приложение открыто кнопкой Web App внутри бота, а не обычной ссылкой.'); return null }
     if (!supabase) { setAuthError('Нет подключения к Supabase.'); return null }
