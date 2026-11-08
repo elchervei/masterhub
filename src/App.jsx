@@ -50,6 +50,7 @@ const categories = [
   { id: 'makeup', title: 'Макияж', subtitle: 'Образы на каждый день и события' }
 ]
 const categoryLabels = Object.fromEntries(categories.map(item => [item.id, item.title]))
+const russianCities = ['Калининград','Москва','Санкт-Петербург','Новосибирск','Екатеринбург','Казань','Нижний Новгород','Красноярск','Челябинск','Самара','Уфа','Ростов-на-Дону','Краснодар','Омск','Воронеж','Пермь','Волгоград','Саратов','Тюмень','Тольятти','Ижевск','Барнаул','Иркутск','Хабаровск','Владивосток','Ярославль','Махачкала','Томск','Оренбург','Кемерово','Новокузнецк','Рязань','Астрахань','Пенза','Липецк','Киров','Чебоксары','Калуга','Тула','Сочи','Ставрополь','Белгород','Курск','Сургут','Ульяновск','Брянск','Вологда','Череповец','Другой город']
 const tabs = [
   { id: 'home', label: 'Главная', icon: Home },
   { id: 'catalog', label: 'Каталог', icon: Search },
@@ -111,33 +112,33 @@ function CategoryIcon({ type }) {
   return <Icon className="category-theme-icon" size={23} strokeWidth={1.65} aria-hidden="true" />
 }
 
-function HomePage({ introVisible, onSelectCategory }) {
+function HomePage({ introVisible, onSelectCategory, city, onCityChange }) {
   if (introVisible) return <main className="page-content home-page home-redesign">
     <section className="home-intro home-intro-only"><h1>Выбери своего мастера</h1></section>
   </main>
   return <main className="page-content home-page category-home">
-    <div className="category-heading"><span className="eyebrow">MASTER HUB · КАЛИНИНГРАД</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div>
+    <div className="category-heading"><span className="eyebrow">MASTER HUB · РОССИЯ</span><h1>Выбери направление</h1><p>Сначала услуга — затем подходящий мастер.</p></div><label className="city-picker"><span><MapPin size={17}/> Город</span><select value={city} onChange={e=>onCityChange(e.target.value)}>{russianCities.map(name=><option key={name} value={name}>{name}</option>)}</select></label>
     <div className="category-list">{categories.map(item => <button className="category-choice" key={item.id} onClick={() => onSelectCategory(item.id)}>
       <span className="category-copy"><b>{item.title}</b><small>{item.subtitle}</small></span><span className="category-art"><CategoryIcon type={item.id}/></span><ChevronRight size={19}/>
     </button>)}</div>
   </main>
 }
 
-function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, onBack, loading }) {
+function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, category, city, onBack, loading }) {
   const [query, setQuery] = useState('')
   const [selectedStyles, setSelectedStyles] = useState([])
   const [styleSearch, setStyleSearch] = useState('')
   const [stylesOpen, setStylesOpen] = useState(false)
   const [sort, setSort] = useState('month')
-  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.name + m.studio + (m.studioName||'') + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || selectedStyles.length === 0 || selectedStyles.some(style => m.styles.includes(style)))).sort((a,b)=>{
+  const filtered = useMemo(() => mastersList.filter(m => m.category === category && (m.city || 'Калининград') === city && (m.name + m.studio + (m.studioName||'') + m.styles.join(' ')).toLowerCase().includes(query.toLowerCase()) && (category !== 'tattoo' || selectedStyles.length === 0 || selectedStyles.some(style => m.styles.includes(style)))).sort((a,b)=>{
     if(sort==='price') return a.price-b.price
     if(sort==='rating') return b.rating-a.rating || b.reviews-a.reviews
     if(sort==='reviews') return b.reviews-a.reviews || b.rating-a.rating
     if(sort==='week') return b.sessionsWeek-a.sessionsWeek || b.rating-a.rating
     return b.sessionsMonth-a.sessionsMonth || b.rating-a.rating
-  }), [mastersList, category, query, selectedStyles, sort])
+  }), [mastersList, category, city, query, selectedStyles, sort])
   const categoryName = categoryLabels[category] || 'Услуги'
-  return <><Header title={`Мастера · ${categoryName}`} subtitle="КАЛИНИНГРАД" back={onBack}/>
+  return <><Header title={`Мастера · ${categoryName}`} subtitle={city.toUpperCase()} back={onBack}/>
     <main className="page-content"><div className="search-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Имя мастера или стиль..."/>{query && <button onClick={()=>setQuery('')}><X size={16}/></button>}</div>
       <div className="filter-head"><span>{filtered.length} мастера</span><label><SlidersHorizontal size={15}/><select value={sort} onChange={e=>setSort(e.target.value)}><option value="month">Популярные · 30 дней</option><option value="week">Популярные · 7 дней</option><option value="rating">Выше средняя оценка</option><option value="reviews">Больше отзывов</option><option value="price">Сначала дешевле</option></select></label></div>
       {category === 'tattoo' && <section className="tattoo-style-filter">
@@ -344,7 +345,7 @@ function ProfilePage({ supabase, isMaster, isAdmin, viewMode, setViewMode, conne
 
 
 function MasterRegistration({ onClose, onSubmit }) {
-  const [form, setForm] = useState({ category: 'tattoo', public_name: '', bio: '', studio_name: '', contact_telegram: '', experience_years: '0' })
+  const [form, setForm] = useState({ category: 'tattoo', public_name: '', bio: '', studio_name: '', city: 'Калининград', contact_telegram: '', experience_years: '0' })
   const [saving, setSaving] = useState(false)
   const update = (key, value) => setForm(old => ({ ...old, [key]: value }))
   const submit = async e => { e.preventDefault(); if (!form.public_name.trim()) return; setSaving(true); await onSubmit(form); setSaving(false) }
@@ -355,6 +356,7 @@ function MasterRegistration({ onClose, onSubmit }) {
     <label>Имя или псевдоним<input required value={form.public_name} onChange={e=>update('public_name',e.target.value)} placeholder="Как тебя показывать клиентам" maxLength={50}/></label>
     <label>О себе<textarea required value={form.bio} onChange={e=>update('bio',e.target.value)} placeholder="Опыт, подход, особенности работ" maxLength={500}/></label>
     <label>Студия (необязательно)<input value={form.studio_name} onChange={e=>update('studio_name',e.target.value)} placeholder="Название студии" maxLength={80}/></label>
+    <label>Город<select required value={form.city} onChange={e=>update('city',e.target.value)}>{russianCities.map(name=><option key={name} value={name}>{name}</option>)}</select></label>
     <label>Telegram для связи<input value={form.contact_telegram} onChange={e=>update('contact_telegram',e.target.value)} placeholder="@username" maxLength={32}/></label>
     <label>Опыт, лет<input type="number" min="0" value={form.experience_years} onChange={e=>update('experience_years',e.target.value)}/></label>
     <button className="primary-button full-button" disabled={saving}>{saving ? 'Отправляем…' : 'Отправить на проверку'} <ChevronRight size={17}/></button>
@@ -365,6 +367,7 @@ export default function App() {
   const [active,setActive]=useState('home')
   const [introVisible,setIntroVisible]=useState(true)
   const [selectedCategory,setSelectedCategory]=useState('tattoo')
+  const [selectedCity,setSelectedCity]=useState('Калининград')
   const [selected,setSelected]=useState(null)
   const [bookingMaster,setBookingMaster]=useState(null)
   const [publicStudioId,setPublicStudioId]=useState(null)
@@ -487,7 +490,7 @@ export default function App() {
       public_name: String(form.public_name || '').trim().slice(0, 50),
       bio: String(form.bio || '').trim().slice(0, 500),
       studio_name: String(form.studio_name || '').trim().slice(0, 80) || null,
-      city: 'Калининград',
+      city: form.city || 'Калининград',
       contact_telegram: telegramUsername(form.contact_telegram) || null,
       experience_years: Math.max(0, Number(form.experience_years || 0)),
       starting_price: 0,
@@ -607,8 +610,8 @@ export default function App() {
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
   else if(selected) content=<MasterDetail master={selected} onBack={()=>{setSelected(null);if(returnToStudio){setReturnToStudio(false);setActive('public-studio')}}} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)} onOpenStudio={openStudioFromMaster}/>
   else if(active==='public-studio') content=<PublicStudioPage supabase={supabase} studioId={publicStudioId} onBack={backFromStudio} onOpenMaster={openStudioMember}/>
-  else if(active==='home') content=<HomePage introVisible={introVisible} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
-  else if(active==='catalog') content=<CatalogPage category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList} loading={mastersLoading}/>
+  else if(active==='home') content=<HomePage introVisible={introVisible} city={selectedCity} onCityChange={setSelectedCity} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
+  else if(active==='catalog') content=<CatalogPage city={selectedCity} category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList} loading={mastersLoading}/>
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersLoading?<MasterCardSkeleton count={2}/>:mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!mastersLoading&&!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
