@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useState } from 'react'
+import { ChartNoAxesCombined, Component, useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { Users, Building2, Home, Search, CalendarDays, Heart, UserRound, MapPin, Star, Clock3, ArrowLeft, SlidersHorizontal, ChevronRight, Bell, Plus, Check, X, Camera, LogOut, Menu, Sparkles, MessageCircle, BriefcaseBusiness, ClipboardList, Send, Upload, ContactRound, Inbox, CalendarCheck2, PenTool, Hand, Eye, CircleDot, Brush } from 'lucide-react'
 import { masters, styleGroups, workImage } from './data'
@@ -90,6 +90,7 @@ function BottomNav({ active, setActive, isAdmin, isMaster, hasStudio }) {
     { id: 'profile', label: 'Кабинет', icon: ContactRound },
     { id: 'master-inbox', label: 'Заявки', icon: Inbox },
     { id: 'master-bookings', label: 'Записи', icon: CalendarCheck2 },
+    { id: 'master-stats', label: 'Статистика', icon: ChartNoAxesCombined },
     ...(hasStudio ? [{ id: 'studio', label: 'Студия', icon: Building2 }] : []),
     { id: 'home', label: 'Клиент', icon: Home }
   ]
@@ -154,11 +155,29 @@ function CatalogPage({ openMaster, favorites, toggleFavorite, mastersList, categ
     </main></>
 }
 
-function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook, onOpenStudio }) {
+function getMasterAnalyticsVisitorId() {
+  try {
+    let id=window.localStorage.getItem('masterhub_analytics_visitor')
+    if(!id){id=crypto.randomUUID();window.localStorage.setItem('masterhub_analytics_visitor',id)}
+    return id
+  } catch { return crypto.randomUUID() }
+}
+
+function MasterDetail({ master, supabase, onBack, favorite, toggleFavorite, onBook, onOpenStudio }) {
   const [tab, setTab] = useState('works')
   const categoryTitle = ({tattoo:'татуировок',nails:'ногтей и педикюра',brows:'бровей и ресниц',piercing:'пирсинга',makeup:'макияжа'})[master.category] || 'услуг'
   const [lightbox, setLightbox] = useState('')
   const [flashFilter, setFlashFilter] = useState('all')
+  useEffect(()=>{
+    if(!supabase||!master?.id)return
+    supabase.rpc('track_master_profile_event',{p_master_id:master.id,p_event_type:'profile_view',p_visitor_id:getMasterAnalyticsVisitorId()})
+      .then(({error})=>{if(error)console.warn('MASTER HUB profile analytics:',error.message)})
+  },[supabase,master?.id])
+  const trackBookingClick=()=>{
+    if(!supabase||!master?.id)return
+    supabase.rpc('track_master_profile_event',{p_master_id:master.id,p_event_type:'booking_click',p_visitor_id:getMasterAnalyticsVisitorId()})
+      .then(({error})=>{if(error)console.warn('MASTER HUB booking analytics:',error.message)})
+  }
   return <><Header title="Профиль мастера" back={onBack} action={<button className={favorite?'icon-button is-favorite':'icon-button'} onClick={toggleFavorite}><Heart size={20} fill={favorite?'currentColor':'none'}/></button>}/>
     <main className="page-content detail-page"><div className="detail-cover" style={{backgroundImage:`url(${master.image})`}}/><div className="detail-identity"><div><span className="eyebrow">{master.studioName || master.studio}</span><h1>{master.name}</h1><div className="master-meta"><span className="rating">{master.reviews>0?<><Star size={14} fill="currentColor"/> {master.rating.toFixed(1)} ({master.reviews} отзывов)</>:'Новый мастер · отзывов пока нет'}</span></div></div><div className="avatar-placeholder">{master.name.split(' ').map(x=>x[0]).join('')}</div></div>
       {master.studioId&&<button type="button" className="master-studio-link" onClick={()=>onOpenStudio?.(master)}><span className="master-studio-link-icon"><Building2 size={18}/></span><span><small>МАСТЕР В КОМАНДЕ</small><b>{master.studioName||master.studio}</b><em>Открыть страницу студии</em></span><ChevronRight size={18}/></button>}
@@ -169,7 +188,7 @@ function MasterDetail({ master, onBack, favorite, toggleFavorite, onBook, onOpen
       {tab==='services'&&<div className="service-list">{master.services?.length ? master.services.map(service=><div key={service.id}><span>{service.title}{service.description&&<small>{service.description}</small>}</span><b>{money(service.price_from)}</b></div>) : <><div><span>Стоимость услуг</span><b>{master.price>0?'от '+money(master.price):'Цена по запросу'}</b></div><small>Мастер ещё не добавил подробный прайс. Уточни стоимость при записи.</small></>}</div>}
       {tab==='reviews'&&<div className="master-reviews-list">{master.reviewItems?.length?master.reviewItems.map(review=><article className="master-review-card" key={review.id}><div><b>Клиент</b><span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span></div><small>{new Date(review.created_at).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}</small>{review.body&&<p>{review.body}</p>}</article>):<div className="empty-state">Пока нет отзывов. После первого визита клиент сможет оставить оценку.</div>}</div>}
       {tab==='info'&&<div className="info-panel"><p>{master.about}</p><p><MapPin size={15}/> {master.city||'Калининград'} · адрес студии уточняется при записи</p><p><MessageCircle size={15}/> {master.handle?telegramProfileUrl(master.handle)?<a href={telegramProfileUrl(master.handle)} onClick={openTelegramLink} target="_blank" rel="noopener noreferrer">{master.handle}</a>:master.handle:'Telegram не указан'}</p></div>}
-      <button className="primary-button booking-cta" onClick={onBook}>Записаться к мастеру <ChevronRight size={17}/></button>
+      <button className="primary-button booking-cta" onClick={()=>{trackBookingClick();onBook()}}>Записаться к мастеру <ChevronRight size={17}/></button>
       {lightbox&&<div className="modal-backdrop portfolio-lightbox" onClick={()=>setLightbox('')}><button type="button" className="modal-close" onClick={()=>setLightbox('')}><X size={22}/></button><img src={lightbox} alt="Работа мастера" onClick={e=>e.stopPropagation()}/></div>}
     </main>
   </>
@@ -608,14 +627,14 @@ export default function App() {
   const confirmBooking=async data=>{if(!user||!supabase)throw new Error('Подключи Telegram, чтобы отправить заявку на запись.');setBookingSaving(true);try{const {error}=await supabase.from('bookings').insert({client_id:user.id,master_id:data.master.id,slot_id:data.slotId,service_id:data.serviceId||null,starts_at:data.startsAt,ends_at:data.endsAt,client_note:(data.clientNote||'Запись').slice(0,300),reference_image_url:data.referenceImageUrl||null,client_telegram:data.clientTelegram||null});if(error)throw error;setBookingMaster(null);setSelected(null);setActive('bookings')}finally{setBookingSaving(false)}}
   let content
   if(bookingMaster) content=<BookingPage master={bookingMaster} onBack={()=>setBookingMaster(null)} onConfirm={confirmBooking} saving={bookingSaving} supabase={supabase} user={user}/>
-  else if(selected) content=<MasterDetail master={selected} onBack={()=>{setSelected(null);if(returnToStudio){setReturnToStudio(false);setActive('public-studio')}}} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)} onOpenStudio={openStudioFromMaster}/>
+  else if(selected) content=<MasterDetail master={selected} supabase={supabase} onBack={()=>{setSelected(null);if(returnToStudio){setReturnToStudio(false);setActive('public-studio')}}} favorite={favorites.includes(selected.id)} toggleFavorite={()=>toggleFavorite(selected.id)} onBook={()=>setBookingMaster(selected)} onOpenStudio={openStudioFromMaster}/>
   else if(active==='public-studio') content=<PublicStudioPage supabase={supabase} studioId={publicStudioId} onBack={backFromStudio} onOpenMaster={openStudioMember}/>
   else if(active==='home') content=<HomePage introVisible={introVisible} city={selectedCity} onCityChange={setSelectedCity} onSelectCategory={id=>{setSelectedCategory(id);setActive('catalog')}}/>
   else if(active==='catalog') content=<CatalogPage city={selectedCity} category={selectedCategory} onBack={()=>setActive('home')} openMaster={setSelected} favorites={favorites} toggleFavorite={toggleFavorite} mastersList={mastersList} loading={mastersLoading}/>
   else if(active==='bookings') content=<BookingsPage supabase={supabase} user={user}/>
   else if(active==='favorites') content=<><Header title="Избранное" subtitle="ТВОИ МАСТЕРА"/><main className="page-content"><div className="master-list">{mastersLoading?<MasterCardSkeleton count={2}/>:mastersList.filter(m=>favorites.includes(m.id)).map(m=><MasterCard key={m.id} master={m} favorite onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>{!mastersLoading&&!favorites.length&&<div className="empty-state tall"><Heart size={34}/><b>Здесь пока пусто</b><span>Сохраняй мастеров, которые понравились</span><button className="primary-button" onClick={()=>setActive('catalog')}>Открыть каталог</button></div>}</main></>
   else if(active==='admin' && userRole==='admin') content=<AdminPanel supabase={supabase} currentUserId={user?.id}/>
-  else if(['profile','master-inbox','master-bookings','studio'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')} onNavigate={setActive} onOpenMasterProfile={openTeamMasterProfile}/>
+  else if(['profile','master-inbox','master-bookings','master-stats','studio'].includes(active) && (userRole==='master' || (userRole==='admin' && viewMode==='master'))) content=<MasterWorkspace supabase={supabase} user={user} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} activeTab={active} onOpenRegistration={()=>setRegistrationOpen(true)} onBackToMenu={()=>setActive('home')} onNavigate={setActive} onOpenMasterProfile={openTeamMasterProfile}/>
   else content=<ProfilePage supabase={supabase} isMaster={userRole==='master'} isAdmin={userRole==='admin'} viewMode={viewMode} setViewMode={setViewMode} connectionStatus={connectionStatus} user={user} authLoading={authLoading} onLogin={loginWithTelegram} onSignOut={signOut} authError={authError} onStartRegistration={startMasterRegistration} registrationStatus={registrationStatus}/>
   return <div className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><div className="app-inner"><RenderErrorBoundary key={active}>{content}</RenderErrorBoundary>{!selected&&!bookingMaster&&!(active==='home'&&introVisible)&&<BottomNav active={active} setActive={setActive} isAdmin={userRole==='admin'} isMaster={userRole==='master' || (userRole==='admin' && viewMode==='master')} hasStudio={hasStudio}/>}</div>{registrationOpen && <MasterRegistration onClose={()=>setRegistrationOpen(false)} onSubmit={submitMasterRegistration}/>}</div>
 }
